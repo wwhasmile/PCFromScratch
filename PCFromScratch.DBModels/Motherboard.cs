@@ -7,7 +7,7 @@ public class Motherboard
     public Guid Id { get; set; }
     public required string Name { get; set; }
     public required Manufacturer Manufacturer { get; set; }
-    public required Socket Socket { get; set; }
+    public required CpuSocket Socket { get; set; }
     public required MotherboardChipset Chipset { get; set; }
     public MotherboardFormFactor FormFactor { get; set; }
     public required RamGeneration RamGeneration { get; set; }
