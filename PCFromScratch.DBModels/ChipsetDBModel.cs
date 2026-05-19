@@ -3,13 +3,9 @@ namespace PCFromScratch.DBModels;
 public class ChipsetDBModel
 {
     public Guid Id { get; set; }
-    public string? Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
-    public ChipsetDBModel()
-    {
-    }
-
-    public ChipsetDBModel(string name) : this(Guid.NewGuid(), name)
+    public ChipsetDBModel(string name) : this(Guid.CreateVersion7(), name)
     {
     }
 
@@ -17,5 +13,9 @@ public class ChipsetDBModel
     {
         Id = id;
         Name = name;
+    }
+
+    private ChipsetDBModel()
+    {
     }
 }

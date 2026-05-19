@@ -3,11 +3,7 @@
 public class SocketDBModel
 {
     public Guid Id { get; set; }
-    public string? Name { get; set; }
-
-    public SocketDBModel()
-    {
-    }
+    public string Name { get; set; } = string.Empty;
 
     public SocketDBModel(string name) : this(Guid.NewGuid(), name)
     {
@@ -17,5 +13,9 @@ public class SocketDBModel
     {
         Id = id;
         Name = name;
+    }
+
+    private SocketDBModel()
+    {
     }
 }
