@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PCFromScratch.Common;
 
-public enum FormFactor
+public enum MotherboardFormFactor
 {
     ATX,
     MicroATX,
