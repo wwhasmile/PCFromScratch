@@ -1,21 +1,21 @@
 ﻿namespace PCFromScratch.DBModels;
 
-public class SocketDBModel
+public class Socket
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
 
-    public SocketDBModel(string name) : this(Guid.NewGuid(), name)
+    public Socket(string name) : this(Guid.NewGuid(), name)
     {
     }
 
-    public SocketDBModel(Guid id, string name)
+    public Socket(Guid id, string name)
     {
         Id = id;
         Name = name;
     }
 
-    private SocketDBModel()
+    private Socket()
     {
     }
 }
