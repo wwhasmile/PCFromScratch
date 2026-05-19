@@ -8,8 +8,8 @@ public class Motherboard
     public required string Name { get; set; }
     public required Manufacturer Manufacturer { get; set; }
     public required Socket Socket { get; set; }
-    public required Chipset Chipset { get; set; }
-    public FormFactor FormFactor { get; set; }
+    public required MotherboardChipset Chipset { get; set; }
+    public MotherboardFormFactor FormFactor { get; set; }
     public required RamGeneration RamGeneration { get; set; }
     public int RamSlots { get; set; }
     public int RamFrequency { get; set; }
