@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="PCFromScratch.Common/PCFromScratch.Common.csproj" />
   <Project Path="PCFromScratch.DBModels/PCFromScratch.DBModels.csproj" />
 </Solution>
