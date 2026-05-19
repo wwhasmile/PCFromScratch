@@ -13,6 +13,6 @@ public class Motherboard
     public required RamGeneration RamGeneration { get; set; }
     public int RamSlots { get; set; }
     public int RamFrequency { get; set; }
-    public required ICollection<Pin> Pins { get; set; }
+    public required ICollection<MotherboardPin> Pins { get; set; }
     public required ICollection<MotherboardExtension> MotherboardExtensions { get; set; }
 }
