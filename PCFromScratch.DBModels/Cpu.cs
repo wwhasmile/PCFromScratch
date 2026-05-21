@@ -9,9 +9,9 @@ public class Cpu
     public required Guid SeriesId { get; set; }
     public required Guid SocketId { get; set; }
 
-    public required Manufacturer Manufacturer { get; set; }
-    public required CpuSeries Series { get; set; }
-    public required CpuSocket Socket { get; set; }
+    public virtual required Manufacturer Manufacturer { get; set; }
+    public virtual required CpuSeries Series { get; set; }
+    public virtual required CpuSocket Socket { get; set; }
 
     public int ProcessNode { get; set; }
     public int Cores { get; set; }

@@ -12,10 +12,10 @@ public class Motherboard
     public required Guid ChipsetId { get; set; }
     public required Guid RamGenerationId { get; set; }
 
-    public required Manufacturer Manufacturer { get; set; }
-    public required CpuSocket Socket { get; set; }
-    public required MotherboardChipset Chipset { get; set; }
-    public required RamGeneration RamGeneration { get; set; }
+    public virtual required Manufacturer Manufacturer { get; set; }
+    public virtual required CpuSocket Socket { get; set; }
+    public virtual required MotherboardChipset Chipset { get; set; }
+    public virtual required RamGeneration RamGeneration { get; set; }
 
     public MotherboardFormFactor FormFactor { get; set; }
     public int RamSlots { get; set; }
