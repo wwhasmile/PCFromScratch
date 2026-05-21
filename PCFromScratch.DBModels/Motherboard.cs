@@ -22,5 +22,5 @@ public class Motherboard
     public int RamFrequency { get; set; }
     
     public ICollection<MotherboardPinSlot> Headers { get; set; } = new HashSet<MotherboardPinSlot>();
-    public ICollection<MotherboardExtension> MotherboardExtensions { get; set; } = [];
+    public ICollection<MotherboardExtensionSlot> Extensions { get; set; } = new HashSet<MotherboardExtensionSlot>();
 }
