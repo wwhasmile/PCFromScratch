@@ -1,6 +1,6 @@
 namespace PCFromScratch.Common;
 
-public enum MotherboardFormFactor
+public enum FormFactor
 {
     ATX,
     MicroATX,
