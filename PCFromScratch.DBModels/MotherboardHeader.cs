@@ -1,7 +1,9 @@
 namespace PCFromScratch.DBModels;
 
-public class CpuSeries
+public class MotherboardHeader
 {
     public Guid Id { get; set; }
+
     public required string Name { get; set; }
+    public int Count { get; set; }
 }

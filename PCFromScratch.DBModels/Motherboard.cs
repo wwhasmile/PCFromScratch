@@ -4,23 +4,17 @@ namespace PCFromScratch.DBModels;
 
 public class Motherboard
 {
-    public required Guid Id { get; set; }
+    public Guid Id { get; set; }
     public required string Name { get; set; }
 
-    public required Guid ManufacturerId { get; set; }
-    public required Guid SocketId { get; set; }
-    public required Guid ChipsetId { get; set; }
-    public required Guid RamGenerationId { get; set; }
+    public required string Socket { get; set; }
+    public required MotherboardFormFactor FormFactor { get; set; }
+    public required string Chipset { get; set; }
 
-    public virtual required Manufacturer Manufacturer { get; set; }
-    public virtual required CpuSocket Socket { get; set; }
-    public virtual required MotherboardChipset Chipset { get; set; }
-    public virtual required RamGeneration RamGeneration { get; set; }
-
-    public MotherboardFormFactor FormFactor { get; set; }
+    public required string RamGeneration { get; set; }
     public int RamSlots { get; set; }
     public int RamFrequency { get; set; }
-    
-    public ICollection<MotherboardPinSlot> Headers { get; set; } = new HashSet<MotherboardPinSlot>();
-    public ICollection<MotherboardExtensionSlot> Extensions { get; set; } = new HashSet<MotherboardExtensionSlot>();
+
+    public ICollection<MotherboardHeader> Headers = new HashSet<MotherboardHeader>();
+    public ICollection<MotherboardExtension> Extensions = new HashSet<MotherboardExtension>();
 }
