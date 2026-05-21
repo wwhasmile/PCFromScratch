@@ -1,6 +1,6 @@
 namespace PCFromScratch.DBModels;
 
-public class MotherboardHeader
+public class MotherboardPinSlot
 {
     public required Guid MotherboardId { get; set; }
     public required Guid PinId { get; set; }
