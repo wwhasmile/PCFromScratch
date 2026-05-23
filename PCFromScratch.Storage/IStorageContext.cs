@@ -2,7 +2,7 @@
 
 namespace PCFromScratch.Storage;
 
-public interface IStorageService
+public interface IStorageContext
 {
     IAsyncEnumerable<Motherboard> GetMotherboards();
     IAsyncEnumerable<Cpu> GetCpus();
