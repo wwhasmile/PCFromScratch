@@ -12,4 +12,5 @@ public interface IStorageContext
 
     IAsyncEnumerable<Motherboard> GetMotherboardsBySocket(string socket);
     IAsyncEnumerable<Ram> GetRamByGeneration(string generation);
+    IAsyncEnumerable<Psu> GetPsusFromPower(int minPower);
 }
