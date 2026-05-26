@@ -2,5 +2,6 @@
   <Project Path="PCFromScratch.App/PCFromScratch.App.csproj" />
   <Project Path="PCFromScratch.Common/PCFromScratch.Common.csproj" />
   <Project Path="PCFromScratch.DBModels/PCFromScratch.DBModels.csproj" />
+  <Project Path="PCFromScratch.Scrapers/PCFromScratch.Scrapers.csproj" />
   <Project Path="PCFromScratch.Storage/PCFromScratch.Storage.csproj" />
 </Solution>
