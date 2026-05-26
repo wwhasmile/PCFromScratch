@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="PCFromScratch.App.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:PCFromScratch.App"
+    xmlns:pages="clr-namespace:PCFromScratch.App.Pages"
+    Title="PCFromScratch.App">
+
+    <FlyoutItem Title="Конструктор ПК">
+        <ShellContent
+            ContentTemplate="{DataTemplate pages:PcConstructorPage}"
+            Route="PcConstructorPage" />
+    </FlyoutItem>
+    
+    <FlyoutItem Title="Порівняння компонентів">
+        <ShellContent
+            ContentTemplate="{DataTemplate pages:ComponentsComparePage}"
+            Route="ComponentsComparePage" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Порівняння ПК">
+        <ShellContent
+            ContentTemplate="{DataTemplate pages:PcComparePage}"
+            Route="PcComparePage" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Чи запуститься?">
+        <ShellContent
+            ContentTemplate="{DataTemplate pages:CanIRunOnItPage}"
+            Route="CanIRunOnItPage" />
+    </FlyoutItem>
+
+</Shell>

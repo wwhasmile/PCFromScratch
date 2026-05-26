@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:PCFromScratch.App.Pages"
+             x:Class="PCFromScratch.App.Pages.PcConstructorPage"
+             Title="Конструктор ПК">
+    <ContentPage.Resources>
+        <local:IsNotNullConverter x:Key="IsNotNullConverter" />
+    </ContentPage.Resources>
+    <StackLayout>
+        <CollectionView x:Name="ComponentCollectionView">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10">
+                        <!-- Single Component Category Template -->
+                        <Grid ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding ., Converter={local:TypeCheckConverter TargetType={x:Type local:SingleComponentCategory}}}">
+                            <Label Text="{Binding Name}" VerticalOptions="Center" />
+                            <Picker Grid.Column="1" 
+                                    ItemsSource="{Binding SelectedPart.Offers}" 
+                                    ItemDisplayBinding="{Binding Shop}" 
+                                    SelectedItem="{Binding SelectedOffer}" 
+                                    IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}"
+                                    WidthRequest="150"/>
+                            <Button Grid.Column="2" Text="{Binding ButtonText}" Clicked="ChooseButton_Clicked" CommandParameter="{Binding}" />
+                        </Grid>
+
+                        <!-- Multi Component Category Template -->
+                        <VerticalStackLayout IsVisible="{Binding ., Converter={local:TypeCheckConverter TargetType={x:Type local:MultiComponentCategory}}}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Name}" VerticalOptions="Center" />
+                                <Button Grid.Column="1" Text="Додати ще" Clicked="ChooseButton_Clicked" CommandParameter="{Binding}" />
+                            </Grid>
+                            <CollectionView ItemsSource="{Binding SelectedParts}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Padding="5,5,5,0" ColumnDefinitions="*,Auto,Auto">
+                                            <Label Text="{Binding Name}" VerticalOptions="Center" />
+                                            <Picker Grid.Column="1" 
+                                                    ItemsSource="{Binding Offers}" 
+                                                    ItemDisplayBinding="{Binding Shop}" 
+                                                    SelectedItem="{Binding SelectedOffer}"
+                                                    WidthRequest="150"/>
+                                            <Button Grid.Column="2" Text="Видалити" Clicked="RemovePart_Clicked" CommandParameter="{Binding}" Padding="5" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Label Text="{Binding TotalCost, StringFormat='Загальна вартість: {0:C}'}" FontSize="Medium" HorizontalOptions="End" Margin="20"/>
+    </StackLayout>
+</ContentPage>
