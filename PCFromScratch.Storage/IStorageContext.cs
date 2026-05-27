@@ -10,17 +10,29 @@ public interface IStorageContext
     IAsyncEnumerable<Ram> GetRams();
     IAsyncEnumerable<Psu> GetPsus();
 
-    public Task AddMotherboard(Motherboard motherboard);
-    public Task AddCpu(Cpu cpu);
-    public Task AddGpu(Gpu gpu);
-    public Task AddRam(Ram ram);
-    public Task AddPsu(Psu psu);
+    Task<Motherboard?> GetMotherboard(Guid id);
+    Task<Cpu?> GetCpu(Guid id);
+    Task<Gpu?> GetGpu(Guid id);
+    Task<Ram?> GetRam(Guid id);
+    Task<Psu?> GetPsu(Guid id);
 
-    public Task UpdateMotherboard(Motherboard motherboard);
-    public Task UpdateCpu(Cpu cpu);
-    public Task UpdateGpu(Gpu gpu);
-    public Task UpdateRam(Ram ram);
-    public Task UpdatePsu(Psu psu);
+    Task AddMotherboard(Motherboard motherboard);
+    Task AddCpu(Cpu cpu);
+    Task AddGpu(Gpu gpu);
+    Task AddRam(Ram ram);
+    Task AddPsu(Psu psu);
+
+    Task UpdateMotherboard(Motherboard motherboard);
+    Task UpdateCpu(Cpu cpu);
+    Task UpdateGpu(Gpu gpu);
+    Task UpdateRam(Ram ram);
+    Task UpdatePsu(Psu psu);
+
+    Task RemoveMotherboard(Guid id);
+    Task RemoveCpu(Guid id);
+    Task RemoveGpu(Guid id);
+    Task RemoveRam(Guid id);
+    Task RemovePsu(Guid id);
 
     IAsyncEnumerable<Motherboard> GetMotherboardsBySocket(string socket);
     IAsyncEnumerable<Ram> GetRamByGeneration(string generation);

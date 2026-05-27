@@ -22,6 +22,16 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
     public IAsyncEnumerable<Psu> GetPsus()
         => _dbContext.Psus.AsNoTracking().AsAsyncEnumerable();
 
+    public async Task<Motherboard?> GetMotherboard(Guid id) => await _dbContext.FindAsync<Motherboard>(id);
+
+    public async Task<Cpu?> GetCpu(Guid id) => await _dbContext.FindAsync<Cpu>(id);
+
+    public async Task<Gpu?> GetGpu(Guid id) => await _dbContext.FindAsync<Gpu>(id);
+
+    public async Task<Ram?> GetRam(Guid id) => await _dbContext.FindAsync<Ram>(id);
+
+    public async Task<Psu?> GetPsu(Guid id) => await _dbContext.FindAsync<Psu>(id);
+
     public IAsyncEnumerable<Motherboard> GetMotherboardsBySocket(string socket)
         => _dbContext.Motherboards.AsNoTracking().Where(x => x.Socket == socket)
         .AsAsyncEnumerable();
@@ -93,4 +103,19 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         _dbContext.Psus.Update(psu);
         await _dbContext.SaveChangesAsync();
     }
+
+    public async Task RemoveMotherboard(Guid id)
+        => await _dbContext.Motherboards.Where(x => x.Id == id).ExecuteDeleteAsync();
+
+    public async Task RemoveCpu(Guid id)
+        => await _dbContext.Cpus.Where(x => x.Id == id).ExecuteDeleteAsync();
+
+    public async Task RemoveGpu(Guid id)
+        => await _dbContext.Gpus.Where(x => x.Id == id).ExecuteDeleteAsync();
+
+    public async Task RemoveRam(Guid id)
+        => await _dbContext.Rams.Where(x => x.Id == id).ExecuteDeleteAsync();
+
+    public async Task RemovePsu(Guid id)
+        => await _dbContext.Psus.Where(x => x.Id == id).ExecuteDeleteAsync();
 }
