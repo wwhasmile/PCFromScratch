@@ -9,6 +9,7 @@
     <ItemGroup>
       <PackageReference Include="AngleSharp" Version="1.4.0" />
       <PackageReference Include="CsvHelper" Version="33.1.0" />
+      <PackageReference Include="FuzzySharp" Version="2.0.2" />
       <PackageReference Include="Microsoft.Playwright" Version="1.60.0" />
     </ItemGroup>
 
