@@ -4,7 +4,7 @@ using CsvHelper;
 
 namespace PCFromScratch.Scrapers;
 
-public class BenchmarkScraper
+public class CpuBenchmarkScraper
 {
     private static readonly string[] Urls =
     {
