@@ -2,10 +2,7 @@
   <Project Path="PCFromScratch.App/PCFromScratch.App.csproj" />
   <Project Path="PCFromScratch.Common/PCFromScratch.Common.csproj" />
   <Project Path="PCFromScratch.DBModels/PCFromScratch.DBModels.csproj" />
-<<<<<<< HEAD
   <Project Path="PCFromScratch.Scrapers/PCFromScratch.Scrapers.csproj" />
-=======
   <Project Path="PCFromScratch.Repository/PCFromScratch.Repository.csproj" />
->>>>>>> 3d7c167 (Repository project)
   <Project Path="PCFromScratch.Storage/PCFromScratch.Storage.csproj" />
 </Solution>
