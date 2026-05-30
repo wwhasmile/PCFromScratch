@@ -1,6 +1,6 @@
 namespace PCFromScratch.DBModels;
 
-public class Ssd
+public class Hhd
 {
     public Guid Id { get; set; }
     public required string Name { get; set; }
