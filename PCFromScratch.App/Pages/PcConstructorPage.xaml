@@ -2,13 +2,17 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:PCFromScratch.App.Pages"
+             xmlns:viewModels="clr-namespace:PCFromScratch.App.ViewModels"
              x:Class="PCFromScratch.App.Pages.PcConstructorPage"
              Title="Конструктор ПК">
+    <ContentPage.BindingContext>
+        <viewModels:PcConstructorViewModel />
+    </ContentPage.BindingContext>
     <ContentPage.Resources>
         <local:IsNotNullConverter x:Key="IsNotNullConverter" />
     </ContentPage.Resources>
     <StackLayout>
-        <CollectionView x:Name="ComponentCollectionView">
+        <CollectionView ItemsSource="{Binding Components}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="10">
@@ -21,14 +25,14 @@
                                     SelectedItem="{Binding SelectedOffer}" 
                                     IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}"
                                     WidthRequest="150"/>
-                            <Button Grid.Column="2" Text="{Binding ButtonText}" Clicked="ChooseButton_Clicked" CommandParameter="{Binding}" />
+                            <Button Grid.Column="2" Text="{Binding ButtonText}" Command="{Binding Path=BindingContext.ChooseCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
                         </Grid>
 
                         <!-- Multi Component Category Template -->
                         <VerticalStackLayout IsVisible="{Binding ., Converter={local:TypeCheckConverter TargetType={x:Type local:MultiComponentCategory}}}">
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="{Binding Name}" VerticalOptions="Center" />
-                                <Button Grid.Column="1" Text="Додати ще" Clicked="ChooseButton_Clicked" CommandParameter="{Binding}" />
+                                <Button Grid.Column="1" Text="Додати ще" Command="{Binding Path=BindingContext.ChooseCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
                             </Grid>
                             <CollectionView ItemsSource="{Binding SelectedParts}">
                                 <CollectionView.ItemTemplate>
@@ -40,7 +44,7 @@
                                                     ItemDisplayBinding="{Binding Shop}" 
                                                     SelectedItem="{Binding SelectedOffer}"
                                                     WidthRequest="150"/>
-                                            <Button Grid.Column="2" Text="Видалити" Clicked="RemovePart_Clicked" CommandParameter="{Binding}" Padding="5" />
+                                            <Button Grid.Column="2" Text="Видалити" Command="{Binding Path=BindingContext.RemoveCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" Padding="5" />
                                         </Grid>
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
