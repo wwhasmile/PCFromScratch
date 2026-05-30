@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:PCFromScratch.App.Pages"
              xmlns:viewModels="clr-namespace:PCFromScratch.App.ViewModels"
+             xmlns:common="clr-namespace:PCFromScratch.Common;assembly=PCFromScratch.Common"
              x:Class="PCFromScratch.App.Pages.PcConstructorPage"
              Title="Конструктор ПК">
     <ContentPage.BindingContext>
@@ -55,5 +56,47 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
         <Label Text="{Binding TotalCost, StringFormat='Загальна вартість: {0:C}'}" FontSize="Medium" HorizontalOptions="End" Margin="20"/>
+        
+        <Button Text="Check Compatibility" Command="{Binding CheckCompatibilityCommand}" Margin="10" />
+
+        <CollectionView ItemsSource="{Binding Warnings}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="common:Warning">
+                    <Border Margin="10,5" Padding="15" StrokeThickness="2">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="8" />
+                        </Border.StrokeShape>
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Incompatibility}">
+                                <Setter Property="Stroke" Value="Red" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Bottleneck}">
+                                <Setter Property="Stroke" Value="Orange" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Info}">
+                                <Setter Property="Stroke" Value="#00b7ff" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="{Binding Severity.DisplayName}" FontAttributes="Bold" FontSize="Caption" TextTransform="Uppercase">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Incompatibility}">
+                                        <Setter Property="TextColor" Value="Red" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Bottleneck}">
+                                        <Setter Property="TextColor" Value="Orange" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Info}">
+                                        <Setter Property="TextColor" Value="#00b7ff" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Label Text="{Binding Message}" FontSize="Body" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
     </StackLayout>
 </ContentPage>
