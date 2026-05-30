@@ -22,6 +22,23 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
     public IAsyncEnumerable<Psu> GetPsus()
         => _dbContext.Psus.AsNoTracking().AsAsyncEnumerable();
 
+    public IAsyncEnumerable<InternalDrive> GetInternalDrives(string? type, int? capacity)
+    {
+        var query = _dbContext.InternalDrives.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(type))
+        {
+            query = query.Where(x => x.Type == type);
+        }
+
+        if (capacity.HasValue)
+        {
+            query = query.Where(x => x.Capacity == capacity.Value);
+        }
+
+        return query.AsAsyncEnumerable();
+    }
+
     public async Task<Motherboard?> GetMotherboard(Guid id) => await _dbContext.FindAsync<Motherboard>(id);
 
     public async Task<Cpu?> GetCpu(Guid id) => await _dbContext.FindAsync<Cpu>(id);
@@ -31,6 +48,8 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
     public async Task<Ram?> GetRam(Guid id) => await _dbContext.FindAsync<Ram>(id);
 
     public async Task<Psu?> GetPsu(Guid id) => await _dbContext.FindAsync<Psu>(id);
+
+    public async Task<InternalDrive?> GetInternalDrive(Guid id) => await _dbContext.FindAsync<InternalDrive>(id);
 
     public IAsyncEnumerable<Motherboard> GetMotherboardsBySocket(string socket)
         => _dbContext.Motherboards.AsNoTracking().Where(x => x.Socket == socket)
@@ -74,6 +93,12 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task AddInternalDrive(InternalDrive internalDrive)
+    {
+        _dbContext.Add(internalDrive);
+        await _dbContext.SaveChangesAsync();
+    }
+
     public async Task UpdateMotherboard(Motherboard motherboard)
     {
         _dbContext.Motherboards.Update(motherboard);
@@ -104,6 +129,12 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task UpdateInternalDrive(InternalDrive internalDrive)
+    {
+        _dbContext.InternalDrives.Update(internalDrive);
+        await _dbContext.SaveChangesAsync();
+    }
+
     public async Task RemoveMotherboard(Guid id)
         => await _dbContext.Motherboards.Where(x => x.Id == id).ExecuteDeleteAsync();
 
@@ -118,4 +149,7 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 
     public async Task RemovePsu(Guid id)
         => await _dbContext.Psus.Where(x => x.Id == id).ExecuteDeleteAsync();
+
+    public async Task RemoveInternalDrive(Guid id)
+        => await _dbContext.InternalDrives.Where(x => x.Id == id).ExecuteDeleteAsync();
 }

@@ -11,4 +11,5 @@ public class StorageDbContext(DbContextOptions<StorageDbContext> options) : DbCo
     public DbSet<Ram> Rams { get; set; }
     public DbSet<Motherboard> Motherboards { get; set; }
     public DbSet<Psu> Psus { get; set; }
+    public DbSet<InternalDrive> InternalDrives { get; set; }
 }
