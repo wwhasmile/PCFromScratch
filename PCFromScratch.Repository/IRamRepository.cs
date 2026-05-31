@@ -6,7 +6,7 @@ public interface IRamRepository
 {
     IAsyncEnumerable<Ram> GetRams(string? generation = null);
 
-    Task<Ram> GetRam(Guid id);
+    Task<Ram?> GetRam(Guid id);
 
     Task AddRam(Ram ram);
     Task UpdateRam(Ram ram);
