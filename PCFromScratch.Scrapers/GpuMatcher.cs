@@ -79,4 +79,12 @@ public class GpuMatcher
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         return csv.GetRecords<GpuBenchmark>().ToList();
     }
+
+    public static GpuBenchmark GetBenchmark(string nameInStore)
+    {
+        var benchmarks = LoadBenchmarks("data/gpu_benchmarks.csv");
+        var benchmarkNames = benchmarks.Select(b => b.GpuName).ToList();
+        var result = Process.ExtractOne(nameInStore, benchmarkNames);
+        return benchmarks.First(b => b.GpuName == result.Value);
+    }
 }

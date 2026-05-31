@@ -7,6 +7,7 @@ namespace PCFromScratch.Scrapers;
 
 public class CpuMatcher
 {
+    //TODO switch all methods to work with db instead of csv files
     public static void MatchCpusWithBenchmarks(string shopCsvPath, string benchmarkCsvPath, string outputCsvPath)
     {
         Console.WriteLine("Loading shop data...");
@@ -84,5 +85,13 @@ public class CpuMatcher
         using var reader = new StreamReader(path);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         return csv.GetRecords<CpuBenchmark>().ToList();
+    }
+
+    public static CpuBenchmark GetBenchmark(string nameInStore)
+    {
+        var benchmarks = LoadBenchmarks("data/cpu_benchmarks.csv");
+        var benchmarkNames = benchmarks.Select(b => b.CpuName).ToList();
+        var result = Process.ExtractOne(nameInStore, benchmarkNames);
+        return benchmarks.First(b => b.CpuName == result.Value);
     }
 }
