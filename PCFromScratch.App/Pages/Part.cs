@@ -4,34 +4,33 @@ using System.Runtime.CompilerServices;
 
 namespace PCFromScratch.App.Pages;
 
-public class Part : INotifyPropertyChanged
+public class Part (string name, IEnumerable<Offer> offers) : INotifyPropertyChanged
 {
-    public string Name { get; set; }
-    public ObservableCollection<Offer> Offers { get; set; } = new();
-
-    private Offer _selectedOffer;
-    public Offer SelectedOffer
+    public string Name { get; set; } = name;
+    public ObservableCollection<Offer> Offers { get; set; } = new (offers);
+    
+    public Offer? SelectedOffer
     {
-        get => _selectedOffer;
+        get;
         set
         {
-            if (_selectedOffer != value)
+            if (field != value)
             {
-                _selectedOffer = value;
+                field = value;
                 OnPropertyChanged();
             }
         }
     }
 
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
-public class Offer
+public class Offer(string shop, decimal price)
 {
-    public string Shop { get; set; }
-    public decimal Price { get; set; }
+    public string Shop { get; set; } = shop;
+    public decimal Price { get; set; } = price;
 }

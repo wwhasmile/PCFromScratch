@@ -5,7 +5,7 @@ using PCFromScratch.App.ViewModels;
 
 namespace PCFromScratch.App.Pages;
 
-public partial class PcConstructorPage : ContentPage
+public partial class PcConstructorPage
 {
     public PcConstructorPage()
     {
@@ -14,17 +14,17 @@ public partial class PcConstructorPage : ContentPage
     }
 }
 
-public abstract class BaseComponentCategory : INotifyPropertyChanged
+public abstract class BaseComponentCategory (string name) : INotifyPropertyChanged
 {
-    public string Name { get; set; }
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    public string Name { get; set; } = name;
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
-public class SingleComponentCategory : BaseComponentCategory
+public class SingleComponentCategory (string name): BaseComponentCategory (name)
 {
     public Part? SelectedPart
     {
@@ -41,7 +41,7 @@ public class SingleComponentCategory : BaseComponentCategory
         }
     }
     
-    public Offer SelectedOffer
+    public Offer? SelectedOffer
     {
         get => field;
         set
@@ -56,7 +56,7 @@ public class SingleComponentCategory : BaseComponentCategory
     public string ButtonText => SelectedPart == null ? "Обрати" : "Змінити";
 }
 
-public class MultiComponentCategory : BaseComponentCategory
+public class MultiComponentCategory (string name): BaseComponentCategory (name)
 {
     public ObservableCollection<Part> SelectedParts { get; } = new();
 }

@@ -40,6 +40,7 @@ public class ComponentSelectionViewModel : INotifyPropertyChanged
         Parts = new ObservableCollection<Part>();
         _allParts = new ObservableCollection<Part>();
         SelectCommand = new Command<Part>(OnSelect);
+        SearchTerm = "";
     }
 
     private void LoadParts(string category)
@@ -48,15 +49,11 @@ public class ComponentSelectionViewModel : INotifyPropertyChanged
         _allParts.Clear();
         for (int i = 1; i <= 10; i++)
         {
-            var part = new Part
+            List<Offer> offers = new List<Offer>
             {
-                Name = $"{category} Модель {i}"
+                new ("Rozetka", 500), new ("Comfy", 550), new ("Moyo", 600)
             };
-
-            // Add simulated offers
-            part.Offers.Add(new Offer { Shop = "Rozetka", Price = i * 1000 + 50 });
-            part.Offers.Add(new Offer { Shop = "Comfy", Price = i * 1000 + 100 });
-            part.Offers.Add(new Offer { Shop = "Moyo", Price = i * 1000 + 20 });
+            var part = new Part($"{category} Модель {i}", offers);
 
             _allParts.Add(part);
         }
@@ -85,8 +82,8 @@ public class ComponentSelectionViewModel : INotifyPropertyChanged
         await Shell.Current.GoToAsync("..");
     }
 
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }

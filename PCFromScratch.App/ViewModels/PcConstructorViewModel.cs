@@ -30,14 +30,14 @@ public class PcConstructorViewModel : INotifyPropertyChanged
     {
         Components = new ObservableCollection<BaseComponentCategory>
         {
-            new SingleComponentCategory { Name = "Процесор (CPU)" },
-            new SingleComponentCategory { Name = "Охолодження процесора" },
-            new SingleComponentCategory { Name = "Материнська плата" },
-            new SingleComponentCategory { Name = "Оперативна пам'ять" },
-            new MultiComponentCategory { Name = "Накопичувач" },
-            new SingleComponentCategory { Name = "Відеокарта (GPU)" },
-            new SingleComponentCategory { Name = "Блок живлення" },
-            new SingleComponentCategory { Name = "Корпус" }
+            new SingleComponentCategory("Процесор (CPU)"),
+            new SingleComponentCategory("Охолодження процесора"),
+            new SingleComponentCategory("Материнська плата"),
+            new SingleComponentCategory("Оперативна пам'ять"),
+            new MultiComponentCategory("Накопичувач"),
+            new SingleComponentCategory("Відеокарта (GPU)"),
+            new SingleComponentCategory("Блок живлення"),
+            new SingleComponentCategory("Корпус")
         };
         
         Warnings = new ObservableCollection<Warning>();
@@ -56,25 +56,21 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         CheckCompatibilityCommand = new Command(CheckCompatibility);
     }
 
-    private async void OnChoose(BaseComponentCategory component)
+    private async void OnChoose(BaseComponentCategory? component)
     {
-        if (component != null)
-        {
+        if (component is not null)
             await Shell.Current.GoToAsync($"{nameof(ComponentSelectionPage)}?Category={component.Name}");
-        }
     }
 
-    private void OnRemove(Part partToRemove)
+    private void OnRemove(Part? partToRemove)
     {
-        if (partToRemove != null)
+        if (partToRemove is null) return;
+        foreach (var component in Components.OfType<MultiComponentCategory>())
         {
-            foreach (var component in Components.OfType<MultiComponentCategory>())
+            if (component.SelectedParts.Contains(partToRemove))
             {
-                if (component.SelectedParts.Contains(partToRemove))
-                {
-                    component.SelectedParts.Remove(partToRemove);
-                    break;
-                }
+                component.SelectedParts.Remove(partToRemove);
+                break;
             }
         }
     }
@@ -90,7 +86,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             }
             else if (component is MultiComponentCategory multi)
             {
-                total += multi.SelectedParts.Where(p => p.SelectedOffer != null).Sum(p => p.SelectedOffer.Price);
+                total += multi.SelectedParts.Sum(p => p.SelectedOffer != null ? p.SelectedOffer.Price : 0);
             }
         }
         TotalCost = total;
@@ -105,8 +101,8 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         Warnings.Add(new Warning(WarningSeverity.Info, "У BOX комплектації процесора кулер йде у комплекті, рекомендовано замінити комплектацію процесора, або прибрати систему охолодження"));
     }
     
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
