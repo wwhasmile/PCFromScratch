@@ -8,6 +8,7 @@ public class Ram
     public int Amount { get; set; }
     public int Sticks { get; set; }
 
+    public float Voltage { get; set; }
     public required string Generation { get; set; }
     public int Frequency { get; set; }
 }

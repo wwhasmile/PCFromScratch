@@ -7,6 +7,6 @@ public class InternalDrive
 
     public int Capacity { get; set; }
     public required string Type { get; set; }
-    public required string FormFactor { get; set; }
+    public required string Format { get; set; }
     public required string Port { get; set; }
 }

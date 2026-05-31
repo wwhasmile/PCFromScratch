@@ -8,7 +8,11 @@ public class Psu
     public required string Name { get; set; }
 
     public int Power { get; set; }
-    public PsuRating Rating { get; set; }
+    public PsuLevel Level { get; set; }
 
-    public FormFactor FormFactor { get; set; }
+    public ICollection<PsuConnector> Connectors { get; set; } = new HashSet<PsuConnector>();
+    public required string PowerConnector { get; set; }
+
+    public PsuFormFactor FormFactor { get; set; }
+    public PsuModularity Modularity { get; set; }
 }

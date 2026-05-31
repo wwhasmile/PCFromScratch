@@ -1,9 +1,9 @@
 namespace PCFromScratch.Common;
 
-public enum FormFactor
+public enum MotherboardFormFactor
 {
     MiniITX,
     MicroATX,
     ATX,
-    EATX
+    EATX,
 }

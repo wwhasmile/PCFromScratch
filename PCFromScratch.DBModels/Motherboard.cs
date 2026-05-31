@@ -8,7 +8,7 @@ public class Motherboard
     public required string Name { get; set; }
 
     public required string Socket { get; set; }
-    public required FormFactor FormFactor { get; set; }
+    public required MotherboardFormFactor FormFactor { get; set; }
     public required string Chipset { get; set; }
 
     public required string RamGeneration { get; set; }
