@@ -4,7 +4,7 @@ namespace PCFromScratch.Repository;
 
 public interface IInternalDriveRepository
 {
-    IAsyncEnumerable<Ram> GetInternalDrives(string? type, int? capacity);
+    IAsyncEnumerable<Ram> GetInternalDrives(string? type = null, int? capacity = null);
 
     Task<Ram> GetInternalDrive(Guid id);
 

@@ -4,11 +4,9 @@ namespace PCFromScratch.Repository;
 
 public interface IRamRepository
 {
-    IAsyncEnumerable<Ram> GetRams();
+    IAsyncEnumerable<Ram> GetRams(string? generation = null);
 
     Task<Ram> GetRam(Guid id);
-
-    IAsyncEnumerable<Ram> GetRamsByGeneration(string generation);
 
     Task AddRam(Ram ram);
     Task UpdateRam(Ram ram);

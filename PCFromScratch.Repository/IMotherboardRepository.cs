@@ -4,11 +4,9 @@ namespace PCFromScratch.Repository;
 
 public interface IMotherboardRepository
 {
-    IAsyncEnumerable<Motherboard> GetMotherboards();
+    IAsyncEnumerable<Motherboard> GetMotherboards(string? socket = null);
 
     Task<Motherboard?> GetMotherboard(Guid id);
-
-    IAsyncEnumerable<Motherboard> GetMotherboardsBySocket(string socket);
 
     Task AddMotherboard(Motherboard motherboard);
     Task UpdateMotherboard(Motherboard motherboard);

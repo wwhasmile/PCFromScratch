@@ -7,8 +7,15 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 {
     private readonly StorageDbContext _dbContext = dbContext;
 
-    public IAsyncEnumerable<Motherboard> GetMotherboards()
-        => _dbContext.Motherboards.AsNoTracking().AsAsyncEnumerable();
+    public IAsyncEnumerable<Motherboard> GetMotherboards(string? socket)
+    {
+        var query = _dbContext.Motherboards.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(socket))
+            query = query.Where(x => x.Socket == socket);
+
+        return query.AsAsyncEnumerable();
+    }
 
     public IAsyncEnumerable<Cpu> GetCpus()
         => _dbContext.Cpus.AsNoTracking().AsAsyncEnumerable();
@@ -16,25 +23,45 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
     public IAsyncEnumerable<Gpu> GetGpus()
         => _dbContext.Gpus.AsNoTracking().AsAsyncEnumerable();
 
-    public IAsyncEnumerable<Ram> GetRams()
-        => _dbContext.Rams.AsNoTracking().AsAsyncEnumerable();
+    public IAsyncEnumerable<Ram> GetRams(string? generation)
+    {
+        var query = _dbContext.Rams.AsNoTracking();
 
-    public IAsyncEnumerable<Psu> GetPsus()
-        => _dbContext.Psus.AsNoTracking().AsAsyncEnumerable();
+        if (!string.IsNullOrWhiteSpace(generation))
+            query = query.Where(x => x.Generation == generation);
+
+        return query.AsAsyncEnumerable();
+    }
 
     public IAsyncEnumerable<InternalDrive> GetInternalDrives(string? type, int? capacity)
     {
         var query = _dbContext.InternalDrives.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(type))
-        {
             query = query.Where(x => x.Type == type);
-        }
 
         if (capacity.HasValue)
-        {
             query = query.Where(x => x.Capacity == capacity.Value);
-        }
+
+        return query.AsAsyncEnumerable();
+    }
+
+    public IAsyncEnumerable<Cooler> GetCoolers(string? socket = null)
+    {
+        var query = _dbContext.Coolers.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(socket))
+            query = query.Where(x => x.AmdSockets.Contains(socket) || x.IntelSockets.Contains(socket));
+
+        return query.AsAsyncEnumerable();
+    }
+
+    public IAsyncEnumerable<Psu> GetPsus(int? minPower)
+    {
+        var query = _dbContext.Psus.AsNoTracking();
+
+        if (minPower.HasValue)
+            query = query.Where(x => x.Power >= minPower);
 
         return query.AsAsyncEnumerable();
     }
@@ -47,21 +74,11 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 
     public async Task<Ram?> GetRam(Guid id) => await _dbContext.FindAsync<Ram>(id);
 
-    public async Task<Psu?> GetPsu(Guid id) => await _dbContext.FindAsync<Psu>(id);
-
     public async Task<InternalDrive?> GetInternalDrive(Guid id) => await _dbContext.FindAsync<InternalDrive>(id);
 
-    public IAsyncEnumerable<Motherboard> GetMotherboardsBySocket(string socket)
-        => _dbContext.Motherboards.AsNoTracking().Where(x => x.Socket == socket)
-        .AsAsyncEnumerable();
+    public async Task<Cooler?> GetCooler(Guid id) => await _dbContext.FindAsync<Cooler>(id);
 
-    public IAsyncEnumerable<Ram> GetRamByGeneration(string generation)
-        => _dbContext.Rams.AsNoTracking().Where(x => x.Generation == generation)
-        .AsAsyncEnumerable();
-
-    public IAsyncEnumerable<Psu> GetPsusFromPower(int minPower)
-        => _dbContext.Psus.AsNoTracking().Where(x => x.Power >= minPower)
-        .AsAsyncEnumerable();
+    public async Task<Psu?> GetPsu(Guid id) => await _dbContext.FindAsync<Psu>(id);
 
     public async Task AddMotherboard(Motherboard motherboard)
     {
@@ -87,15 +104,21 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task AddPsu(Psu psu)
-    {
-        _dbContext.Add(psu);
-        await _dbContext.SaveChangesAsync();
-    }
-
     public async Task AddInternalDrive(InternalDrive internalDrive)
     {
         _dbContext.Add(internalDrive);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddCooler(Cooler cooler)
+    {
+        _dbContext.Add(cooler);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddPsu(Psu psu)
+    {
+        _dbContext.Add(psu);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -123,15 +146,21 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdatePsu(Psu psu)
-    {
-        _dbContext.Psus.Update(psu);
-        await _dbContext.SaveChangesAsync();
-    }
-
     public async Task UpdateInternalDrive(InternalDrive internalDrive)
     {
         _dbContext.InternalDrives.Update(internalDrive);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateCooler(Cooler cooler)
+    {
+        _dbContext.Coolers.Update(cooler);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdatePsu(Psu psu)
+    {
+        _dbContext.Psus.Update(psu);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -147,9 +176,12 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
     public async Task RemoveRam(Guid id)
         => await _dbContext.Rams.Where(x => x.Id == id).ExecuteDeleteAsync();
 
-    public async Task RemovePsu(Guid id)
-        => await _dbContext.Psus.Where(x => x.Id == id).ExecuteDeleteAsync();
-
     public async Task RemoveInternalDrive(Guid id)
         => await _dbContext.InternalDrives.Where(x => x.Id == id).ExecuteDeleteAsync();
+
+    public async Task RemoveCooler(Guid id)
+        => await _dbContext.Coolers.Where(x => x.Id == id).ExecuteDeleteAsync();
+
+    public async Task RemovePsu(Guid id)
+        => await _dbContext.Psus.Where(x => x.Id == id).ExecuteDeleteAsync();
 }
