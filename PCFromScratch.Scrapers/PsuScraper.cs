@@ -45,7 +45,7 @@ public class PsuScraper
                 await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight / 2);");
                 await Task.Delay(random.Next(1000, 2500));
                 await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight);");
-                await Task.Delay(random.Next(4500, 8500));
+                await Task.Delay(random.Next(3000, 6000));
 
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
@@ -122,8 +122,20 @@ public class PsuScraper
                                 
                                 string currentPower = power;
                                 string currentPowerConnectors = powerConnectors;
-                                
-                                // Parse submodel specific text. Example: "550 Вт 24+8 (4+4) pin"
+                                if (System.Text.RegularExpressions.Regex.IsMatch(submodelName, ".*80\\+ (Standard|Bronze|Silver|Gold|Platinum|Titanium)"))
+                                {
+                                    level80Plus = "80+" + submodelName.Split("80+")[1].Trim();
+                                    submodelName = submodelName.Split("80+")[0];
+                                }
+                                else if (submodelName.Contains("без 80+"))
+                                {
+                                    submodelName = submodelName.Replace("без 80+", "").Trim();
+                                }
+                                else if (submodelName.Contains("80+"))
+                                {
+                                    level80Plus = "80+ Standard";
+                                    submodelName = submodelName.Replace("80+", "").Trim();
+                                }
                                 if (submodelName.Contains("Вт"))
                                 {
                                     var parts = submodelName.Split("Вт");
