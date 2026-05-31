@@ -6,7 +6,7 @@ public interface IGpuRepository
 {
     IAsyncEnumerable<Gpu> GetGpus();
 
-    Task<Gpu?> GetGpu();
+    Task<Gpu?> GetGpu(Guid id);
 
     Task AddGpu(Gpu gpu);
     Task UpdateGpu(Gpu gpu);
