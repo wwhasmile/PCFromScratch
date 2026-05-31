@@ -8,7 +8,7 @@ public interface IInternalDriveRepository
 
     Task<InternalDrive?> GetInternalDrive(Guid id);
 
-    Task GetInternalDrive(InternalDrive internalDrive);
+    Task AddInternalDrive(InternalDrive internalDrive);
     Task UpdateInternalDrive(InternalDrive internalDrive);
     Task RemoveInternalDrive(Guid id);
 }

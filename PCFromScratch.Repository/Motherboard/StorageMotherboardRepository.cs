@@ -8,7 +8,7 @@ public class StorageMotherboardRepository(IStorageContext storageContext) : IMot
     private readonly IStorageContext _storageContext = storageContext;
 
     public IAsyncEnumerable<Motherboard> GetMotherboards(string? socket = null)
-    => _storageContext.GetMotherboards(socket);
+        => _storageContext.GetMotherboards(socket);
 
     public Task<Motherboard?> GetMotherboard(Guid id) => _storageContext.GetMotherboard(id);
 
