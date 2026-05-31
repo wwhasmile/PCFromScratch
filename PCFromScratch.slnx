@@ -3,6 +3,7 @@
   <Project Path="PCFromScratch.Common/PCFromScratch.Common.csproj" />
   <Project Path="PCFromScratch.DBModels/PCFromScratch.DBModels.csproj" />
   <Project Path="PCFromScratch.Scrapers/PCFromScratch.Scrapers.csproj" />
+  <Project Path="PCFromScratch.DTOModels/PCFromScratch.DTOModels.csproj" />
   <Project Path="PCFromScratch.Repository/PCFromScratch.Repository.csproj" />
   <Project Path="PCFromScratch.Services/PCFromScratch.Services.csproj" />
   <Project Path="PCFromScratch.Storage/PCFromScratch.Storage.csproj" />
