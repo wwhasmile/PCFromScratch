@@ -1,9 +1,12 @@
-﻿namespace PCFromScratch.App.Pages;
+﻿using PCFromScratch.App.ViewModels;
+
+namespace PCFromScratch.App.Pages;
 
 public partial class ComponentsComparePage : ContentPage
 {
-    public ComponentsComparePage()
+    public ComponentsComparePage(ComponentsCompareViewModel viewModel)
     {
         InitializeComponent();
+        BindingContext = viewModel;
     }
 }

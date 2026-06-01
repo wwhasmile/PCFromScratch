@@ -1,9 +1,41 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="using:PCFromScratch.App.ViewModels"
              x:Class="PCFromScratch.App.Pages.ComponentsComparePage"
+             x:DataType="viewModels:ComponentsCompareViewModel"
              Title="Порівняння компонентів">
-    <VerticalStackLayout Padding="30" Spacing="25">
-        <Label Text="Порівняння компонентів" FontSize="24" HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+            <Label Text="Порівняння компонентів" FontSize="24" HorizontalOptions="Center" />
+
+            <Picker Title="Оберіть тип компонента" 
+                    ItemsSource="{Binding ComponentTypes}" 
+                    SelectedItem="{Binding SelectedComponentType}" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Picker Grid.Column="0" Title="Компонент 1" 
+                        ItemsSource="{Binding ComponentNames1}"
+                        SelectedItem="{Binding SelectedComponent1}" />
+
+                <Picker Grid.Column="1" Title="Компонент 2"
+                        ItemsSource="{Binding ComponentNames2}"
+                        SelectedItem="{Binding SelectedComponent2}" />
+            </Grid>
+
+            <Label Text="Результати порівняння" FontSize="20" HorizontalOptions="Center" Margin="0,20,0,0" />
+
+            <CollectionView ItemsSource="{Binding ChartData}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="viewModels:BenchmarkChartEntry">
+                        <StackLayout Orientation="Horizontal" Padding="5">
+                            <Label Text="{Binding Name}" VerticalOptions="Center" WidthRequest="150" />
+                            <BoxView Color="CornflowerBlue" HeightRequest="20" WidthRequest="{Binding Width}"/>
+                            <Label Text="{Binding Value}" VerticalOptions="Center" />
+                        </StackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
