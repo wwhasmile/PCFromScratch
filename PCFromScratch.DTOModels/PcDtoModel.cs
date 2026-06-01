@@ -1,6 +1,6 @@
 ﻿namespace PCFromScratch.DTOModels;
 
-public class PCDtoModel
+public class PcDtoModel
 {
     public Guid Cpu { get; set; }
     public Guid Motherboard { get; set; }
