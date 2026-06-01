@@ -6,9 +6,6 @@
              xmlns:common="clr-namespace:PCFromScratch.Common;assembly=PCFromScratch.Common"
              x:Class="PCFromScratch.App.Pages.PcConstructorPage"
              Title="Конструктор ПК">
-    <ContentPage.BindingContext>
-        <viewModels:PcConstructorViewModel />
-    </ContentPage.BindingContext>
     <ContentPage.Resources>
         <local:IsNotNullConverter x:Key="IsNotNullConverter" />
     </ContentPage.Resources>
@@ -19,7 +16,10 @@
                     <Grid Padding="10">
                         <!-- Single Component Category Template -->
                         <Grid ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding ., Converter={local:TypeCheckConverter TargetType={x:Type local:SingleComponentCategory}}}">
-                            <Label Text="{Binding Name}" VerticalOptions="Center" />
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Name}" VerticalOptions="Center" />
+                                <Label Text="{Binding SelectedPart.Name}" VerticalOptions="Center" IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}" />
+                            </VerticalStackLayout>
                             <Picker Grid.Column="1" 
                                     ItemsSource="{Binding SelectedPart.Offers}" 
                                     ItemDisplayBinding="{Binding Shop}" 

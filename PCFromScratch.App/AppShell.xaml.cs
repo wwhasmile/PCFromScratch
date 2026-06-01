@@ -8,6 +8,12 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
         
-        Routing.RegisterRoute(nameof(ComponentSelectionPage), typeof(ComponentSelectionPage));
+        Routing.RegisterRoute(nameof(CpuSelectionPage), typeof(CpuSelectionPage));
+        Routing.RegisterRoute(nameof(CoolerSelectionPage), typeof(CoolerSelectionPage));
+        Routing.RegisterRoute(nameof(MotherboardSelectionPage), typeof(MotherboardSelectionPage));
+        Routing.RegisterRoute(nameof(RamSelectionPage), typeof(RamSelectionPage));
+        Routing.RegisterRoute(nameof(StorageSelectionPage), typeof(StorageSelectionPage));
+        Routing.RegisterRoute(nameof(GpuSelectionPage), typeof(GpuSelectionPage));
+        Routing.RegisterRoute(nameof(PsuSelectionPage), typeof(PsuSelectionPage));
     }
 }

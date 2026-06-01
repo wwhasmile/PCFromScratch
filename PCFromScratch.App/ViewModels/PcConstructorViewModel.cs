@@ -56,10 +56,27 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         CheckCompatibilityCommand = new Command(CheckCompatibility);
     }
 
-    private async void OnChoose(BaseComponentCategory? component)
+    private async void OnChoose(BaseComponentCategory component)
     {
-        if (component is not null)
-            await Shell.Current.GoToAsync($"{nameof(ComponentSelectionPage)}?Category={component.Name}");
+        if (component != null)
+        {
+            var pageName = component.Name switch
+            {
+                "Процесор (CPU)" => nameof(CpuSelectionPage),
+                "Охолодження процесора" => nameof(CoolerSelectionPage),
+                "Материнська плата" => nameof(MotherboardSelectionPage),
+                "Оперативна пам'ять" => nameof(RamSelectionPage),
+                "Накопичувач" => nameof(StorageSelectionPage),
+                "Відеокарта (GPU)" => nameof(GpuSelectionPage),
+                "Блок живлення" => nameof(PsuSelectionPage),
+                _ => string.Empty
+            };
+
+            if (!string.IsNullOrEmpty(pageName))
+            {
+                await Shell.Current.GoToAsync(pageName);
+            }
+        }
     }
 
     private void OnRemove(Part? partToRemove)
@@ -72,6 +89,30 @@ public class PcConstructorViewModel : INotifyPropertyChanged
                 component.SelectedParts.Remove(partToRemove);
                 break;
             }
+        }
+    }
+
+    public void UpdateSelectedComponent(string category, ComponentModel selectedPart)
+    {
+        var categoryName = category switch
+        {
+            "Cpu" => "Процесор (CPU)",
+            "Cooler" => "Охолодження процесора",
+            "Motherboard" => "Материнська плата",
+            "Ram" => "Оперативна пам'ять",
+            "Storage" => "Накопичувач",
+            "Gpu" => "Відеокарта (GPU)",
+            "Psu" => "Блок живлення",
+            _ => string.Empty
+        };
+        var component = Components.FirstOrDefault(c => c.Name == categoryName);
+        if (component is SingleComponentCategory single)
+        {
+            single.SelectedPart = new Part(selectedPart.Name, new List<Offer> { new("Rozetka", 100), new("Comfy", 200) });
+        }
+        else if (component is MultiComponentCategory multi)
+        {
+            multi.SelectedParts.Add(new Part(selectedPart.Name, new List<Offer> { new("Rozetka", 100), new("Comfy", 200) }));
         }
     }
 

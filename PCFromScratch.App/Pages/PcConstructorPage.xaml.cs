@@ -5,12 +5,32 @@ using PCFromScratch.App.ViewModels;
 
 namespace PCFromScratch.App.Pages;
 
+[QueryProperty(nameof(SelectedPart), "SelectedPart")]
+[QueryProperty(nameof(Category), "Category")]
 public partial class PcConstructorPage
 {
-    public PcConstructorPage()
+    public ComponentModel SelectedPart { get; set; }
+    public string Category { get; set; }
+
+    public PcConstructorPage(PcConstructorViewModel viewModel)
     {
         InitializeComponent();
-        BindingContext = new PcConstructorViewModel();
+        BindingContext = viewModel;
+    }
+
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+
+        if (SelectedPart != null && !string.IsNullOrEmpty(Category))
+        {
+            var viewModel = (PcConstructorViewModel)BindingContext;
+            viewModel.UpdateSelectedComponent(Category, SelectedPart);
+
+            // Clear properties to prevent re-processing
+            SelectedPart = null;
+            Category = null;
+        }
     }
 }
 

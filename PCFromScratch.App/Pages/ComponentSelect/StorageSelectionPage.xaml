@@ -2,11 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:PCFromScratch.App.ViewModels"
-             x:Class="PCFromScratch.App.Pages.ComponentSelectionPage"
-             Title="Вибір компонента">
-    <ContentPage.BindingContext>
-        <viewModels:ComponentSelectionViewModel />
-    </ContentPage.BindingContext>
+             x:Class="PCFromScratch.App.Pages.StorageSelectionPage"
+             Title="Вибір накопичувача">
     <StackLayout>
         <SearchBar Placeholder="Пошук..." Text="{Binding SearchTerm}" />
         <CollectionView ItemsSource="{Binding Parts}">
