@@ -5,5 +5,5 @@ namespace PCFromScratch.Services;
 
 public interface IPcCheckService
 {
-    List<Warning> CheckPc(PcDtoModel pc);
+    Task<List<Warning>> CheckPc(PcDtoModel pc);
 }
