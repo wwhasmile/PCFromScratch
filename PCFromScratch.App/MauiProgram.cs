@@ -1,7 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Maui;
+
+using Microsoft.Extensions.Logging;
 using PCFromScratch.App.Pages;
 using PCFromScratch.App.ViewModels;
 using PCFromScratch.Repository;
+using PCFromScratch.Services;
 using PCFromScratch.Storage;
 
 namespace PCFromScratch.App;
@@ -13,6 +16,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -22,15 +26,16 @@ public static class MauiProgram
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
-        builder.Services.AddSingleton<IStorageContext, EntityStorageContext>();
         
         builder.Services.AddSingleton<ICpuRepository, FakeCpu>();
         builder.Services.AddSingleton<IGpuRepository, FakeGpu>();
-        builder.Services.AddSingleton<ICoolerRepository, StorageCoolerRepository>();
-        builder.Services.AddSingleton<IMotherboardRepository, StorageMotherboardRepository>();
-        builder.Services.AddSingleton<IRamRepository, StorageRamRepository>();
-        builder.Services.AddSingleton<IInternalDriveRepository, StorageInternalDriveRepository>();
-        builder.Services.AddSingleton<IPsuRepository, StoragePsuRepository>();
+        builder.Services.AddSingleton<ICoolerRepository, FakeCooler>();
+        builder.Services.AddSingleton<IMotherboardRepository, FakeMotherboard>();
+        builder.Services.AddSingleton<IRamRepository, FakeRam>();
+        builder.Services.AddSingleton<IInternalDriveRepository, FakeInternalDrive>();
+        builder.Services.AddSingleton<IPsuRepository, FakePsu>();
+
+        builder.Services.AddSingleton<IPcCheckService, PcCheckService>();
 
         builder.Services.AddSingleton<ComponentsCompareViewModel>();
         builder.Services.AddSingleton<PcConstructorViewModel>();

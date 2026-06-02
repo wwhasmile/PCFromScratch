@@ -5,11 +5,11 @@ using PCFromScratch.App.ViewModels;
 
 namespace PCFromScratch.App.Pages;
 
-[QueryProperty(nameof(SelectedPart), "SelectedPart")]
+[QueryProperty(nameof(SelectedPartId), "SelectedPartId")]
 [QueryProperty(nameof(Category), "Category")]
 public partial class PcConstructorPage
 {
-    public ComponentModel SelectedPart { get; set; }
+    public Guid SelectedPartId { get; set; }
     public string Category { get; set; }
 
     public PcConstructorPage(PcConstructorViewModel viewModel)
@@ -22,13 +22,13 @@ public partial class PcConstructorPage
     {
         base.OnNavigatedTo(args);
 
-        if (SelectedPart != null && !string.IsNullOrEmpty(Category))
+        if (SelectedPartId != Guid.Empty && !string.IsNullOrEmpty(Category))
         {
             var viewModel = (PcConstructorViewModel)BindingContext;
-            viewModel.UpdateSelectedComponent(Category, SelectedPart);
+            viewModel.UpdateSelectedComponent(Category, SelectedPartId);
 
             // Clear properties to prevent re-processing
-            SelectedPart = null;
+            SelectedPartId = Guid.Empty;
             Category = null;
         }
     }
@@ -79,4 +79,20 @@ public class SingleComponentCategory (string name): BaseComponentCategory (name)
 public class MultiComponentCategory (string name): BaseComponentCategory (name)
 {
     public ObservableCollection<Part> SelectedParts { get; } = new();
+}
+
+public class ComponentCategoryTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate SingleComponentCategoryTemplate { get; set; }
+    public DataTemplate MultiComponentCategoryTemplate { get; set; }
+    
+    protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+    {
+        return item switch
+        {
+            SingleComponentCategory => SingleComponentCategoryTemplate,
+            MultiComponentCategory => MultiComponentCategoryTemplate,
+        };
+    }
+
 }

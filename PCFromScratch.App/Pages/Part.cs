@@ -4,8 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace PCFromScratch.App.Pages;
 
-public class Part (string name, IEnumerable<Offer> offers) : INotifyPropertyChanged
+public class Part (Guid id, string name, IEnumerable<Offer> offers) : INotifyPropertyChanged
 {
+    public Guid Id { get; set; } = id;
     public string Name { get; set; } = name;
     public ObservableCollection<Offer> Offers { get; set; } = new (offers);
     

@@ -2,13 +2,29 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+
+using CommunityToolkit.Mvvm.Input;
+
 using PCFromScratch.App.Pages;
 using PCFromScratch.Common;
+using PCFromScratch.DTOModels;
+using PCFromScratch.Repository;
+using PCFromScratch.Services;
 
 namespace PCFromScratch.App.ViewModels;
 
 public class PcConstructorViewModel : INotifyPropertyChanged
 {
+    private readonly ICpuRepository _cpuRepository;
+    private readonly ICoolerRepository _coolerRepository;
+    private readonly IMotherboardRepository _motherboardRepository;
+    private readonly IRamRepository _ramRepository;
+    private readonly IInternalDriveRepository _storageRepository;
+    private readonly IGpuRepository _gpuRepository;
+    private readonly IPsuRepository _psuRepository;
+    private readonly IPcCheckService _pcCheckService;
+
+    public PcDtoModel Pc { get; set; }
     public ObservableCollection<BaseComponentCategory> Components { get; set; }
     public ObservableCollection<Warning> Warnings { get; set; }
     
@@ -26,7 +42,10 @@ public class PcConstructorViewModel : INotifyPropertyChanged
     public ICommand RemoveCommand { get; }
     public ICommand CheckCompatibilityCommand { get; }
 
-    public PcConstructorViewModel()
+    public PcConstructorViewModel(ICpuRepository cpuRepository, ICoolerRepository coolerRepository, 
+        IMotherboardRepository motherboardRepository, IRamRepository ramRepository, 
+        IInternalDriveRepository storageRepository, IGpuRepository gpuRepository, IPsuRepository psuRepository,
+        IPcCheckService pcCheckService)
     {
         Components = new ObservableCollection<BaseComponentCategory>
         {
@@ -36,8 +55,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             new SingleComponentCategory("Оперативна пам'ять"),
             new MultiComponentCategory("Накопичувач"),
             new SingleComponentCategory("Відеокарта (GPU)"),
-            new SingleComponentCategory("Блок живлення"),
-            new SingleComponentCategory("Корпус")
+            new SingleComponentCategory("Блок живлення")
         };
         
         Warnings = new ObservableCollection<Warning>();
@@ -47,16 +65,53 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             component.PropertyChanged += (s, e) => RecalculateTotal();
             if (component is MultiComponentCategory multi)
             {
-                multi.SelectedParts.CollectionChanged += (s, e) => RecalculateTotal();
+                multi.SelectedParts.CollectionChanged += (s, e) =>
+                {
+                    if (e.NewItems != null)
+                    {
+                        foreach (Part item in e.NewItems)
+                        {
+                            item.PropertyChanged += Part_PropertyChanged;
+                        }
+                    }
+
+                    if (e.OldItems != null)
+                    {
+                        foreach (Part item in e.OldItems)
+                        {
+                            item.PropertyChanged -= Part_PropertyChanged;
+                        }
+                    }
+                    RecalculateTotal();
+                };
             }
         }
 
-        ChooseCommand = new Command<BaseComponentCategory>(OnChoose);
+        _cpuRepository = cpuRepository;
+        _coolerRepository = coolerRepository;
+        _motherboardRepository = motherboardRepository;
+        _ramRepository = ramRepository;
+        _storageRepository = storageRepository;
+        _gpuRepository = gpuRepository;
+        _psuRepository = psuRepository;
+        _pcCheckService = pcCheckService;
+
+        ChooseCommand = new AsyncRelayCommand<BaseComponentCategory>(OnChoose);
         RemoveCommand = new Command<Part>(OnRemove);
-        CheckCompatibilityCommand = new Command(CheckCompatibility);
+        CheckCompatibilityCommand = new AsyncRelayCommand(CheckCompatibility);
+
+        Pc = new PcDtoModel();
+    }
+    
+    private void Part_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Part.SelectedOffer))
+        {
+            RecalculateTotal();
+        }
     }
 
-    private async void OnChoose(BaseComponentCategory component)
+    private async Task OnChoose(BaseComponentCategory component)
     {
         if (component != null)
         {
@@ -90,9 +145,13 @@ public class PcConstructorViewModel : INotifyPropertyChanged
                 break;
             }
         }
+        if (Pc.InternalDrives.Contains(partToRemove.Id))
+        {
+            Pc.InternalDrives.Remove(partToRemove.Id);
+        }
     }
 
-    public void UpdateSelectedComponent(string category, ComponentModel selectedPart)
+    public async Task UpdateSelectedComponent(string category, Guid selectedPartId)
     {
         var categoryName = category switch
         {
@@ -105,14 +164,53 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             "Psu" => "Блок живлення",
             _ => string.Empty
         };
+
+        string name = category switch
+        {
+            "Cpu" => (await _cpuRepository.GetCpu(selectedPartId)).Name,
+            "Cooler" => (await _coolerRepository.GetCooler(selectedPartId)).Name,
+            "Motherboard" => (await _motherboardRepository.GetMotherboard(selectedPartId)).Name,
+            "Ram" => (await _ramRepository.GetRam(selectedPartId)).Name,
+            "Storage" => (await _storageRepository.GetInternalDrive(selectedPartId)).Name,
+            "Gpu" => (await _gpuRepository.GetGpu(selectedPartId)).Name,
+            "Psu" => (await _psuRepository.GetPsu(selectedPartId)).Name,
+            _ => string.Empty
+        };
+
+        if (name == null) return;
+
         var component = Components.FirstOrDefault(c => c.Name == categoryName);
         if (component is SingleComponentCategory single)
         {
-            single.SelectedPart = new Part(selectedPart.Name, new List<Offer> { new("Rozetka", 100), new("Comfy", 200) });
+            single.SelectedPart = new Part(selectedPartId, name, new List<Offer> { new("Rozetka", 100), new("Comfy", 200) });
         }
         else if (component is MultiComponentCategory multi)
         {
-            multi.SelectedParts.Add(new Part(selectedPart.Name, new List<Offer> { new("Rozetka", 100), new("Comfy", 200) }));
+            multi.SelectedParts.Add(new Part(selectedPartId, name, new List<Offer> { new("Rozetka", 100), new("Comfy", 200) }));
+        }
+        switch (category)
+        {
+            case "Cpu":
+                Pc.Cpu = selectedPartId;
+                break;
+            case "Cooler":
+                Pc.Cooler = selectedPartId;
+                break;
+            case "Motherboard":
+                Pc.Motherboard = selectedPartId;
+                break;
+            case "Ram":
+                Pc.Ram = selectedPartId;
+                break;
+            case "Storage":
+                Pc.InternalDrives.Add(selectedPartId);
+                break;
+            case "Gpu":
+                Pc.Gpu = selectedPartId;
+                break;
+            case "Psu":
+                Pc.Psu = selectedPartId;
+                break;
         }
     }
 
@@ -133,13 +231,15 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         TotalCost = total;
     }
     
-    private void CheckCompatibility()
+    private async Task CheckCompatibility()
     {
+        var results = await _pcCheckService.CheckPc(Pc);
+        
         Warnings.Clear();
-        // This is a mock implementation. In the future, this will be replaced with a call to a compatibility check service.
-        Warnings.Add(new Warning(WarningSeverity.Incompatibility, "Процесор і материнська плата мають різні сокети."));
-        Warnings.Add(new Warning(WarningSeverity.Bottleneck, "Материнська плата підтримує максимальну частоту пам'яті N МГц, обрана па'мять має частоту K МГц."));
-        Warnings.Add(new Warning(WarningSeverity.Info, "У BOX комплектації процесора кулер йде у комплекті, рекомендовано замінити комплектацію процесора, або прибрати систему охолодження"));
+        foreach (var warning in results)
+        {
+            Warnings.Add(warning);
+        }
     }
     
     public event PropertyChangedEventHandler? PropertyChanged;
