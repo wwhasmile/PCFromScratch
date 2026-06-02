@@ -7,14 +7,14 @@ public class StorageMotherboardRepository(IStorageContext storageContext) : IMot
 {
     private readonly IStorageContext _storageContext = storageContext;
 
-    public IAsyncEnumerable<Motherboard> GetMotherboards(string? socket = null)
+    public IAsyncEnumerable<MotherboardRenamedForOmnissiah> GetMotherboards(string? socket = null)
         => _storageContext.GetMotherboards(socket);
 
-    public Task<Motherboard?> GetMotherboard(Guid id) => _storageContext.GetMotherboard(id);
+    public Task<MotherboardRenamedForOmnissiah?> GetMotherboard(Guid id) => _storageContext.GetMotherboard(id);
 
-    public Task AddMotherboard(Motherboard motherboard) => _storageContext.AddMotherboard(motherboard);
+    public Task AddMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah) => _storageContext.AddMotherboard(motherboardRenamedForOmnissiah);
 
-    public Task UpdateMotherboard(Motherboard motherboard) => _storageContext.UpdateMotherboard(motherboard);
+    public Task UpdateMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah) => _storageContext.UpdateMotherboard(motherboardRenamedForOmnissiah);
 
     public Task RemoveMotherboard(Guid id) => _storageContext.RemoveMotherboard(id);
 }

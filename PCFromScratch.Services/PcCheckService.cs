@@ -27,7 +27,7 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
 
         var cpuTask = pc.Cpu.HasValue ? _cpuRepository.GetCpu(pc.Cpu.Value) : Task.FromResult<Cpu?>(null);
         var motherboardTask = pc.Motherboard.HasValue ? _motherboardRepository.GetMotherboard(pc.Motherboard.Value)
-            : Task.FromResult<Motherboard?>(null);
+            : Task.FromResult<MotherboardRenamedForOmnissiah?>(null);
         var ramTask = pc.Ram.HasValue ? _ramRepository.GetRam(pc.Ram.Value) : Task.FromResult<Ram?>(null);
         var gpuTask = pc.Gpu.HasValue ? _gpuRepository.GetGpu(pc.Gpu.Value) : Task.FromResult<Gpu?>(null);
         var coolerTask = pc.Cooler.HasValue ? _coolerRepository.GetCooler(pc.Cooler.Value)
@@ -50,7 +50,7 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         return warnings;
     }
 
-    private static List<Warning> ValidateMotherboard(Cpu? cpu, Motherboard? motherboard)
+    private static List<Warning> ValidateMotherboard(Cpu? cpu, MotherboardRenamedForOmnissiah? motherboard)
     {
         if (cpu is null) return [];
         if (motherboard is null) return [];
@@ -60,7 +60,7 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         return [ new(WarningSeverity.Incompatibility, "Несумісний сокет процесора та материнської плати") ];
     }
 
-    private static List<Warning> ValidateRam(Cpu? cpu, Motherboard? motherboard, Ram? ram)
+    private static List<Warning> ValidateRam(Cpu? cpu, MotherboardRenamedForOmnissiah? motherboard, Ram? ram)
     {
         if (motherboard is null) return [];
         if (ram is null) return [];
@@ -88,7 +88,7 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         return result;
     }
 
-    private static List<Warning> ValidateCooler(Cpu? cpu, Motherboard? motherboard, Cooler? cooler)
+    private static List<Warning> ValidateCooler(Cpu? cpu, MotherboardRenamedForOmnissiah? motherboard, Cooler? cooler)
     {
         if (motherboard is null) return [];
         if (cooler is null) return [];

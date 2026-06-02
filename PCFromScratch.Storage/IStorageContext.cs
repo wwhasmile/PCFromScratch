@@ -4,7 +4,7 @@ namespace PCFromScratch.Storage;
 
 public interface IStorageContext
 {
-    IAsyncEnumerable<Motherboard> GetMotherboards(string? socket = null);
+    IAsyncEnumerable<MotherboardRenamedForOmnissiah> GetMotherboards(string? socket = null);
     IAsyncEnumerable<Cpu> GetCpus();
     IAsyncEnumerable<Gpu> GetGpus();
     IAsyncEnumerable<Ram> GetRams(string? generation = null);
@@ -12,7 +12,7 @@ public interface IStorageContext
     IAsyncEnumerable<Cooler> GetCoolers(string? socket = null);
     IAsyncEnumerable<Psu> GetPsus(int? minPower = null);
 
-    Task<Motherboard?> GetMotherboard(Guid id);
+    Task<MotherboardRenamedForOmnissiah?> GetMotherboard(Guid id);
     Task<Cpu?> GetCpu(Guid id);
     Task<Gpu?> GetGpu(Guid id);
     Task<Ram?> GetRam(Guid id);
@@ -20,7 +20,7 @@ public interface IStorageContext
     Task<Cooler?> GetCooler(Guid id);
     Task<Psu?> GetPsu(Guid id);
 
-    Task AddMotherboard(Motherboard motherboard);
+    Task AddMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah);
     Task AddCpu(Cpu cpu);
     Task AddGpu(Gpu gpu);
     Task AddRam(Ram ram);
@@ -28,7 +28,7 @@ public interface IStorageContext
     Task AddCooler(Cooler cooler);
     Task AddPsu(Psu psu);
 
-    Task UpdateMotherboard(Motherboard motherboard);
+    Task UpdateMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah);
     Task UpdateCpu(Cpu cpu);
     Task UpdateGpu(Gpu gpu);
     Task UpdateRam(Ram ram);

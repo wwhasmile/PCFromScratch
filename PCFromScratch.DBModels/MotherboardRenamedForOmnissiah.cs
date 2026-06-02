@@ -1,8 +1,8 @@
-using PCFromScratch.Common;
+﻿using PCFromScratch.Common;
 
 namespace PCFromScratch.DBModels;
 
-public class Motherboard
+public class MotherboardRenamedForOmnissiah
 {
     public Guid Id { get; set; }
     public required string Name { get; set; }

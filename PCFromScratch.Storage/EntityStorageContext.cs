@@ -7,7 +7,7 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 {
     private readonly StorageDbContext _dbContext = dbContext;
 
-    public IAsyncEnumerable<Motherboard> GetMotherboards(string? socket)
+    public IAsyncEnumerable<MotherboardRenamedForOmnissiah> GetMotherboards(string? socket)
     {
         var query = _dbContext.Motherboards.AsNoTracking();
 
@@ -66,7 +66,7 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         return query.AsAsyncEnumerable();
     }
 
-    public async Task<Motherboard?> GetMotherboard(Guid id) => await _dbContext.FindAsync<Motherboard>(id);
+    public async Task<MotherboardRenamedForOmnissiah?> GetMotherboard(Guid id) => await _dbContext.FindAsync<MotherboardRenamedForOmnissiah>(id);
 
     public async Task<Cpu?> GetCpu(Guid id) => await _dbContext.FindAsync<Cpu>(id);
 
@@ -80,9 +80,9 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 
     public async Task<Psu?> GetPsu(Guid id) => await _dbContext.FindAsync<Psu>(id);
 
-    public async Task AddMotherboard(Motherboard motherboard)
+    public async Task AddMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah)
     {
-        _dbContext.Add(motherboard);
+        _dbContext.Add(motherboardRenamedForOmnissiah);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -122,9 +122,9 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdateMotherboard(Motherboard motherboard)
+    public async Task UpdateMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah)
     {
-        _dbContext.Motherboards.Update(motherboard);
+        _dbContext.Motherboards.Update(motherboardRenamedForOmnissiah);
         await _dbContext.SaveChangesAsync();
     }
 
