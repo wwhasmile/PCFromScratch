@@ -1,8 +1,9 @@
-﻿using PCFromScratch.Repository;
+﻿using PCFromScratch.DBModels;
+using PCFromScratch.Repository;
 
 namespace PCFromScratch.App.ViewModels
 {
-    public class PsuSelectionViewModel : BaseComponentViewModel
+    public class PsuSelectionViewModel : BaseComponentViewModel<Psu>
     {
         private readonly IPsuRepository _psuRepository;
 
@@ -17,7 +18,7 @@ namespace PCFromScratch.App.ViewModels
             _allParts.Clear();
             await foreach (var psu in _psuRepository.GetPsus())
             {
-                _allParts.Add(new ComponentModel { Id = psu.Id, Name = psu.Name });
+                _allParts.Add(psu);
             }
             UpdateList();
         }

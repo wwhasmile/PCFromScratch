@@ -1,8 +1,9 @@
-﻿using PCFromScratch.Repository;
+﻿using PCFromScratch.DBModels;
+using PCFromScratch.Repository;
 
 namespace PCFromScratch.App.ViewModels
 {
-    public class StorageSelectionViewModel : BaseComponentViewModel
+    public class StorageSelectionViewModel : BaseComponentViewModel<InternalDrive>
     {
         private readonly IInternalDriveRepository _storageRepository;
 
@@ -17,7 +18,7 @@ namespace PCFromScratch.App.ViewModels
             _allParts.Clear();
             await foreach (var storage in _storageRepository.GetInternalDrives())
             {
-                _allParts.Add(new ComponentModel { Id = storage.Id, Name = storage.Name });
+                _allParts.Add(storage);
             }
             UpdateList();
         }

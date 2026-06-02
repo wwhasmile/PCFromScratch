@@ -2,17 +2,31 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:PCFromScratch.App.ViewModels"
+             xmlns:dbModels="clr-namespace:PCFromScratch.DBModels;assembly=PCFromScratch.DBModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="PCFromScratch.App.Pages.CoolerSelectionPage"
+             x:DataType="viewModels:CoolerSelectionViewModel"
              Title="Вибір кулера">
     <StackLayout>
         <SearchBar Placeholder="Пошук..." Text="{Binding SearchTerm}" />
         <CollectionView ItemsSource="{Binding Parts}">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Grid Padding="10" ColumnDefinitions="*,Auto">
-                        <Label Text="{Binding Name}" VerticalOptions="Center" />
-                        <Button Grid.Column="1" Text="Обрати" Command="{Binding Path=BindingContext.SelectCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
-                    </Grid>
+                <DataTemplate x:DataType="dbModels:Cooler">
+                    <toolkit:Expander>
+                        <toolkit:Expander.Header>
+                            <Grid Padding="10" ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Name}" VerticalOptions="Center" />
+                                <Button Grid.Column="1" Text="Обрати" Command="{Binding Path=BindingContext.SelectCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
+                            </Grid>
+                        </toolkit:Expander.Header>
+                        <StackLayout Padding="10">
+                            <Label Text="{Binding Tdp, StringFormat='TDP: {0} W'}" />
+                            <Label Text="{Binding Type, StringFormat='Тип: {0}'}" />
+                            <Label Text="{Binding FanCount, StringFormat='Кількість вентиляторів: {0}'}" />
+                            <Label Text="{Binding Speed, StringFormat='Швидкість: {0} RPM'}" />
+                            <Label Text="{Binding Height, StringFormat='Висота: {0} mm'}" />
+                        </StackLayout>
+                    </toolkit:Expander>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

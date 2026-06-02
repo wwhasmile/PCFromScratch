@@ -1,25 +1,25 @@
-﻿using PCFromScratch.Repository;
+﻿using PCFromScratch.DBModels;
+using PCFromScratch.Repository;
 
-namespace PCFromScratch.App.ViewModels
+namespace PCFromScratch.App.ViewModels;
+
+public class CpuSelectionViewModel : BaseComponentViewModel<Cpu>
 {
-    public class CpuSelectionViewModel : BaseComponentViewModel
+    private readonly ICpuRepository _cpuRepository;
+
+    public CpuSelectionViewModel(ICpuRepository cpuRepository)
     {
-        private readonly ICpuRepository _cpuRepository;
+        _cpuRepository = cpuRepository;
+        LoadParts();
+    }
 
-        public CpuSelectionViewModel(ICpuRepository cpuRepository)
+    protected override async void LoadParts()
+    {
+        _allParts.Clear();
+        await foreach (var cpu in _cpuRepository.GetCpus())
         {
-            _cpuRepository = cpuRepository;
-            LoadParts();
+            _allParts.Add(cpu);
         }
-
-        protected override async void LoadParts()
-        {
-            _allParts.Clear();
-            await foreach (var cpu in _cpuRepository.GetCpus())
-            {
-                _allParts.Add(new ComponentModel { Id = cpu.Id, Name = cpu.Name });
-            }
-            UpdateList();
-        }
+        UpdateList();
     }
 }

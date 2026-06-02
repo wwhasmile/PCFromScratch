@@ -1,8 +1,9 @@
-﻿using PCFromScratch.Repository;
+﻿using PCFromScratch.DBModels;
+using PCFromScratch.Repository;
 
 namespace PCFromScratch.App.ViewModels
 {
-    public class CoolerSelectionViewModel : BaseComponentViewModel
+    public class CoolerSelectionViewModel : BaseComponentViewModel<Cooler>
     {
         private readonly ICoolerRepository _coolerRepository;
 
@@ -17,7 +18,7 @@ namespace PCFromScratch.App.ViewModels
             _allParts.Clear();
             await foreach (var cooler in _coolerRepository.GetCoolers())
             {
-                _allParts.Add(new ComponentModel { Id = cooler.Id, Name = cooler.Name });
+                _allParts.Add(cooler);
             }
             UpdateList();
         }

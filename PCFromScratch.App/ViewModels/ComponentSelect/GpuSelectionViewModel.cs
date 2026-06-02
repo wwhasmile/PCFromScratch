@@ -1,25 +1,25 @@
-﻿using PCFromScratch.Repository;
+﻿using PCFromScratch.DBModels;
+using PCFromScratch.Repository;
 
-namespace PCFromScratch.App.ViewModels
+namespace PCFromScratch.App.ViewModels;
+
+public class GpuSelectionViewModel : BaseComponentViewModel<Gpu>
 {
-    public class GpuSelectionViewModel : BaseComponentViewModel
+    private readonly IGpuRepository _gpuRepository;
+
+    public GpuSelectionViewModel(IGpuRepository gpuRepository)
     {
-        private readonly IGpuRepository _gpuRepository;
+        _gpuRepository = gpuRepository;
+        LoadParts();
+    }
 
-        public GpuSelectionViewModel(IGpuRepository gpuRepository)
+    protected override async void LoadParts()
+    {
+        _allParts.Clear();
+        await foreach (var gpu in _gpuRepository.GetGpus())
         {
-            _gpuRepository = gpuRepository;
-            LoadParts();
+            _allParts.Add(gpu);
         }
-
-        protected override async void LoadParts()
-        {
-            _allParts.Clear();
-            await foreach (var gpu in _gpuRepository.GetGpus())
-            {
-                _allParts.Add(new ComponentModel { Id = gpu.Id, Name = gpu.Name });
-            }
-            UpdateList();
-        }
+        UpdateList();
     }
 }

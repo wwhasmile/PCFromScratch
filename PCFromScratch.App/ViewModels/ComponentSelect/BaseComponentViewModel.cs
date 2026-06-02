@@ -3,12 +3,15 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
+using PCFromScratch.Common;
+using PCFromScratch.DBModels;
+
 namespace PCFromScratch.App.ViewModels
 {
-    public abstract class BaseComponentViewModel : INotifyPropertyChanged
+    public abstract class BaseComponentViewModel<T> : INotifyPropertyChanged where T: class
     {
-        public ObservableCollection<ComponentModel> Parts { get; set; }
-        protected ObservableCollection<ComponentModel> _allParts;
+        public ObservableCollection<T> Parts { get; set; }
+        protected ObservableCollection<T> _allParts;
 
         private string _searchTerm;
         public string SearchTerm
@@ -26,9 +29,9 @@ namespace PCFromScratch.App.ViewModels
 
         protected BaseComponentViewModel()
         {
-            Parts = new ObservableCollection<ComponentModel>();
-            _allParts = new ObservableCollection<ComponentModel>();
-            SelectCommand = new Command<ComponentModel>(OnSelect);
+            Parts = new ObservableCollection<T>();
+            _allParts = new ObservableCollection<T>();
+            SelectCommand = new Command<T>(OnSelect);
             _searchTerm = "";
         }
 
@@ -39,7 +42,7 @@ namespace PCFromScratch.App.ViewModels
             Parts.Clear();
             var filteredParts = string.IsNullOrWhiteSpace(searchTerm)
                 ? _allParts
-                : _allParts.Where(p => p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+                : _allParts.Where(p => ((dynamic)p).Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
             foreach (var part in filteredParts)
             {
@@ -47,11 +50,11 @@ namespace PCFromScratch.App.ViewModels
             }
         }
 
-        private async void OnSelect(ComponentModel part)
+        private async void OnSelect(T part)
         {
             var navigationParameter = new Dictionary<string, object>
             {
-                { "SelectedPart", part },
+                { "SelectedPartId", ((dynamic)part).Id },
                 { "Category", GetType().Name.Replace("SelectionViewModel", "") }
             };
             await Shell.Current.GoToAsync("..", navigationParameter);

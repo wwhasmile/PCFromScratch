@@ -1,25 +1,25 @@
-﻿using PCFromScratch.Repository;
+﻿using PCFromScratch.DBModels;
+using PCFromScratch.Repository;
 
-namespace PCFromScratch.App.ViewModels
+namespace PCFromScratch.App.ViewModels;
+
+public class MotherboardSelectionViewModel : BaseComponentViewModel<MotherboardRenamedForOmnissiah>
 {
-    public class MotherboardSelectionViewModel : BaseComponentViewModel
+    private readonly IMotherboardRepository _motherboardRepository;
+
+    public MotherboardSelectionViewModel(IMotherboardRepository motherboardRepository)
     {
-        private readonly IMotherboardRepository _motherboardRepository;
+        _motherboardRepository = motherboardRepository;
+        LoadParts();
+    }
 
-        public MotherboardSelectionViewModel(IMotherboardRepository motherboardRepository)
+    protected override async void LoadParts()
+    {
+        _allParts.Clear();
+        await foreach (var motherboard in _motherboardRepository.GetMotherboards())
         {
-            _motherboardRepository = motherboardRepository;
-            LoadParts();
+            _allParts.Add(motherboard);
         }
-
-        protected override async void LoadParts()
-        {
-            _allParts.Clear();
-            await foreach (var motherboard in _motherboardRepository.GetMotherboards())
-            {
-                _allParts.Add(new ComponentModel { Id = motherboard.Id, Name = motherboard.Name });
-            }
-            UpdateList();
-        }
+        UpdateList();
     }
 }

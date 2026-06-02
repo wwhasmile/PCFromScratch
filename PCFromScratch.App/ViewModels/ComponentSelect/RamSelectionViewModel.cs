@@ -1,25 +1,25 @@
-﻿using PCFromScratch.Repository;
+﻿using PCFromScratch.DBModels;
+using PCFromScratch.Repository;
 
-namespace PCFromScratch.App.ViewModels
+namespace PCFromScratch.App.ViewModels;
+
+public class RamSelectionViewModel : BaseComponentViewModel<Ram>
 {
-    public class RamSelectionViewModel : BaseComponentViewModel
+    private readonly IRamRepository _ramRepository;
+
+    public RamSelectionViewModel(IRamRepository ramRepository)
     {
-        private readonly IRamRepository _ramRepository;
+        _ramRepository = ramRepository;
+        LoadParts();
+    }
 
-        public RamSelectionViewModel(IRamRepository ramRepository)
+    protected override async void LoadParts()
+    {
+        _allParts.Clear();
+        await foreach (var ram in _ramRepository.GetRams())
         {
-            _ramRepository = ramRepository;
-            LoadParts();
+            _allParts.Add(ram);
         }
-
-        protected override async void LoadParts()
-        {
-            _allParts.Clear();
-            await foreach (var ram in _ramRepository.GetRams())
-            {
-                _allParts.Add(new ComponentModel { Id = ram.Id, Name = ram.Name });
-            }
-            UpdateList();
-        }
+        UpdateList();
     }
 }
