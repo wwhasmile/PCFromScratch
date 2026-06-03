@@ -1,17 +1,18 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using AngleSharp;
-using AngleSharp.Dom;
 using CsvHelper;
 using Microsoft.Playwright;
 
-using PCFromScratch.Scrapers.CSVModels;
+using PCFromScratch.DBModels;
 
 namespace PCFromScratch.Scrapers;
 
 public class GpuScraper
 {
+    //I cannot test some lines until db is ready, so I will mark them with empty comments
     private static readonly string FilePath = "data/gpus.csv";
-    public static async Task GetGpusForSale()
+    public static async Task GetGpus()
     {
         if (!File.Exists(FilePath))
         {
@@ -33,7 +34,7 @@ public class GpuScraper
         var gpus = new List<Gpu>();
         var random = new Random();
 
-        var pageLink = "https://ek.ua/ua/list/189/";
+        var pageLink = "https://ek.ua/ua/ek-list.php?katalog_=189&order_=param_desc&op_=8161";
         try
         {
             while (pageLink != null)
@@ -45,46 +46,83 @@ public class GpuScraper
                 await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight / 2);");
                 await Task.Delay(random.Next(1000, 2500));
                 await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight);");
-                await Task.Delay(random.Next(4500, 8500));
+                await Task.Delay(random.Next(1000, 5000));
 
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
                 var document = await context.OpenAsync(req => req.Content(content));
 
-                var cards = document.QuerySelectorAll("td.model-short-info");
+                var cards = document.QuerySelectorAll("table.model-short-block");
 
                 foreach (var card in cards)
                 {
                     try
                     {
-                        var name = card.QuerySelector("span.u")?.TextContent;
+                        var priceInfo = card.QuerySelector("td.model-hot-prices-td"); //
+                        var priceRange = priceInfo.QuerySelector("div. model-price-range").TextContent; //
+                        List<Offer> offers = new List<Offer>();
+                        foreach (var offer in priceInfo.QuerySelector("table.model-hot-prices").QuerySelectorAll("tr")) //
+                        {
+                            var offerLink = offer.LastElementChild.GetAttribute("href");
+                            var priceStr = offer.LastElementChild.TextContent;
+                            var offerPrice = Regex.Replace(priceStr, "[^0-9]", "");
+                            var offerShop = offer.FirstElementChild.QuerySelector("u").TextContent;
+                            var offerCity = offer.FirstElementChild.QuerySelector("nobr").TextContent;
+                            offers.Add(new Offer { ShopName = offerShop, Link = offerLink, Price = decimal.Parse(offerPrice), City = offerCity });
+                        }
+                        
+                        var modelInfo = card.QuerySelector("td.model-short-info");
+                        var name = modelInfo.QuerySelector("span.u")?.TextContent;
                         if (string.IsNullOrEmpty(name)) continue;
 
-                        var link = "https://ek.ua" + card.QuerySelector("a.model-short-title.no-u")?.GetAttribute("href");
+                        Task<byte[]> imageTask = page.GetByAltText($"Відеокарта {name}").ScreenshotAsync(); //
 
-                        var detailsDiv = card.QuerySelector("div.m-s-f2");
+                        var detailsDiv = modelInfo.QuerySelector("div.m-s-f2");
                         if (detailsDiv == null) continue;
 
                         var details = detailsDiv.ChildNodes;
-                        string tdp = "";
+                        int tdp = 0;
+                        int length = 0;
 
                         foreach (var detail in details)
                         {
                             var text = detail.TextContent;
                             if (text.Contains("Живлення") && text.Contains("Вт"))
                             {
-                                var parts = text.Split(' ');
-                                tdp = parts.Last().Replace("Вт", "").Trim();
+                                var parts = text.Replace("Вт", "").Trim().Split(' ');
+                                tdp = int.Parse(parts.Last().Trim());
+                            }
+
+                            if (text.Contains("Довжина"))
+                            {
+                                length = int.Parse(text.Replace("мм", "").Trim().Split(":").Last());
                             }
                         }
-
-                        if (string.IsNullOrEmpty(tdp)) continue;
-
+                        
+                        var links = modelInfo.QuerySelector("div.model-short-links"); //
+                        if(links == null) continue;
+                        string link = "";
+                        foreach (var linkInElement in links.QuerySelectorAll("a")) //
+                        {
+                            var text = linkInElement.TextContent;
+                            if (text.Contains("Ціни"))
+                            {
+                                link = "https://ek.ua" + linkInElement.GetAttribute("link"); //
+                            }
+                        }
+                        if (tdp==0 || length==0) continue;
+                        
+                        var image = await imageTask; //
+                        
                         gpus.Add(new Gpu
                         {
                             Name = name,
                             Link = link,
-                            Tdp = tdp
+                            Tdp = tdp,
+                            Length = length,
+                            Image = image,
+                            PriceRange = priceRange,
+                            Offers = offers
                         });
                     }
                     catch (Exception e)

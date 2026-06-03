@@ -13,4 +13,8 @@
       <PackageReference Include="Microsoft.Playwright" Version="1.60.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\PCFromScratch.DBModels\PCFromScratch.DBModels.csproj" />
+    </ItemGroup>
+
 </Project>
