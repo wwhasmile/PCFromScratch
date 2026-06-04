@@ -4,6 +4,8 @@ namespace PCFromScratch.Common;
 
 public enum PsuLevel
 {
+    [Display(Name = "Відсутній")]
+    None,
     [Display(Name = "80+ Standard")]
     Standard,
     [Display(Name = "80+ Bronze")]

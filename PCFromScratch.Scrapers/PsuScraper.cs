@@ -1,27 +1,20 @@
 ﻿using System.Globalization;
 using AngleSharp;
+using AngleSharp.Dom;
 using CsvHelper;
 using Microsoft.Playwright;
-
-using PCFromScratch.Scrapers.CSVModels;
+using PCFromScratch.DBModels;
+using PCFromScratch.Common;
 
 namespace PCFromScratch.Scrapers;
 
 public class PsuScraper
 {
-    private static readonly string FilePath = "data/psu.csv";
+    private static readonly string FilePath = "data/psus.csv";
 
     public static async Task GetPsus()
     {
-        if (!File.Exists(FilePath))
-        {
-            string? directoryName = Path.GetDirectoryName(FilePath);
-            if (directoryName is not null && !Directory.Exists(directoryName))
-            {
-                Directory.CreateDirectory(directoryName);
-            }
-            File.Create(FilePath).Close();
-        }
+        BaseScraper.CreatePath(FilePath);
 
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -31,7 +24,6 @@ public class PsuScraper
         var page = await browser.NewPageAsync();
 
         var psus = new List<Psu>();
-        var random = new Random();
 
         var pageLink = "https://ek.ua/ua/list/351/";
         
@@ -42,151 +34,64 @@ public class PsuScraper
                 Console.WriteLine($"Retrieving page: {pageLink}");
                 await page.GotoAsync(pageLink);
 
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight / 2);");
-                await Task.Delay(random.Next(1000, 2500));
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight);");
-                await Task.Delay(random.Next(3000, 6000));
+                await page.EvaluateAsync(@"
+                    let cards = document.querySelectorAll('table.model-short-block');
+                    for (let i = 0; i < cards.length; i++) {
+                        cards[i].id = 'card-for-scraping-' + i;
+                    }
+                ");
 
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
                 var document = await context.OpenAsync(req => req.Content(content));
 
-                var cards = document.QuerySelectorAll("td.model-short-info");
+                var cards = document.QuerySelectorAll("table.model-short-block");
 
                 foreach (var card in cards)
                 {
                     try
                     {
-                        // We ONLY want the main name tag (span.u), ignoring the submodel info (span.list-conf-name)
-                        var name = card.QuerySelector("span.u")?.TextContent.Trim();
-                        if (string.IsNullOrEmpty(name)) continue;
-
-                        var link = "https://ek.ua" + card.QuerySelector("a.model-short-title.no-u")?.GetAttribute("href");
+                        var modelInfo = card.QuerySelector("td.model-short-info");
+                        if (modelInfo == null) continue;
                         
-                        var detailsDiv = card.QuerySelector("div.m-s-f2");
-                        string power = "", formFactor = "", connectors = "", powerConnectors = "", level80Plus = "";
+                        var uSpan = modelInfo.QuerySelector("span.u")?.TextContent.Trim();
+                        if (string.IsNullOrEmpty(uSpan)) continue;
 
-                        // Extract 80+ Level
-                        var badgesDiv = card.QuerySelector("div.m-s-f1");
-                        if (badgesDiv != null)
-                        {
-                            var badges = badgesDiv.QuerySelectorAll("a");
-                            foreach (var badge in badges)
-                            {
-                                var badgeText = badge.TextContent;
-                                if (badgeText.Contains("80+"))
-                                {
-                                    level80Plus = badgeText.Trim();
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (detailsDiv != null)
-                        {
-                            var details = detailsDiv.ChildNodes;
-                            foreach (var detail in details)
-                            {
-                                var text = detail.TextContent;
-                                if (text.Contains("Потужність"))
-                                {
-                                     if (detail.ChildNodes.Length > 1) power = detail.ChildNodes[1].TextContent.Replace("Вт", "").Trim();
-                                }
-                                else if (text.Contains("Форм-фактор"))
-                                {
-                                     if (detail.ChildNodes.Length > 1) formFactor = detail.ChildNodes[1].TextContent.Trim();
-                                }
-                                else if (text.Contains("Живлення"))
-                                {
-                                     if (detail.ChildNodes.Length > 1) powerConnectors = detail.ChildNodes[1].TextContent.Trim();
-                                }
-                                else if (text.Contains("Конекторів"))
-                                {
-                                     if (detail.ChildNodes.Length > 1) connectors = detail.ChildNodes[1].TextContent.Trim();
-                                }
-                            }
-                        }
-
-                        var confList = card.QuerySelector("div.m-c-f1-pl--button");
+                        var imageTask = page.GetByAltText($"Блок живлення {uSpan}").ScreenshotAsync();
                         
+                        var detailsDiv = modelInfo.QuerySelector("div.m-s-f2");
+                        (int power, PsuFormFactor formFactor, PsuModularity modularity) = GetModelDetails(detailsDiv);
+
+                        var confList = modelInfo.QuerySelector("div.m-c-f1-pl--button");
+                        
+                        var image = await imageTask;
+
                         if (confList != null)
                         {
-                            var confItems = confList.QuerySelectorAll("span.ib");
+                            var confItems = confList.QuerySelectorAll("span.ib").ToList();
                             
-                            foreach (var item in confItems)
+                            for (var i = 0; i < confItems.Count; i++)
                             {
+                                var item = confItems[i];
                                 if (item.ClassList.Contains("out-of-stock")) continue;
-
-                                string submodelName = item.TextContent.Replace("\n", " ").Trim();
-                                submodelName = System.Text.RegularExpressions.Regex.Replace(submodelName, @"\s+", " ");
                                 
-                                string currentPower = power;
-                                string currentPowerConnectors = powerConnectors;
-                                if (System.Text.RegularExpressions.Regex.IsMatch(submodelName, ".*80\\+ (Standard|Bronze|Silver|Gold|Platinum|Titanium)"))
+                                if (!item.ClassList.Contains("current"))
                                 {
-                                    level80Plus = "80+" + submodelName.Split("80+")[1].Trim();
-                                    submodelName = submodelName.Split("80+")[0];
-                                }
-                                else if (submodelName.Contains("без 80+"))
-                                {
-                                    submodelName = submodelName.Replace("без 80+", "").Trim();
-                                }
-                                else if (submodelName.Contains("80+"))
-                                {
-                                    level80Plus = "80+ Standard";
-                                    submodelName = submodelName.Replace("80+", "").Trim();
-                                }
-                                if (submodelName.Contains("Вт"))
-                                {
-                                    var parts = submodelName.Split("Вт");
-                                    currentPower = parts[0].Trim();
-                                    
-                                    // The rest of the string is the power connectors if available
-                                    if (parts.Length > 1)
-                                    {
-                                        var subConnectors = parts[1].Trim();
-                                        if (!string.IsNullOrEmpty(subConnectors))
-                                        {
-                                            currentPowerConnectors = subConnectors;
-                                        }
-                                    }
-                                }
-                                
-                                string currentLink;
-                                if (item.ClassList.Contains("current"))
-                                {
-                                    currentLink = link;
-                                }
-                                else
-                                {
-                                    var aTag = item.QuerySelector("a");
-                                    currentLink = aTag != null ? "https://ek.ua" + aTag.GetAttribute("href") : link;
+                                    var cardId = card.Id;
+                                    var cardLocator = page.Locator($"#{cardId}");
+                                    var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(i);
+                                    await submodelLocator.ClickAsync();
+                                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                                 }
 
-                                psus.Add(new Psu
-                                {
-                                    Name = name, // Main name only, e.g. "be quiet! Pure Power 13 M"
-                                    Link = currentLink,
-                                    Power = currentPower,
-                                    FormFactor = formFactor,
-                                    Connectors = connectors,
-                                    PowerConnectors = currentPowerConnectors,
-                                    Level80Plus = level80Plus
-                                });
+                                string powerConnector = GetPowerConnectors(card.QuerySelector("div.m-s-f2"));
+                                CreateAndAddPsu(psus, uSpan, power, formFactor, modularity, powerConnector, image, card);
                             }
                         }
                         else
                         {
-                           psus.Add(new Psu
-                           {
-                               Name = name,
-                               Link = link,
-                               Power = power,
-                               FormFactor = formFactor,
-                               Connectors = connectors,
-                               PowerConnectors = powerConnectors,
-                               Level80Plus = level80Plus
-                           });
+                            string powerConnector = GetPowerConnectors(card.QuerySelector("div.m-s-f2"));
+                            CreateAndAddPsu(psus, uSpan, power, formFactor, modularity, powerConnector, image, card);
                         }
                     }
                     catch (Exception e)
@@ -216,5 +121,103 @@ public class PsuScraper
         }
         
         Console.WriteLine($"Successfully saved {psus.Count} PSUs to '{FilePath}'.");
+    }
+
+    private static (int, PsuFormFactor, PsuModularity) GetModelDetails(IElement? detailsDiv)
+    {
+        int power = 0;
+        PsuFormFactor formFactor = PsuFormFactor.ATX;
+        PsuModularity modularity = PsuModularity.NotModular;
+
+        if (detailsDiv == null) return (power, formFactor, modularity);
+
+        foreach (var detail in detailsDiv.ChildNodes)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Потужність"))
+                int.TryParse(detail.ChildNodes[1].TextContent.Replace("Вт", "").Trim(), out power);
+            else if (text.Contains("Форм-фактор"))
+            {
+                var textContent = detail.ChildNodes[1].TextContent;
+                if (textContent.Contains("SFX"))
+                    formFactor = PsuFormFactor.SFX;
+                if (textContent.Contains("модульний"))
+                {
+                    modularity = PsuModularity.Modular;
+                }
+                else if (textContent.Contains("напівмодульний"))
+                {
+                    modularity = PsuModularity.SemiModular;
+                }
+            }
+        }
+        return (power, formFactor, modularity);
+    }
+
+    private static PsuLevel GetPsuLevel(IElement card)
+    {
+        var badgesDiv = card.QuerySelector("div.m-s-f1");
+        if (badgesDiv != null)
+        {
+            var badge = badgesDiv.ChildNodes.FirstOrDefault(n => n.TextContent.Contains("80+"));
+            if (badge != null)
+            {
+                var levelString = badge.TextContent;
+                return levelString switch
+                {
+                    "80+ Bronze" => PsuLevel.Bronze,
+                    "80+ Silver" => PsuLevel.Silver,
+                    "80+ Gold" => PsuLevel.Gold,
+                    "80+ Platinum" => PsuLevel.Platinum,
+                    "80+ Titanium" => PsuLevel.Titanium,
+                    "80+" => PsuLevel.Standard,
+                    _ => PsuLevel.None
+                };
+            }
+        }
+        return PsuLevel.None;
+    }
+
+    private static string GetPowerConnectors(IElement? detailsDiv)
+    {
+        if (detailsDiv == null) return string.Empty;
+        foreach (var detail in detailsDiv.ChildNodes)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Живлення"))
+            {
+                if (detail.ChildNodes.Length > 1)
+                {
+                    return detail.ChildNodes[1].TextContent.Trim();
+                }
+            }
+        }
+        return string.Empty;
+    }
+    
+    private static void CreateAndAddPsu(List<Psu> list, string model, int power, PsuFormFactor formFactor, PsuModularity modularity, string powerConnector, byte[] image, IElement card)
+    {
+        var priceInfo = card.QuerySelector("td.model-hot-prices-td");
+        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo);
+
+        var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
+            .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
+        
+        var level = GetPsuLevel(card);
+
+        list.Add(new Psu
+        {
+            Id = Guid.NewGuid(),
+            Name = model,
+            Link = link,
+            Power = power,
+            Level = level,
+            FormFactor = formFactor,
+            Modularity = modularity,
+            PowerConnector = powerConnector,
+            Image = image,
+            PriceRange = priceRange,
+            Offers = offers
+        });
     }
 }
