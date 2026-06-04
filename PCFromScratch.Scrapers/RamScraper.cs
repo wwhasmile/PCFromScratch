@@ -32,27 +32,18 @@ public class RamScraper
             {
                 Console.WriteLine($"Retrieving page: {pageLink}");
                 await page.GotoAsync(pageLink);
-
-                await page.EvaluateAsync(@"
-                    let cards = document.querySelectorAll('table.model-short-block');
-                    for (let i = 0; i < cards.length; i++) {
-                        cards[i].id = 'card-for-scraping-' + i;
-                    }
-                ");
-
+                
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
                 var document = await context.OpenAsync(req => req.Content(content));
 
                 var cards = document.QuerySelectorAll("table.model-short-block");
 
-                foreach (var card in cards)
+                for (int i = 0; i < cards.Length; i++)
                 {
                     try
                     {
-                        var cardId = card.Id;
-                        var cardLocator = page.Locator($"#{cardId}");
-
+                        var card = cards[i];
                         var modelInfo = card.QuerySelector("td.model-short-info");
                         if (modelInfo == null) continue;
                         
@@ -72,9 +63,9 @@ public class RamScraper
                         {
                             var confItems = confList.QuerySelectorAll("span.ib").ToList();
                             
-                            for (var i = 0; i < confItems.Count; i++)
+                            for (var j = 0; j < confItems.Count; j++)
                             {
-                                var item = confItems[i];
+                                var item = confItems[j];
                                 if (item.ClassList.Contains("out-of-stock")) continue;
 
                                 string submodelName = item.TextContent.Replace("\n", " ").Trim();
@@ -82,7 +73,8 @@ public class RamScraper
 
                                 if (!item.ClassList.Contains("current"))
                                 {
-                                    var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(i);
+                                    var cardLocator = page.Locator("table.model-short-block").Nth(i);
+                                    var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
                                     await submodelLocator.ClickAsync();
                                     await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                                 }
