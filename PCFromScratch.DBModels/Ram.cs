@@ -14,6 +14,6 @@ public class Ram
     public required string Generation { get; set; }
     public int Frequency { get; set; }
     public byte[]? Image { get; set; }
-    public string? PriceRange { get; set; }
-    public List<Offer> Offers { get; set; } = new ();
+    public required string PriceRange { get; set; }
+    public HashSet<Offer> Offers { get; set; } = new HashSet<Offer>();
 }

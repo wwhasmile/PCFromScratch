@@ -8,6 +8,6 @@ public class Gpu
     public int Tdp { get; set; }
     public int Length { get; set; }
     public byte[]? Image { get; set; }
-    public string PriceRange { get; set; }
-    public List<Offer> Offers { get; set; } = new ();
+    public required string PriceRange { get; set; }
+    public ICollection<Offer> Offers { get; set; } = new HashSet<Offer>();
 }

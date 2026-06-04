@@ -14,6 +14,6 @@ public class Cpu
     public int RamFrequency { get; set; }
     public CpuPacking Packing { get; set; }
     public byte[]? Image { get; set; }
-    public string PriceRange { get; set; }
-    public List<Offer> Offers { get; set; } = new ();
+    public required string PriceRange { get; set; }
+    public ICollection<Offer> Offers { get; set; } = new HashSet<Offer>();
 }
