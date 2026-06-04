@@ -1,40 +1,31 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using AngleSharp;
+using AngleSharp.Dom;
 using CsvHelper;
 using Microsoft.Playwright;
-
-using PCFromScratch.Scrapers.CSVModels;
+using PCFromScratch.DBModels;
 
 namespace PCFromScratch.Scrapers;
 
 public class HddScraper
 {
-    private static readonly string FilePath = "data/hdd.csv";
+    private static readonly string FilePath = "data/hdds.csv";
 
     public static async Task GetHdds()
     {
-        if (!File.Exists(FilePath))
-        {
-            string? directoryName = Path.GetDirectoryName(FilePath);
-            if (directoryName is not null && !Directory.Exists(directoryName))
-            {
-                Directory.CreateDirectory(directoryName);
-            }
-            File.Create(FilePath).Close();
-        }
+        BaseScraper.CreatePath(FilePath);
 
         using var playwright = await Playwright.CreateAsync();
-        await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
-        {
-            Headless = false
-        });
+        await using var browser =
+            await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
         var page = await browser.NewPageAsync();
 
-        var hdds = new List<Hdd>();
-        var random = new Random();
+        var hdds = new List<InternalDrive>();
 
-        var pageLink = "https://ek.ua/ua/ek-list.php?presets_=3573%2C3590&katalog_=190&pf_=1&sc_id_=980&order_=pop&save_podbor_=1";
-        
+        var pageLink =
+            "https://ek.ua/ua/ek-list.php?presets_=3573%2C3590&katalog_=190&pf_=1&sc_id_=980&order_=pop&save_podbor_=1";
+
         try
         {
             while (pageLink != null)
@@ -42,113 +33,51 @@ public class HddScraper
                 Console.WriteLine($"Retrieving page: {pageLink}");
                 await page.GotoAsync(pageLink);
 
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight / 2);");
-                await Task.Delay(random.Next(1000, 2500));
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight);");
-                await Task.Delay(random.Next(4500, 8500));
-
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
                 var document = await context.OpenAsync(req => req.Content(content));
 
-                var cards = document.QuerySelectorAll("td.model-short-info");
-
-                foreach (var card in cards)
+                var cards = document.QuerySelectorAll("table.model-short-block");
+                for (int i = 0; i < cards.Length; i++)
                 {
                     try
                     {
-                        var modelName = card.QuerySelector("span.u")?.TextContent.Trim();
-                        if (string.IsNullOrEmpty(modelName)) continue;
+                        var modelInfo = cards[i].QuerySelector("td.model-short-info");
+                        if (modelInfo == null) continue;
 
-                        var mainLink = "https://ek.ua" + card.QuerySelector("a.model-short-title.no-u")?.GetAttribute("href");
-                        
-                        var detailsDiv = card.QuerySelector("div.m-s-f2");
-                        string format = "";
+                        var uSpan = modelInfo.QuerySelector("span.u")?.TextContent.Trim();
+                        if (string.IsNullOrEmpty(uSpan)) continue;
 
-                        // Extract main details, specifically looking for Format which is shared across submodels
-                        if (detailsDiv != null)
-                        {
-                            var details = detailsDiv.ChildNodes;
-                            foreach (var detail in details)
-                            {
-                                var text = detail.TextContent;
-                                if (text.Contains("Формат"))
-                                {
-                                     if (detail.ChildNodes.Length > 1) format = detail.ChildNodes[1].TextContent.Replace("\"", "").Trim();
-                                }
-                            }
-                        }
+                        var imageTask = page.GetByAltText(uSpan).ScreenshotAsync();
 
-                        var confList = card.QuerySelector("div.m-c-f1-pl--button");
-                        
+                        var detailsDiv = modelInfo.QuerySelector("div.m-s-f2");
+                        string format = GetModelDetails(detailsDiv);
+
+                        var confList = modelInfo.QuerySelector("div.m-c-f1-pl--button");
+
+                        var image = await imageTask;
+
                         if (confList != null)
                         {
-                            var confItems = confList.QuerySelectorAll("span.ib");
-                            
-                            foreach (var item in confItems)
+                            var confItems = confList.QuerySelectorAll("span.ib").ToList();
+
+                            for (var j = 0; j < confItems.Count; j++)
                             {
+                                var item = confItems[j];
                                 if (item.ClassList.Contains("out-of-stock")) continue;
-
-                                string submodelName = item.TextContent.Replace("\n", " ").Trim();
-                                submodelName = System.Text.RegularExpressions.Regex.Replace(submodelName, @"\s+", " ");
                                 
-                                string capacity = "";
-                                
-                                // Parse capacity from submodel name. It usually starts with it (e.g., "10 TB 256 МБ" or "10 TB")
-                                if (submodelName.Contains("TB") || submodelName.Contains("GB"))
-                                {
-                                     var parts = submodelName.Split(new[] { "TB", "GB" }, StringSplitOptions.None);
-                                     if (parts.Length > 0)
-                                     {
-                                         string unit = submodelName.Contains("TB") ? "TB" : "GB";
-                                         capacity = parts[0].Trim() + " " + unit;
-                                     }
-                                }
-                                
-                                string currentLink;
-                                if (item.ClassList.Contains("current"))
-                                {
-                                    currentLink = mainLink;
-                                }
-                                else
-                                {
-                                    var aTag = item.QuerySelector("a");
-                                    currentLink = aTag != null ? "https://ek.ua" + aTag.GetAttribute("href") : mainLink;
-                                }
-
-                                hdds.Add(new Hdd
-                                {
-                                    Model = modelName,
-                                    Submodel = submodelName,
-                                    Link = currentLink,
-                                    Capacity = capacity,
-                                    Format = format
-                                });
+                                var cardLocator = page.Locator("table.model-short-block").Nth(i);
+                                var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
+                                await submodelLocator.ClickAsync();
+                                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                                int capacity = GetCapacity(cards[i].QuerySelector("div.m-s-f2"));
+                                CreateAndAddHdd(hdds, uSpan, capacity, format, image, cards[i]);
                             }
                         }
                         else
                         {
-                           // Fallback if no submodels exist
-                           string fallbackCapacity = "";
-                           if (detailsDiv != null)
-                           {
-                               var details = detailsDiv.ChildNodes;
-                               foreach (var detail in details)
-                               {
-                                   if (detail.TextContent.Contains("Ємність"))
-                                   {
-                                        if (detail.ChildNodes.Length > 1) fallbackCapacity = detail.ChildNodes[1].TextContent.Trim();
-                                   }
-                               }
-                           }
-
-                           hdds.Add(new Hdd
-                           {
-                               Model = modelName,
-                               Link = mainLink,
-                               Capacity = fallbackCapacity,
-                               Format = format
-                           });
+                            int capacity = GetCapacity(cards[i].QuerySelector("div.m-s-f2"));
+                            CreateAndAddHdd(hdds, uSpan, capacity, format, image, cards[i]);
                         }
                     }
                     catch (Exception e)
@@ -176,7 +105,70 @@ public class HddScraper
         {
             csv.WriteRecords(hdds);
         }
-        
+
         Console.WriteLine($"Successfully saved {hdds.Count} HDDs to '{FilePath}'.");
+    }
+
+    private static string GetModelDetails(IElement? detailsDiv)
+    {
+        if (detailsDiv == null) return string.Empty;
+
+        foreach (var detail in detailsDiv.ChildNodes)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Формат"))
+            {
+                var format = detail.ChildNodes[1].TextContent.Replace("\"", "").Trim();
+                return format;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static int GetCapacity(IElement? detailsDiv)
+    {
+        if (detailsDiv == null) return 0;
+        foreach (var detail in detailsDiv.ChildNodes)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Ємність"))
+            {
+                if (detail.ChildNodes.Length > 1)
+                {
+                    var capacityStr = detail.ChildNodes[1].TextContent.Trim();
+                    int capacity = int.Parse(Regex.Replace(capacityStr, "[^0-9]", ""));
+                    if (capacityStr.Contains("TB"))
+                    {
+                        return capacity * 1024;
+                    }
+                    return capacity;
+                }
+            }
+        }
+        return 0;
+    }
+
+private static void CreateAndAddHdd(List<InternalDrive> list, string model, int capacity, string format, byte[] image, IElement card)
+    {
+        var priceInfo = card.QuerySelector("td.model-hot-prices-td");
+        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo);
+
+        var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
+            .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
+
+        list.Add(new InternalDrive
+        {
+            Id = Guid.NewGuid(),
+            Name = model,
+            Link = link,
+            Capacity = capacity,
+            Type = "HDD",
+            Format = format,
+            Port = "SATA",
+            Image = image,
+            PriceRange = priceRange,
+            Offers = offers
+        });
     }
 }

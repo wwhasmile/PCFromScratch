@@ -1,27 +1,20 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using AngleSharp;
+using AngleSharp.Dom;
 using CsvHelper;
 using Microsoft.Playwright;
-
-using PCFromScratch.Scrapers.CSVModels;
+using PCFromScratch.DBModels;
 
 namespace PCFromScratch.Scrapers;
 
 public class SsdScraper
 {
-    private static readonly string FilePath = "data/ssd.csv";
+    private static readonly string FilePath = "data/ssds.csv";
 
     public static async Task GetSsds()
     {
-        if (!File.Exists(FilePath))
-        {
-            string? directoryName = Path.GetDirectoryName(FilePath);
-            if (directoryName is not null && !Directory.Exists(directoryName))
-            {
-                Directory.CreateDirectory(directoryName);
-            }
-            File.Create(FilePath).Close();
-        }
+        BaseScraper.CreatePath(FilePath);
 
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -30,9 +23,8 @@ public class SsdScraper
         });
         var page = await browser.NewPageAsync();
 
-        var ssds = new List<Ssd>();
-        var random = new Random();
-        
+        var ssds = new List<InternalDrive>();
+
         var pageLink = "https://ek.ua/ua/list/61/pr-3680/";
         
         try
@@ -41,114 +33,58 @@ public class SsdScraper
             {
                 Console.WriteLine($"Retrieving page: {pageLink}");
                 await page.GotoAsync(pageLink);
-
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight / 2);");
-                await Task.Delay(random.Next(1000, 2500));
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight);");
-                await Task.Delay(random.Next(4500, 8500));
-
+                
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
                 var document = await context.OpenAsync(req => req.Content(content));
 
-                var cards = document.QuerySelectorAll("td.model-short-info");
+                var cards = document.QuerySelectorAll("table.model-short-block");
 
-                foreach (var card in cards)
+                for (int i = 0; i < cards.Length; i++)
                 {
                     try
                     {
-                        var modelName = card.QuerySelector("span.u")?.TextContent.Trim();
-                        if (string.IsNullOrEmpty(modelName)) continue;
-
-                        var mainLink = "https://ek.ua" + card.QuerySelector("a.model-short-title.no-u")?.GetAttribute("href");
+                        var card = cards[i];
+                        var modelInfo = card.QuerySelector("td.model-short-info");
+                        if (modelInfo == null) continue;
                         
-                        var detailsDiv = card.QuerySelector("div.m-s-f2");
-                        string format = "";
+                        var uSpan = modelInfo.QuerySelector("span.u")?.TextContent.Trim();
+                        if (string.IsNullOrEmpty(uSpan)) continue;
 
-                        // Extract main details, specifically looking for Format/Form-factor which is shared across submodels
-                        if (detailsDiv != null)
-                        {
-                            var details = detailsDiv.ChildNodes;
-                            foreach (var detail in details)
-                            {
-                                var text = detail.TextContent;
-                                if (text.Contains("Форм-фактор") || text.Contains("Формат"))
-                                {
-                                     if (detail.ChildNodes.Length > 1) format = detail.ChildNodes[1].TextContent.Replace("\"", "").Trim();
-                                }
-                            }
-                        }
-
-                        var confList = card.QuerySelector("div.m-c-f1-pl--button");
+                        var imageTask = page.GetByAltText($"SSD {uSpan}").ScreenshotAsync();
                         
+                        var detailsDiv = modelInfo.QuerySelector("div.m-s-f2");
+                        (string format, string port) = GetModelDetails(detailsDiv);
+
+                        var confList = modelInfo.QuerySelector("div.m-c-f1-pl--button");
+                        
+                        var image = await imageTask;
+
                         if (confList != null)
                         {
-                            var confItems = confList.QuerySelectorAll("span.ib");
+                            var confItems = confList.QuerySelectorAll("span.ib").ToList();
                             
-                            foreach (var item in confItems)
+                            for (var j = 0; j < confItems.Count; j++)
                             {
+                                var item = confItems[j];
                                 if (item.ClassList.Contains("out-of-stock")) continue;
-
-                                string submodelName = item.TextContent.Replace("\n", " ").Trim();
-                                submodelName = System.Text.RegularExpressions.Regex.Replace(submodelName, @"\s+", " ");
                                 
-                                string capacity = "";
-                                
-                                // Parse capacity from submodel name. It usually starts with it (e.g., "1 TB", "500 GB", "2 TB M.2")
-                                if (submodelName.Contains("TB") || submodelName.Contains("GB"))
+                                if (!item.ClassList.Contains("current"))
                                 {
-                                     var parts = submodelName.Split(new[] { "TB", "GB" }, StringSplitOptions.None);
-                                     if (parts.Length > 0)
-                                     {
-                                         string unit = submodelName.Contains("TB") ? "TB" : "GB";
-                                         capacity = parts[0].Trim() + " " + unit;
-                                     }
-                                }
-                                
-                                string currentLink;
-                                if (item.ClassList.Contains("current"))
-                                {
-                                    currentLink = mainLink;
-                                }
-                                else
-                                {
-                                    var aTag = item.QuerySelector("a");
-                                    currentLink = aTag != null ? "https://ek.ua" + aTag.GetAttribute("href") : mainLink;
+                                    var cardLocator = page.Locator("table.model-short-block").Nth(i);
+                                    var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
+                                    await submodelLocator.ClickAsync();
+                                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                                 }
 
-                                ssds.Add(new Ssd
-                                {
-                                    Model = modelName,
-                                    Submodel = submodelName,
-                                    Link = currentLink,
-                                    Capacity = capacity,
-                                    Format = format
-                                });
+                                int capacity = GetCapacity(cards[i].QuerySelector("div.m-s-f2"));
+                                CreateAndAddSsd(ssds, uSpan, capacity, format, port, image, card);
                             }
                         }
                         else
                         {
-                           // Fallback if no submodels exist
-                           string fallbackCapacity = "";
-                           if (detailsDiv != null)
-                           {
-                               var details = detailsDiv.ChildNodes;
-                               foreach (var detail in details)
-                               {
-                                   if (detail.TextContent.Contains("Ємність") || detail.TextContent.Contains("Об'єм"))
-                                   {
-                                        if (detail.ChildNodes.Length > 1) fallbackCapacity = detail.ChildNodes[1].TextContent.Trim();
-                                   }
-                               }
-                           }
-
-                           ssds.Add(new Ssd
-                           {
-                               Model = modelName,
-                               Link = mainLink,
-                               Capacity = fallbackCapacity,
-                               Format = format
-                           });
+                            int capacity = GetCapacity(cards[i].QuerySelector("div.m-s-f2"));
+                            CreateAndAddSsd(ssds, uSpan, capacity, format, port, image, card);
                         }
                     }
                     catch (Exception e)
@@ -178,5 +114,68 @@ public class SsdScraper
         }
         
         Console.WriteLine($"Successfully saved {ssds.Count} SSDs to '{FilePath}'.");
+    }
+
+    private static (string, string) GetModelDetails(IElement? detailsDiv)
+    {
+        if (detailsDiv == null) return (string.Empty, string.Empty);
+
+        foreach (var detail in detailsDiv.ChildNodes)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Формат"))
+            {
+                string format = detail.ChildNodes[1].TextContent.Replace("\"", "").Trim();
+                string port = format.Contains("M.2") ? "M.2" : "SATA";
+                return (format, port);
+            }
+                
+        }
+        return (string.Empty, string.Empty);
+    }
+    
+    private static int GetCapacity(IElement? detailsDiv)
+    {
+        if (detailsDiv == null) return 0;
+        foreach (var detail in detailsDiv.ChildNodes)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Ємність"))
+            {
+                if (detail.ChildNodes.Length > 1)
+                {
+                    var capacityStr = detail.ChildNodes[1].TextContent.Trim();
+                    int capacity = int.Parse(Regex.Replace(capacityStr, "[^0-9]", ""));
+                    if (capacityStr.Contains("TB"))
+                    {
+                        return capacity * 1024;
+                    }
+                    return capacity;
+                }
+            }
+        }
+        return 0;
+    }
+    
+    private static void CreateAndAddSsd(List<InternalDrive> list, string model, int capacity, string format, string port, byte[] image, IElement card)
+    {
+        var priceInfo = card.QuerySelector("td.model-hot-prices-td");
+        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo);
+
+        var link = "https://ek.ua" + card.QuerySelector("a.model-short-title.no-u")?.GetAttribute("href");
+        
+        list.Add(new InternalDrive
+        {
+            Id = Guid.NewGuid(),
+            Name = model,
+            Link = link,
+            Capacity = capacity,
+            Type = "SSD",
+            Format = format,
+            Port = port,
+            Image = image,
+            PriceRange = priceRange,
+            Offers = offers
+        });
     }
 }
