@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
-using System.Text.RegularExpressions;
 using AngleSharp;
+using AngleSharp.Dom;
 using CsvHelper;
 using Microsoft.Playwright;
 
@@ -14,15 +14,7 @@ public class GpuScraper
     private static readonly string FilePath = "data/gpus.csv";
     public static async Task GetGpus()
     {
-        if (!File.Exists(FilePath))
-        {
-            string? directoryName = Path.GetDirectoryName(FilePath);
-            if (directoryName is not null && !Directory.Exists(Path.GetDirectoryName(FilePath)))
-            {
-                Directory.CreateDirectory(directoryName);
-            }
-            File.Create(FilePath).Close();
-        }
+        BaseScraper.CreatePath(FilePath);
         
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -45,8 +37,6 @@ public class GpuScraper
                 // Simulate Human Behavior
                 await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight / 2);");
                 await Task.Delay(random.Next(1000, 2500));
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight);");
-                await Task.Delay(random.Next(1000, 5000));
 
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
@@ -59,17 +49,7 @@ public class GpuScraper
                     try
                     {
                         var priceInfo = card.QuerySelector("td.model-hot-prices-td"); //
-                        var priceRange = priceInfo.QuerySelector("div. model-price-range").TextContent; //
-                        List<Offer> offers = new List<Offer>();
-                        foreach (var offer in priceInfo.QuerySelector("table.model-hot-prices").QuerySelectorAll("tr")) //
-                        {
-                            var offerLink = offer.LastElementChild.GetAttribute("href");
-                            var priceStr = offer.LastElementChild.TextContent;
-                            var offerPrice = Regex.Replace(priceStr, "[^0-9]", "");
-                            var offerShop = offer.FirstElementChild.QuerySelector("u").TextContent;
-                            var offerCity = offer.FirstElementChild.QuerySelector("nobr").TextContent;
-                            offers.Add(new Offer { ShopName = offerShop, Link = offerLink, Price = decimal.Parse(offerPrice), City = offerCity });
-                        }
+                        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo); //
                         
                         var modelInfo = card.QuerySelector("td.model-short-info");
                         var name = modelInfo.QuerySelector("span.u")?.TextContent;
@@ -81,23 +61,9 @@ public class GpuScraper
                         if (detailsDiv == null) continue;
 
                         var details = detailsDiv.ChildNodes;
-                        int tdp = 0;
-                        int length = 0;
-
-                        foreach (var detail in details)
-                        {
-                            var text = detail.TextContent;
-                            if (text.Contains("Живлення") && text.Contains("Вт"))
-                            {
-                                var parts = text.Replace("Вт", "").Trim().Split(' ');
-                                tdp = int.Parse(parts.Last().Trim());
-                            }
-
-                            if (text.Contains("Довжина"))
-                            {
-                                length = int.Parse(text.Replace("мм", "").Trim().Split(":").Last());
-                            }
-                        }
+                        
+                        (int tdp,int length) = CheckDetails(details);
+                        if (tdp==0 || length==0) continue;
                         
                         var links = modelInfo.QuerySelector("div.model-short-links"); //
                         if(links == null) continue;
@@ -110,7 +76,6 @@ public class GpuScraper
                                 link = "https://ek.ua" + linkInElement.GetAttribute("link"); //
                             }
                         }
-                        if (tdp==0 || length==0) continue;
                         
                         var image = await imageTask; //
                         
@@ -155,5 +120,27 @@ public class GpuScraper
         }
         
         Console.WriteLine($"Successfully saved {gpus.Count} GPUs to 'data/gpus.csv'.");
+    }
+
+    private static (int, int) CheckDetails(INodeList details)
+    {
+        int tdp = 0;
+        int length = 0;
+        foreach (var detail in details)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Живлення") && text.Contains("Вт"))
+            {
+                var parts = text.Replace("Вт", "").Trim().Split(' ');
+                tdp = int.Parse(parts.Last().Trim());
+            }
+
+            if (text.Contains("Довжина"))
+            {
+                length = int.Parse(text.Replace("мм", "").Trim().Split(":").Last());
+            }
+        }
+
+        return (tdp, length);
     }
 }

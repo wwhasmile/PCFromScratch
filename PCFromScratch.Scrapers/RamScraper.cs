@@ -3,8 +3,7 @@ using AngleSharp;
 using AngleSharp.Dom;
 using CsvHelper;
 using Microsoft.Playwright;
-
-using PCFromScratch.Scrapers.CSVModels;
+using PCFromScratch.DBModels;
 
 namespace PCFromScratch.Scrapers;
 
@@ -14,15 +13,7 @@ public class RamScraper
 
     public static async Task GetRams()
     {
-        if (!File.Exists(FilePath))
-        {
-            string? directoryName = Path.GetDirectoryName(FilePath);
-            if (directoryName is not null && !Directory.Exists(directoryName))
-            {
-                Directory.CreateDirectory(directoryName);
-            }
-            File.Create(FilePath).Close();
-        }
+        BaseScraper.CreatePath(FilePath);
 
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -32,7 +23,6 @@ public class RamScraper
         var page = await browser.NewPageAsync();
 
         var rams = new List<Ram>();
-        var random = new Random();
 
         var pageLink = "https://ek.ua/ua/ek-list.php?katalog_=188&presets_=4480";
         
@@ -43,110 +33,67 @@ public class RamScraper
                 Console.WriteLine($"Retrieving page: {pageLink}");
                 await page.GotoAsync(pageLink);
 
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight / 2);");
-                await Task.Delay(random.Next(1000, 2500));
-                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight);");
-                await Task.Delay(random.Next(4500, 8500));
+                await page.EvaluateAsync(@"
+                    let cards = document.querySelectorAll('table.model-short-block');
+                    for (let i = 0; i < cards.length; i++) {
+                        cards[i].id = 'card-for-scraping-' + i;
+                    }
+                ");
 
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
                 var document = await context.OpenAsync(req => req.Content(content));
 
-                var cards = document.QuerySelectorAll("td.model-short-info");
+                var cards = document.QuerySelectorAll("table.model-short-block");
 
                 foreach (var card in cards)
                 {
                     try
                     {
-                        var uSpan = card.QuerySelector("span.u")?.TextContent.Trim();
+                        var cardId = card.Id;
+                        var cardLocator = page.Locator($"#{cardId}");
+
+                        var modelInfo = card.QuerySelector("td.model-short-info");
+                        if (modelInfo == null) continue;
+                        
+                        var uSpan = modelInfo.QuerySelector("span.u")?.TextContent.Trim();
                         if (string.IsNullOrEmpty(uSpan)) continue;
 
-                        var mainLink = "https://ek.ua" + card.QuerySelector("a.model-short-title.no-u")?.GetAttribute("href");
+                        var imageTask = page.GetByAltText($"Оперативна пам'ять {uSpan}").ScreenshotAsync();
                         
-                        var detailsDiv = card.QuerySelector("div.m-s-f2");
-                        string capacity = "", voltage = "";
+                        var detailsDiv = modelInfo.QuerySelector("div.m-s-f2");
+                        (string capacityStr, string voltageStr) = GetModelDetails(detailsDiv);
 
-                        if (detailsDiv != null)
-                        {
-                            var details = detailsDiv.ChildNodes;
-                            foreach (var detail in details)
-                            {
-                                var text = detail.TextContent;
-                                if (text.Contains("Об'єм"))
-                                {
-                                     if (detail.ChildNodes.Length > 1) capacity = detail.ChildNodes[1].TextContent.Trim();
-                                }
-                                else if (text.Contains("Напруга"))
-                                {
-                                     if (detail.ChildNodes.Length > 1) voltage = detail.ChildNodes[1].TextContent.Replace("В", "").Trim();
-                                }
-                            }
-                        }
+                        var confList = modelInfo.QuerySelector("div.m-c-f1-pl--button");
 
-                        var confList = card.QuerySelector("div.m-c-f1-pl--button");
+                        var image = await imageTask;
                         
                         if (confList != null)
                         {
-                            var confItems = confList.QuerySelectorAll("span.ib");
+                            var confItems = confList.QuerySelectorAll("span.ib").ToList();
                             
-                            foreach (var item in confItems)
+                            for (var i = 0; i < confItems.Count; i++)
                             {
-                                // Check for the 'out-of-stock' class
-                                if (item.ClassList.Contains("out-of-stock"))
-                                {
-                                    continue; // Skip this submodel
-                                }
+                                var item = confItems[i];
+                                if (item.ClassList.Contains("out-of-stock")) continue;
 
                                 string submodelName = item.TextContent.Replace("\n", " ").Trim();
                                 submodelName = System.Text.RegularExpressions.Regex.Replace(submodelName, @"\s+", " ");
-                                
-                                string ramGen = "", ramFreq = "";
-                                
-                                var dashSplit = submodelName.Split('-');
-                                if (dashSplit.Length >= 2)
-                                {
-                                    ramGen = dashSplit[0].Trim();
-                                    ramFreq = dashSplit[1].Split(' ')[0].Trim(); 
-                                }
-                                
-                                string link;
-                                if (item.ClassList.Contains("current"))
-                                {
-                                    link = mainLink;
-                                }
-                                else
-                                {
-                                    var aTag = item.QuerySelector("a");
-                                    link = aTag != null ? "https://ek.ua" + aTag.GetAttribute("href") : mainLink;
-                                }
 
-                                rams.Add(new Ram
+                                if (!item.ClassList.Contains("current"))
                                 {
-                                    Model = uSpan,
-                                    Submodel = submodelName,
-                                    Link = link,
-                                    Capacity = capacity,
-                                    Voltage = voltage,
-                                    Generation = ramGen,
-                                    Frequency = ramFreq
-                                });
+                                    var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(i);
+                                    await submodelLocator.ClickAsync();
+                                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                                }
+                                CreateAndAddRam(rams, uSpan, submodelName, capacityStr, voltageStr, image, card);
                             }
                         }
-                        else
-                        {
-                           rams.Add(new Ram
-                           {
-                               Model = uSpan,
-                               Link = mainLink,
-                               Capacity = capacity,
-                               Voltage = voltage
-                           });
-                        }
+                        else CreateAndAddRam(rams, uSpan, null, capacityStr, voltageStr, image, card);
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine($"Skipping a malformed card. Error: {e.Message}");
-                        continue;
                     }
                 }
 
@@ -171,5 +118,81 @@ public class RamScraper
         }
         
         Console.WriteLine($"Successfully saved {rams.Count} RAM modules to '{FilePath}'.");
+    }
+
+    private static (string, string) GetModelDetails(IElement? detailsDiv)
+    {
+        string capacityStr = "", voltageStr = "";
+        if (detailsDiv == null) return (capacityStr, voltageStr);
+        foreach (var detail in detailsDiv.ChildNodes)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Об'єм"))
+            {
+                if (detail.ChildNodes.Length > 1) capacityStr = detail.ChildNodes[1].TextContent.Trim();
+            }
+            else if (text.Contains("Напруга"))
+            {
+                if (detail.ChildNodes.Length > 1) voltageStr = detail.ChildNodes[1].TextContent.Replace("В", "").Trim();
+            }
+        }
+        return (capacityStr, voltageStr);
+    }
+
+    private static (string, string) GetSubmodelDetails(IElement? detailsDiv)
+    {
+        string ramGen = "", ramFreq = "";
+        if (detailsDiv == null) return (ramGen, ramFreq);
+        foreach (var detail in detailsDiv.ChildNodes)
+        {
+            var text = detail.TextContent;
+            if (text.Contains("Швидкість"))
+            {
+                if (detail.ChildNodes.Length > 1)
+                {
+                    var genFreqStr = detail.ChildNodes[1].TextContent.Trim();
+                    var dashSplit = genFreqStr.Split('-');
+                    if (dashSplit.Length >= 2)
+                    {
+                        ramGen = dashSplit[0].Trim();
+                        ramFreq = dashSplit[1].Trim();
+                    }
+                }
+            }
+        }
+        return (ramGen, ramFreq);
+    }
+
+    private static void CreateAndAddRam(List<Ram> list, string model, string? submodel, string capacityStr,
+        string voltageStr, byte[] image, IElement card)
+    {
+        var priceInfo = card.QuerySelector("td.model-hot-prices-td");
+        var (priceRange, offers)= BaseScraper.GetPriceInfo(priceInfo);
+        (string ramGen, string ramFreq) = GetSubmodelDetails(card.QuerySelector("div.m-s-f2"));
+
+        var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
+            .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
+                                
+        var capacityParts = capacityStr.Split('х');
+        int.TryParse(capacityParts.Length > 1 ? capacityParts[0].Trim() : "1", out var sticks);
+        int.TryParse(System.Text.RegularExpressions.Regex.Match(capacityParts.Last(), @"\d+").Value, out var amount);
+        float.TryParse(voltageStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var voltage);
+        int.TryParse(ramFreq, out var frequency);
+        
+        list.Add(new Ram
+        {
+            Id = Guid.NewGuid(),
+            Model = model,
+            Submodel = submodel,
+            Link = link,
+            Amount = amount,
+            Frequency = frequency,
+            Generation = ramGen,
+            Image = image,
+            Offers = offers,
+            PriceRange = priceRange,
+            Sticks = sticks,
+            Voltage = voltage
+        });
     }
 }
