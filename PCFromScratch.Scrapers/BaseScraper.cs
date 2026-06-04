@@ -12,7 +12,7 @@ public class BaseScraper
 {
     public static (string, List<Offer>) GetPriceInfo(IElement? priceInfo)
     {
-        string priceRange = priceInfo.QuerySelector("div.model-price-range").TextContent;
+        string priceRange = priceInfo.QuerySelector("div.model-price-range").TextContent.Split(".Порівняти")[0];
         List<Offer> offers = new List<Offer>();
         foreach (var offer in priceInfo.QuerySelector("table.model-hot-prices").QuerySelectorAll("tr")) //
         {
