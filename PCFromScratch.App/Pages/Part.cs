@@ -30,8 +30,9 @@ public class Part (Guid id, string name, IEnumerable<Offer> offers) : INotifyPro
     }
 }
 
-public class Offer(string shop, decimal price)
+public class Offer(string shop, string link, decimal price)
 {
     public string Shop { get; set; } = shop;
+    public string Link { get; set; } = link;
     public decimal Price { get; set; } = price;
 }

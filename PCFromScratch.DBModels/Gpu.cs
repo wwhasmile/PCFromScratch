@@ -8,6 +8,7 @@ public class Gpu
     public int Tdp { get; set; }
     public int Length { get; set; }
     public byte[]? Image { get; set; }
-    public required string PriceRange { get; set; }
+    public int MaxPrice { get; set; }
+    public int MinPrice { get; set; }
     public ICollection<Offer> Offers { get; set; } = new HashSet<Offer>();
 }

@@ -6,6 +6,7 @@ public class Cooler
 {
     public Guid Id { get; set; }
     public required string Name { get; set; }
+    public required string Link { get; set; }
 
     public int Tdp { get; set; }
     public ICollection<string> IntelSockets { get; set; } = new HashSet<string>();

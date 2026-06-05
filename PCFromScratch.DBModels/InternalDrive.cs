@@ -11,6 +11,7 @@ public class InternalDrive
     public required string Format { get; set; }
     public required string Port { get; set; }
     public byte[]? Image { get; set; }
-    public string? PriceRange { get; set; }
-    public List<Offer> Offers { get; set; } = new ();
+    public int MinPrice { get; set; }
+    public int MaxPrice { get; set; }
+    public HashSet<Offer> Offers { get; set; } = new ();
 }

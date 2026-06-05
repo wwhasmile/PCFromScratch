@@ -141,7 +141,7 @@ public class CpuScraper
     private static void CreateAndAddCpu(List<Cpu> list, string model, string? packing, string socket, int tdp, string ram, byte[] image, IElement card)
     {
         var priceInfo = card.QuerySelector("td.model-hot-prices-td");
-        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo);
+        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo);
 
         var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
             .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
@@ -168,7 +168,8 @@ public class CpuScraper
             RamFrequency = ramFreq,
             Packing = packing?.ToLower() == "box" ? CpuPacking.Box : CpuPacking.OEM,
             Image = image,
-            PriceRange = priceRange,
+            MaxPrice = maxPr,
+            MinPrice = minPr,
             Offers = offers
         });
     }

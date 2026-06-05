@@ -170,7 +170,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             "Cpu" => (await _cpuRepository.GetCpu(selectedPartId)).Name,
             "Cooler" => (await _coolerRepository.GetCooler(selectedPartId)).Name,
             "Motherboard" => (await _motherboardRepository.GetMotherboard(selectedPartId)).Name,
-            "Ram" => (await _ramRepository.GetRam(selectedPartId)).Name,
+            "Ram" => (await _ramRepository.GetRam(selectedPartId)).Model,
             "Storage" => (await _storageRepository.GetInternalDrive(selectedPartId)).Name,
             "Gpu" => (await _gpuRepository.GetGpu(selectedPartId)).Name,
             "Psu" => (await _psuRepository.GetPsu(selectedPartId)).Name,
@@ -182,11 +182,11 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         var component = Components.FirstOrDefault(c => c.Name == categoryName);
         if (component is SingleComponentCategory single)
         {
-            single.SelectedPart = new Part(selectedPartId, name, new List<Offer> { new("Rozetka", 100), new("Comfy", 200) });
+            single.SelectedPart = new Part(selectedPartId, name, new List<Offer>());
         }
         else if (component is MultiComponentCategory multi)
         {
-            multi.SelectedParts.Add(new Part(selectedPartId, name, new List<Offer> { new("Rozetka", 100), new("Comfy", 200) }));
+            multi.SelectedParts.Add(new Part(selectedPartId, name, new List<Offer>()));
         }
         switch (category)
         {
@@ -212,6 +212,11 @@ public class PcConstructorViewModel : INotifyPropertyChanged
                 Pc.Psu = selectedPartId;
                 break;
         }
+    }
+
+    public void ScrapePrices()
+    {
+        
     }
 
     private void RecalculateTotal()

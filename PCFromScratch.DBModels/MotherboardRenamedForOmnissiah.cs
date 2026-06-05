@@ -6,6 +6,7 @@ public class MotherboardRenamedForOmnissiah
 {
     public Guid Id { get; set; }
     public required string Name { get; set; }
+    public required string Link { get; set; }
 
     public required string Socket { get; set; }
     public required MotherboardFormFactor FormFactor { get; set; }

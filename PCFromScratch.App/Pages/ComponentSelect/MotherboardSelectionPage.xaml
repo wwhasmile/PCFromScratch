@@ -15,8 +15,8 @@
                     <toolkit:Expander>
                         <toolkit:Expander.Header>
                             <Grid Padding="10" ColumnDefinitions="*,Auto">
-                                <Label Text="{Binding  Name, FallbackValue='Another One Bites The Dust'}" VerticalOptions="Center" />
-                                <Label Text="{Binding Id, FallbackValue='Шо, опять?'}"/>
+                                <Label Text="{Binding  Name}" VerticalOptions="Center" />
+                                <Label Text="{Binding Id}"/>
                                 <Button Grid.Column="1" Text="Обрати" Command="{Binding Path=BindingContext.SelectCommand, Source={ RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" />
                             </Grid>
                         </toolkit:Expander.Header>

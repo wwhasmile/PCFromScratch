@@ -191,7 +191,7 @@ public class PsuScraper
     private static void CreateAndAddPsu(List<Psu> list, string model, int power, PsuFormFactor formFactor, PsuModularity modularity, string powerConnector, byte[] image, IElement card)
     {
         var priceInfo = card.QuerySelector("td.model-hot-prices-td");
-        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo);
+        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo);
 
         var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
             .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
@@ -209,7 +209,8 @@ public class PsuScraper
             Modularity = modularity,
             PowerConnector = powerConnector,
             Image = image,
-            PriceRange = priceRange,
+            MaxPrice = maxPr,
+            MinPrice = minPr,
             Offers = offers
         });
     }

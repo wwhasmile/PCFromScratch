@@ -7,10 +7,10 @@ public class FakePsu : IPsuRepository
 {
     private List<Psu> _psus = new List<Psu>
     {
-        new() { Id = Guid.NewGuid(), Name = "Cooler Master MWE 1050 V2 Gold", Power = 1050, Level = PsuLevel.Gold, PowerConnector = "24", FormFactor = PsuFormFactor.ATX, Modularity = PsuModularity.Modular },
-        new() { Id = Guid.NewGuid(), Name = "be quiet! System Power 10 850W", Power = 850, Level = PsuLevel.Bronze, PowerConnector = "24", FormFactor = PsuFormFactor.ATX, Modularity = PsuModularity.Modular },
-        new() { Id = Guid.NewGuid(), Name = "Deepcool PX1000G", Power = 1000, Level = PsuLevel.Gold, PowerConnector = "24", FormFactor = PsuFormFactor.ATX, Modularity = PsuModularity.SemiModular },
-        new() { Id = Guid.NewGuid(), Name = "MSI MAG A850GL PCIE5", Power = 850, Level = PsuLevel.Gold, PowerConnector = "24", FormFactor = PsuFormFactor.ATX, Modularity = PsuModularity.NotModular }
+        new() { Id = Guid.NewGuid(), Link = "link", Name = "Cooler Master MWE 1050 V2 Gold", Power = 1050, Level = PsuLevel.Gold, PowerConnector = "24", FormFactor = PsuFormFactor.ATX, Modularity = PsuModularity.Modular },
+        new() { Id = Guid.NewGuid(), Link = "link", Name = "be quiet! System Power 10 850W", Power = 850, Level = PsuLevel.Bronze, PowerConnector = "24", FormFactor = PsuFormFactor.ATX, Modularity = PsuModularity.Modular },
+        new() { Id = Guid.NewGuid(), Link = "link", Name = "Deepcool PX1000G", Power = 1000, Level = PsuLevel.Gold, PowerConnector = "24", FormFactor = PsuFormFactor.ATX, Modularity = PsuModularity.SemiModular },
+        new() { Id = Guid.NewGuid(), Link = "link", Name = "MSI MAG A850GL PCIE5", Power = 850, Level = PsuLevel.Gold, PowerConnector = "24", FormFactor = PsuFormFactor.ATX, Modularity = PsuModularity.NotModular }
     };
     public async IAsyncEnumerable<Psu> GetPsus(int? capacity)
     {

@@ -159,7 +159,7 @@ public class RamScraper
         string voltageStr, byte[] image, IElement card)
     {
         var priceInfo = card.QuerySelector("td.model-hot-prices-td");
-        var (priceRange, offers)= BaseScraper.GetPriceInfo(priceInfo);
+        var (minPr, maxPr, offers)= BaseScraper.GetPriceInfo(priceInfo);
         (string ramGen, string ramFreq) = GetSubmodelDetails(card.QuerySelector("div.m-s-f2"));
 
         var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
@@ -182,7 +182,8 @@ public class RamScraper
             Generation = ramGen,
             Image = image,
             Offers = offers,
-            PriceRange = priceRange,
+            MinPrice = minPr,
+            MaxPrice = maxPr,
             Sticks = sticks,
             Voltage = voltage
         });

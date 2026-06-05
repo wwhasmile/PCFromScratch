@@ -20,5 +20,5 @@ public class MatchedGpu
     public string? ShopLink { get; set; }
 
     [Name("TDP")]
-    public string? Tdp { get; set; }
+    public int Tdp { get; set; }
 }

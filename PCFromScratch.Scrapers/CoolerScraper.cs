@@ -8,7 +8,7 @@ using PCFromScratch.Scrapers.CSVModels;
 
 namespace PCFromScratch.Scrapers;
 
-public class CoolerScraper
+public class CoolerScraper //TODO
 {
     public static async Task GetCoolers()
     {

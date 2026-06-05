@@ -14,19 +14,17 @@ public class FakeCpu : ICpuRepository
             new Cpu
             {
                 Id = Guid.NewGuid(),
-                Name = "Intel Core Ultra 7 270K Plus",
+                Name = "Intel Core Ultra 7 270K Plus", Link = "link", 
                 Socket = "1151",
-                MaxRam = 128,
                 RamGen = "DDR5",
                 Tdp = 165,
-                Packing = CpuPacking.Box
+                Packing = CpuPacking.Box,
             },
             new Cpu
             {
                 Id = Guid.NewGuid(),
-                Name = "AMD Ryzen 5 Matisse 3600",
+                Name = "AMD Ryzen 5 Matisse 3600", Link = "link",
                 Socket = "AM5",
-                MaxRam = 256,
                 RamGen = "DDR5",
                 Tdp = 165,
                 Packing = CpuPacking.OEM
@@ -34,9 +32,8 @@ public class FakeCpu : ICpuRepository
             new Cpu
             {
                 Id = Guid.NewGuid(),
-                Name = "Intel Core i9 Raptor Lake Refresh i9-14900K",
+                Name = "Intel Core i9 Raptor Lake Refresh i9-14900K", Link = "link",
                 Socket = "1151",
-                MaxRam = 256,
                 RamGen = "DDR5",
                 Tdp = 165,
                 Packing = CpuPacking.OEM
@@ -44,9 +41,8 @@ public class FakeCpu : ICpuRepository
             new Cpu
             {
                 Id = Guid.NewGuid(),
-                Name = "AMD Ryzen 5 Summit Ridge 1600 OEM 1",
+                Name = "AMD Ryzen 5 Summit Ridge 1600 OEM 1", Link = "link",
                 Socket = "AM4",
-                MaxRam = 128,
                 RamGen = "DDR5",
                 Tdp = 165,
                 Packing = CpuPacking.Box

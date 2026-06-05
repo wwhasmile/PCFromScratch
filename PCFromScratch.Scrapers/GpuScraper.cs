@@ -49,7 +49,7 @@ public class GpuScraper
                     try
                     {
                         var priceInfo = card.QuerySelector("td.model-hot-prices-td"); //
-                        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo); //
+                        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo); //
                         
                         var modelInfo = card.QuerySelector("td.model-short-info");
                         var name = modelInfo.QuerySelector("span.u")?.TextContent;
@@ -86,7 +86,8 @@ public class GpuScraper
                             Tdp = tdp,
                             Length = length,
                             Image = image,
-                            PriceRange = priceRange,
+                            MaxPrice = maxPr,
+                            MinPrice = minPr,
                             Offers = offers
                         });
                     }

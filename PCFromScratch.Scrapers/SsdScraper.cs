@@ -160,7 +160,7 @@ public class SsdScraper
     private static void CreateAndAddSsd(List<InternalDrive> list, string model, int capacity, string format, string port, byte[] image, IElement card)
     {
         var priceInfo = card.QuerySelector("td.model-hot-prices-td");
-        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo);
+        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo);
 
         var link = "https://ek.ua" + card.QuerySelector("a.model-short-title.no-u")?.GetAttribute("href");
         
@@ -174,7 +174,8 @@ public class SsdScraper
             Format = format,
             Port = port,
             Image = image,
-            PriceRange = priceRange,
+            MaxPrice = maxPr,
+            MinPrice = minPr,
             Offers = offers
         });
     }

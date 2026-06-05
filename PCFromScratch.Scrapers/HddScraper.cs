@@ -152,7 +152,7 @@ public class HddScraper
 private static void CreateAndAddHdd(List<InternalDrive> list, string model, int capacity, string format, byte[] image, IElement card)
     {
         var priceInfo = card.QuerySelector("td.model-hot-prices-td");
-        var (priceRange, offers) = BaseScraper.GetPriceInfo(priceInfo);
+        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo);
 
         var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
             .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
@@ -167,7 +167,8 @@ private static void CreateAndAddHdd(List<InternalDrive> list, string model, int 
             Format = format,
             Port = "SATA",
             Image = image,
-            PriceRange = priceRange,
+            MaxPrice = maxPr,
+            MinPrice = minPr,
             Offers = offers
         });
     }
