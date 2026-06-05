@@ -1,0 +1,6 @@
+@PCFromScratch.API_HostAddress = http://localhost:5160
+
+GET {{PCFromScratch.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
