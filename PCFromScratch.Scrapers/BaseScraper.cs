@@ -32,7 +32,7 @@ public class BaseScraper
             var offerPrice = Regex.Replace(priceStr, "[^0-9]", "");
             var offerShop = offer.FirstElementChild.QuerySelector("u").TextContent;
             var offerCity = offer.FirstElementChild.QuerySelector("nobr").TextContent;
-            offers.Add(new Offer { ShopName = offerShop, Price = decimal.Parse(offerPrice), City = offerCity });
+            offers.Add(new Offer { Id = Guid.NewGuid(), ShopName = offerShop, Price = decimal.Parse(offerPrice), City = offerCity });
         }
         return (min, max, offers);
     }
