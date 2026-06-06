@@ -17,12 +17,12 @@ public class BaseScraper
         int min = 0, max = 0;
         if (minMaxPrice.Length > 1)
         {
-            min = int.Parse(Regex.Replace(minMaxPrice[0], "^[0-9]", ""));
+            min = int.Parse(Regex.Replace(minMaxPrice[0], "[^0-9]", ""));
             max = int.Parse(Regex.Replace(minMaxPrice[1], "[^0-9]", ""));
         }
         else
         {
-            min = int.Parse(Regex.Replace(minMaxPrice[0], "^[0-9]", ""));
+            min = int.Parse(Regex.Replace(minMaxPrice[0], "[^0-9]", ""));
             max = min;
         }
         HashSet<Offer> offers = new HashSet<Offer>();
@@ -35,7 +35,38 @@ public class BaseScraper
             offers.Add(new Offer { Id = Guid.NewGuid(), ShopName = offerShop, Price = decimal.Parse(offerPrice), City = offerCity });
         }
         return (min, max, offers);
+    }   
+    public static async Task<(int, int, HashSet<Offer>)> GetPriceInfoAsync(ILocator priceInfo)
+    {
+        string priceRangeText = await priceInfo.Locator("div.model-price-range").TextContentAsync();
+        string priceRange = priceRangeText.Split(".Порівняти")[0];
+        var minMaxPrice = priceRange.Split("до");
+        int min = 0, max = 0;
+        if (minMaxPrice.Length > 1)
+        {
+            min = int.Parse(Regex.Replace(minMaxPrice[0], "[^0-9]", ""));
+            max = int.Parse(Regex.Replace(minMaxPrice[1], "[^0-9]", ""));
+        }
+        else
+        {
+            min = int.Parse(Regex.Replace(minMaxPrice[0], "[^0-9]", ""));
+            max = min;
+        }
+        HashSet<Offer> offers = new HashSet<Offer>();
+        var rows = priceInfo.Locator("table.model-hot-prices tr");
+        var count = await rows.CountAsync();
+        for (int i = 0; i < count; i++)
+        {
+            var row = rows.Nth(i);
+            var priceStr = await row.Locator("td").Last.TextContentAsync();
+            var offerPrice = Regex.Replace(priceStr, "[^0-9]", "");
+            var offerShop = await row.Locator("td").First.Locator("u").TextContentAsync();
+            var offerCity = await row.Locator("td").First.Locator("nobr").TextContentAsync();
+            offers.Add(new Offer { Id = Guid.NewGuid(), ShopName = offerShop, Price = decimal.Parse(offerPrice), City = offerCity });
+        }
+        return (min, max, offers);
     }
+
 
     public static void CreatePath(string filePath)
     {
