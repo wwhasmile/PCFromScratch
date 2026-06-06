@@ -16,7 +16,7 @@ public class Psu
 
     public PsuFormFactor FormFactor { get; set; }
     public PsuModularity Modularity { get; set; }
-    public byte[]? Image { get; set; }
+    public string? ImageUrl { get; set; }
     public int MinPrice { get; set; }
     public int MaxPrice { get; set; }
     public ICollection<Offer> Offers { get; set; } = new HashSet<Offer>();

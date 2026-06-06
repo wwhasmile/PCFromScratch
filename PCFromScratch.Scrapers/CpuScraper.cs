@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
+
 using AngleSharp;
 using AngleSharp.Dom;
 using CsvHelper;
@@ -50,15 +52,13 @@ public class CpuScraper
                         
                         var uSpan = modelInfo.QuerySelector("span.u")?.TextContent.Trim();
                         if (string.IsNullOrEmpty(uSpan)) continue;
-
-                        var imageTask = page.GetByAltText($"Процесор {uSpan}").ScreenshotAsync();
                         
                         var detailsDiv = modelInfo.QuerySelector("div.m-s-f2");
-                        (string socket, int tdp, string ram) = GetModelDetails(detailsDiv);
+                        (string socket, string ram) = GetModelDetails(detailsDiv);
 
                         var confList = modelInfo.QuerySelector("div.m-c-f1-pl--button");
                         
-                        var image = await imageTask;
+                        var image = card.QuerySelector("img").GetAttribute("src");
 
                         if (confList != null)
                         {
@@ -69,25 +69,26 @@ public class CpuScraper
                                 var item = confItems[j];
                                 if (item.ClassList.Contains("out-of-stock")) continue;
                                 
-                                if (!item.ClassList.Contains("current"))
-                                {
-                                    var cardLocator = page.Locator("table.model-short-block").Nth(i);
-                                    var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
-                                    await submodelLocator.ClickAsync();
-                                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                                }
+                                var cardLocator = page.Locator("table.model-short-block").Nth(i);
+                                var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
+                                await submodelLocator.ClickAsync();
+                                if (confItems.Count > 4) await Task.Delay(1000);
+                                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                                 
                                 string submodelName = item.TextContent.Replace("\n", " ").Trim();
-                                submodelName = System.Text.RegularExpressions.Regex.Replace(submodelName, @"\s+", " ");
+                                submodelName = Regex.Replace(submodelName, @"\s+", " ");
+                                var tdp = await GetSubmodelDetails(cardLocator);
                                 var packing = submodelName.EndsWith("OEM") ? "oem" : "box";
-                                CreateAndAddCpu(cpus, uSpan, packing, socket, tdp, ram, image, card);
+                                await CreateAndAddCpu(cpus, uSpan + ' ' + submodelName, packing, socket, tdp, ram, image, cardLocator);
                             }
                         }
                         else
                         {
                             var nameTag = modelInfo.QuerySelector("span.u")?.TextContent + " " + modelInfo.QuerySelector("span.list-conf-name.ib.nobr")?.TextContent;
                             var packing = nameTag.EndsWith("OEM") ? "oem" : "box";
-                            CreateAndAddCpu(cpus, uSpan, packing, socket, tdp, ram, image, card);
+                            var cardLocator = page.Locator("table.model-short-block").Nth(i);
+                            var tdp = await GetSubmodelDetails(cardLocator);
+                            await CreateAndAddCpu(cpus, uSpan, packing, socket, tdp, ram, image, cardLocator);
                         }
                     }
                     catch (Exception e)
@@ -119,32 +120,42 @@ public class CpuScraper
         Console.WriteLine($"Successfully saved {cpus.Count} CPUs to '{FilePath}'.");
     }
 
-    private static (string, int, string) GetModelDetails(IElement? detailsDiv)
+    private static (string, string) GetModelDetails(IElement? detailsDiv)
     {
         string socket = "", ram = "";
-        int tdp = 0;
-        if (detailsDiv == null) return (socket, tdp, ram);
+        if (detailsDiv == null) return (socket, ram);
 
         foreach (var detail in detailsDiv.ChildNodes)
         {
             var text = detail.TextContent;
             if (text.Contains("Socket"))
                 socket = detail.ChildNodes[1].TextContent;
-            else if (text.Contains("TDP"))
-                int.TryParse(detail.ChildNodes[1].TextContent.Replace("Вт", "").Trim(), out tdp);
             else if (text.Contains("ОЗП"))
                 ram = detail.ChildNodes[1].TextContent;
         }
-        return (socket, tdp, ram);
+        return (socket, ram);
+    }
+    
+    private static async Task<int> GetSubmodelDetails(ILocator detailsDiv)
+    {
+        var details = (await detailsDiv.InnerTextAsync()).Split('\n');
+        foreach (var detail in details)
+        {
+            if (detail.Contains("TDP"))
+            {
+                int.TryParse(Regex.Replace(detail, "[^0-9]", ""), out var tdp);
+                return tdp;
+            }
+        }
+        return 0;
     }
 
-    private static void CreateAndAddCpu(List<Cpu> list, string model, string? packing, string socket, int tdp, string ram, byte[] image, IElement card)
+    private static async Task CreateAndAddCpu(List<Cpu> list, string model, string? packing, string socket, int tdp, string ram, string? image, ILocator card)
     {
-        var priceInfo = card.QuerySelector("td.model-hot-prices-td");
-        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo);
+        var priceInfo = card.Locator("td.model-hot-prices-td");
+        var (minPr, maxPr, offers) = await BaseScraper.GetPriceInfoAsync(priceInfo);
 
-        var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
-            .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
+        var link = "https://ek.ua" + await card.Locator("div.model-short-links a").Filter(new() { HasText = "Ціни" }).First.GetAttributeAsync("link");
 
         var ramSplitted = ram.Split(", ");
         string ramGen = "";
@@ -167,7 +178,7 @@ public class CpuScraper
             RamGen = ramGen,
             RamFrequency = ramFreq,
             Packing = packing?.ToLower() == "box" ? CpuPacking.Box : CpuPacking.OEM,
-            Image = image,
+            ImageUrl = image,
             MaxPrice = maxPr,
             MinPrice = minPr,
             Offers = offers

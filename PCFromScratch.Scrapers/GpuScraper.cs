@@ -10,7 +10,6 @@ namespace PCFromScratch.Scrapers;
 
 public class GpuScraper
 {
-    //I cannot test some lines until db is ready, so I will mark them with empty comments
     private static readonly string FilePath = "data/gpus.csv";
     public static async Task GetGpus()
     {
@@ -37,6 +36,7 @@ public class GpuScraper
                 // Simulate Human Behavior
                 await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight / 2);");
                 await Task.Delay(random.Next(1000, 2500));
+                await page.EvaluateAsync("window.scrollTo(0, document.body.scrollHeight);");
 
                 var content = await page.ContentAsync();
                 var context = BrowsingContext.New(Configuration.Default);
@@ -48,14 +48,13 @@ public class GpuScraper
                 {
                     try
                     {
-                        var priceInfo = card.QuerySelector("td.model-hot-prices-td"); //
-                        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo); //
+                        var priceInfo = card.QuerySelector("td.model-hot-prices-td");
+                        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo);
                         
                         var modelInfo = card.QuerySelector("td.model-short-info");
                         var name = modelInfo.QuerySelector("span.u")?.TextContent;
+                        
                         if (string.IsNullOrEmpty(name)) continue;
-
-                        Task<byte[]> imageTask = page.GetByAltText($"Відеокарта {name}").ScreenshotAsync(); //
 
                         var detailsDiv = modelInfo.QuerySelector("div.m-s-f2");
                         if (detailsDiv == null) continue;
@@ -65,27 +64,28 @@ public class GpuScraper
                         (int tdp,int length) = CheckDetails(details);
                         if (tdp==0 || length==0) continue;
                         
-                        var links = modelInfo.QuerySelector("div.model-short-links"); //
+                        var links = modelInfo.QuerySelector("div.model-short-links");
                         if(links == null) continue;
                         string link = "";
-                        foreach (var linkInElement in links.QuerySelectorAll("a")) //
+                        foreach (var linkInElement in links.QuerySelectorAll("a"))
                         {
                             var text = linkInElement.TextContent;
                             if (text.Contains("Ціни"))
                             {
-                                link = "https://ek.ua" + linkInElement.GetAttribute("link"); //
+                                link = "https://ek.ua" + linkInElement.GetAttribute("link");
                             }
                         }
-                        
-                        var image = await imageTask; //
+                        if (link == "") continue;
+                        var image = card.QuerySelector("img").GetAttribute("src");
                         
                         gpus.Add(new Gpu
                         {
+                            Id = Guid.NewGuid(),
                             Name = name,
                             Link = link,
                             Tdp = tdp,
                             Length = length,
-                            Image = image,
+                            ImageUrl = image,
                             MaxPrice = maxPr,
                             MinPrice = minPr,
                             Offers = offers
@@ -93,8 +93,7 @@ public class GpuScraper
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"No data about GPU: {e.Message}, returning current result");
-                        goto EndScraping; // Exit loops and proceed to file writing
+                        Console.WriteLine($"No data about GPU: {e.Message}");
                     }
                 }
 
@@ -111,8 +110,6 @@ public class GpuScraper
         {
             await browser.CloseAsync();
         }
-
-        EndScraping:; // Label for goto
 
         using (var writer = new StreamWriter("data/gpus.csv"))
         using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))

@@ -13,7 +13,7 @@ public class Cpu
     public required string RamGen { get; set; }
     public int RamFrequency { get; set; }
     public CpuPacking Packing { get; set; }
-    public byte[]? Image { get; set; }
+    public string? ImageUrl { get; set; }
     public int MinPrice { get; set; }
     public int MaxPrice { get; set; }
     public ICollection<Offer> Offers { get; set; } = new HashSet<Offer>();

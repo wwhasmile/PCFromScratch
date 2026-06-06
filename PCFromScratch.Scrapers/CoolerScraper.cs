@@ -68,6 +68,7 @@ public class CoolerScraper
                                 var cardLocator = page.Locator("table.model-short-block").Nth(i);
                                 var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
                                 await submodelLocator.ClickAsync();
+                                if (confItems.Count > 4) await Task.Delay(1000);
                                 await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                                 await CreateAndAddCooler(coolers, tdp, intelSockets, amdSockets, height, type, cardLocator);
                             }
@@ -138,7 +139,7 @@ public class CoolerScraper
     private static async Task<(int, int, int, int)> GetSubmodelDetails(ILocator detailsDiv)
     {
         int fanCount = 1, radius = 0, thickness = 0, speed = 0;
-        var details = await detailsDiv.Locator("span").AllInnerTextsAsync();
+        var details = (await detailsDiv.InnerTextAsync()).Split('\n');
         foreach (var textContent in details)
         {
             var text = Regex.Replace(textContent, "\\s", " ");
@@ -167,7 +168,8 @@ public class CoolerScraper
         var (minPr, maxPr, offers) = await BaseScraper.GetPriceInfoAsync(priceInfo);
         
         var (fanCount, radius, thickness, speed) = await GetSubmodelDetails(card.Locator("div.m-s-f2"));
-        var link = "https://ek.ua" + await card.Locator("div.model-short-links a").Filter(new() { HasText = "Ціни" }).First.GetAttributeAsync("link");
+        var link = "https://ek.ua" + await card.Locator("div.model-short-links a").
+            Filter(new() { HasText = "Ціни" }).First.GetAttributeAsync("link");
         
         list.Add(new Cooler
         {

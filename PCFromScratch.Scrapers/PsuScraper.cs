@@ -69,22 +69,17 @@ public class PsuScraper
                                 var item = confItems[j];
                                 if (item.ClassList.Contains("out-of-stock")) continue;
                                 
-                                if (!item.ClassList.Contains("current"))
-                                {
-                                    var cardLocator = page.Locator("table.model-short-block").Nth(i);
-                                    var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
-                                    await submodelLocator.ClickAsync();
-                                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                                }
-
-                                string powerConnector = GetPowerConnectors(card.QuerySelector("div.m-s-f2"));
-                                CreateAndAddPsu(psus, uSpan, power, formFactor, modularity, powerConnector, image, card);
+                                var cardLocator = page.Locator("table.model-short-block").Nth(i);
+                                var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
+                                await submodelLocator.ClickAsync();
+                                if (confItems.Count > 4) await Task.Delay(1000);
+                                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                                await CreateAndAddPsu(psus, uSpan, power, formFactor, modularity, cardLocator);
                             }
                         }
                         else
                         {
-                            string powerConnector = GetPowerConnectors(card.QuerySelector("div.m-s-f2"));
-                            CreateAndAddPsu(psus, uSpan, power, formFactor, modularity, powerConnector, image, card);
+                            await CreateAndAddPsu(psus, uSpan, power, formFactor, modularity, page.Locator("table.model-short-block").Nth(i));
                         }
                     }
                     catch (Exception e)
@@ -147,15 +142,15 @@ public class PsuScraper
         return (power, formFactor, modularity);
     }
 
-    private static PsuLevel GetPsuLevel(IElement card)
+    private static async Task<PsuLevel> GetPsuLevel(ILocator card)
     {
-        var badgesDiv = card.QuerySelector("div.m-s-f1");
-        if (badgesDiv != null)
+        var badgesDiv = card.Locator("div.m-s-f1");
+        if (await badgesDiv.CountAsync() > 0)
         {
-            var badge = badgesDiv.ChildNodes.FirstOrDefault(n => n.TextContent.Contains("80+"));
-            if (badge != null)
+            var badge = badgesDiv.GetByText("80+");
+            if (await badge.CountAsync() > 0)
             {
-                var levelString = badge.TextContent;
+                var levelString = await badge.InnerTextAsync();
                 return levelString switch
                 {
                     "80+ Bronze" => PsuLevel.Bronze,
@@ -171,32 +166,26 @@ public class PsuScraper
         return PsuLevel.None;
     }
 
-    private static string GetPowerConnectors(IElement? detailsDiv)
+    private static async Task<string> GetPowerConnectors(ILocator detailsDiv)
     {
-        if (detailsDiv == null) return string.Empty;
-        foreach (var detail in detailsDiv.ChildNodes)
+        foreach (var detail in (await detailsDiv.InnerTextAsync()).Split('\n'))
         {
-            var text = detail.TextContent;
-            if (text.Contains("Живлення"))
+            if (detail.Contains("Живлення"))
             {
-                if (detail.ChildNodes.Length > 1)
-                {
-                    return detail.ChildNodes[1].TextContent.Trim();
-                }
+                return detail.Split(":")[1].Trim();
             }
         }
         return string.Empty;
     }
     
-    private static void CreateAndAddPsu(List<Psu> list, string model, int power, PsuFormFactor formFactor, PsuModularity modularity, string powerConnector, byte[] image, IElement card)
+    private static async Task CreateAndAddPsu(List<Psu> list, string model, int power, PsuFormFactor formFactor, PsuModularity modularity, ILocator card)
     {
-        var priceInfo = card.QuerySelector("td.model-hot-prices-td");
-        var (minPr, maxPr, offers) = BaseScraper.GetPriceInfo(priceInfo);
-
-        var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
-            .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
-        
-        var level = GetPsuLevel(card);
+        var priceInfo = card.Locator("td.model-hot-prices-td");
+        var (minPr, maxPr, offers) = await BaseScraper.GetPriceInfoAsync(priceInfo);
+        var image = await card.Locator("img").First.GetAttributeAsync("src");
+        var link = "https://ek.ua" + await card.Locator("div.model-short-links a").Filter(new() { HasText = "Ціни" }).First.GetAttributeAsync("link");
+        string powerConnector = await GetPowerConnectors(card.Locator("div.m-s-f2"));
+        var level = await GetPsuLevel(card);
 
         list.Add(new Psu
         {
@@ -208,7 +197,7 @@ public class PsuScraper
             FormFactor = formFactor,
             Modularity = modularity,
             PowerConnector = powerConnector,
-            Image = image,
+            ImageUrl = image,
             MaxPrice = maxPr,
             MinPrice = minPr,
             Offers = offers

@@ -49,15 +49,11 @@ public class RamScraper
                         
                         var uSpan = modelInfo.QuerySelector("span.u")?.TextContent.Trim();
                         if (string.IsNullOrEmpty(uSpan)) continue;
-
-                        var imageTask = page.GetByAltText($"Оперативна пам'ять {uSpan}").ScreenshotAsync();
                         
                         var detailsDiv = modelInfo.QuerySelector("div.m-s-f2");
                         (string capacityStr, string voltageStr) = GetModelDetails(detailsDiv);
 
                         var confList = modelInfo.QuerySelector("div.m-c-f1-pl--button");
-
-                        var image = await imageTask;
                         
                         if (confList != null)
                         {
@@ -71,17 +67,15 @@ public class RamScraper
                                 string submodelName = item.TextContent.Replace("\n", " ").Trim();
                                 submodelName = System.Text.RegularExpressions.Regex.Replace(submodelName, @"\s+", " ");
 
-                                if (!item.ClassList.Contains("current"))
-                                {
-                                    var cardLocator = page.Locator("table.model-short-block").Nth(i);
-                                    var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
-                                    await submodelLocator.ClickAsync();
-                                    await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                                }
-                                CreateAndAddRam(rams, uSpan, submodelName, capacityStr, voltageStr, image, card);
+                                var cardLocator = page.Locator("table.model-short-block").Nth(i);
+                                var submodelLocator = cardLocator.Locator("div.m-c-f1-pl--button span.ib").Nth(j);
+                                await submodelLocator.ClickAsync();
+                                if (confItems.Count > 4) await Task.Delay(1000);
+                                await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                                await CreateAndAddRam(rams, uSpan, submodelName, capacityStr, voltageStr, cardLocator);
                             }
                         }
-                        else CreateAndAddRam(rams, uSpan, null, capacityStr, voltageStr, image, card);
+                        else await CreateAndAddRam(rams, uSpan, null, capacityStr, voltageStr, page.Locator("table.model-short-block").Nth(i));
                     }
                     catch (Exception e)
                     {
@@ -131,39 +125,34 @@ public class RamScraper
         return (capacityStr, voltageStr);
     }
 
-    private static (string, string) GetSubmodelDetails(IElement? detailsDiv)
+    private static async Task<(string, string)> GetSubmodelDetails(ILocator detailsDiv)
     {
         string ramGen = "", ramFreq = "";
-        if (detailsDiv == null) return (ramGen, ramFreq);
-        foreach (var detail in detailsDiv.ChildNodes)
+        foreach (var detail in (await detailsDiv.InnerTextAsync()).Split('\n'))
         {
-            var text = detail.TextContent;
-            if (text.Contains("Швидкість"))
+            if (detail.Contains("Швидкість"))
             {
-                if (detail.ChildNodes.Length > 1)
+                var genFreqStr = detail.Split(':')[1].Trim();
+                var dashSplit = genFreqStr.Split('-');
+                if (dashSplit.Length >= 2)
                 {
-                    var genFreqStr = detail.ChildNodes[1].TextContent.Trim();
-                    var dashSplit = genFreqStr.Split('-');
-                    if (dashSplit.Length >= 2)
-                    {
-                        ramGen = dashSplit[0].Trim();
-                        ramFreq = dashSplit[1].Trim();
-                    }
+                    ramGen = dashSplit[0].Trim();
+                    ramFreq = dashSplit[1].Trim();
                 }
             }
         }
         return (ramGen, ramFreq);
     }
 
-    private static void CreateAndAddRam(List<Ram> list, string model, string? submodel, string capacityStr,
-        string voltageStr, byte[] image, IElement card)
+    private static async Task CreateAndAddRam(List<Ram> list, string model, string? submodel, string capacityStr,
+        string voltageStr, ILocator card)
     {
-        var priceInfo = card.QuerySelector("td.model-hot-prices-td");
-        var (minPr, maxPr, offers)= BaseScraper.GetPriceInfo(priceInfo);
-        (string ramGen, string ramFreq) = GetSubmodelDetails(card.QuerySelector("div.m-s-f2"));
-
-        var link = "https://ek.ua" + card.QuerySelector("div.model-short-links").QuerySelectorAll("a")
-            .Where(n => n.TextContent.Contains("Ціни")).FirstOrDefault().GetAttribute("link");
+        var priceInfo = card.Locator("td.model-hot-prices-td");
+        var (minPr, maxPr, offers)= await BaseScraper.GetPriceInfoAsync(priceInfo);
+        (string ramGen, string ramFreq) = await GetSubmodelDetails(card.Locator("div.m-s-f2"));
+        var image = await card.Locator("img").First.GetAttributeAsync("src");
+        var link = "https://ek.ua" + await card.Locator("div.model-short-links a").
+            Filter(new() { HasText = "Ціни" }).First.GetAttributeAsync("link");
                                 
         var capacityParts = capacityStr.Split('х');
         int.TryParse(capacityParts.Length > 1 ? capacityParts[0].Trim() : "1", out var sticks);
@@ -180,7 +169,7 @@ public class RamScraper
             Amount = amount,
             Frequency = frequency,
             Generation = ramGen,
-            Image = image,
+            ImageUrl = image,
             Offers = offers,
             MinPrice = minPr,
             MaxPrice = maxPr,
