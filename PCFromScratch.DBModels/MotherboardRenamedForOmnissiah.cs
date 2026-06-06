@@ -15,7 +15,9 @@ public class MotherboardRenamedForOmnissiah
     public required string RamGeneration { get; set; }
     public int RamSlots { get; set; }
     public int RamFrequency { get; set; }
-
-    public ICollection<MotherboardHeader> Headers = new HashSet<MotherboardHeader>();
-    public ICollection<MotherboardExtension> Extensions = new HashSet<MotherboardExtension>();
+    public bool HasM2Slot { get; set; }
+    public string? ImageUrl { get; set; }
+    public int MinPrice { get; set; }
+    public int MaxPrice { get; set; }
+    public ICollection<Offer> Offers { get; set; } = new HashSet<Offer>();
 }
