@@ -20,4 +20,8 @@ public class Cooler
     public int Height { get; set; }
 
     public CoolerType Type { get; set; }
+    public string? ImageUrl { get; set; }
+    public int MinPrice { get; set; }
+    public int MaxPrice { get; set; }
+    public HashSet<Offer> Offers { get; set; } = new ();
 }
