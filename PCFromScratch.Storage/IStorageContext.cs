@@ -22,7 +22,9 @@ public interface IStorageContext
     Task<Cooler?> GetCooler(Guid id);
     Task<Psu?> GetPsu(Guid id);
     Task<CpuBenchmark?> GetCpuBenchmark(Guid id);
+    Task<CpuBenchmark?> GetCpuBenchmark(string cpuName);
     Task<GpuBenchmark?> GetGpuBenchmark(Guid id);
+    Task<GpuBenchmark?> GetGpuBenchmark(string gpuName);
 
     Task AddMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah);
     Task AddCpu(Cpu cpu);

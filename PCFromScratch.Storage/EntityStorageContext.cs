@@ -102,7 +102,13 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 
     public async Task<CpuBenchmark?> GetCpuBenchmark(Guid id) => await _dbContext.FindAsync<CpuBenchmark>(id);
 
+    public Task<CpuBenchmark?> GetCpuBenchmark(string cpuName)
+        => _dbContext.CpuBenchmarks.FirstOrDefaultAsync(x => x.Name == cpuName);
+
     public async Task<GpuBenchmark?> GetGpuBenchmark(Guid id) => await _dbContext.FindAsync<GpuBenchmark>(id);
+
+    public Task<GpuBenchmark?> GetGpuBenchmark(string gpuName)
+        => _dbContext.GpuBenchmarks.FirstOrDefaultAsync(x => x.Name == gpuName);
 
     public async Task AddMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah)
     {
