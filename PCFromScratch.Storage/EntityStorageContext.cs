@@ -66,6 +66,26 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         return query.AsAsyncEnumerable();
     }
 
+    public IAsyncEnumerable<CpuBenchmark> GetCpuBenchmarks(int? minScore)
+    {
+        var query = _dbContext.CpuBenchmarks.AsNoTracking();
+
+        if (minScore.HasValue)
+            query = query.Where(x => x.Score >= minScore);
+        
+        return query.AsAsyncEnumerable();
+    }
+
+    public IAsyncEnumerable<GpuBenchmark> GetGpuBenchmarks(int? minScore)
+    {
+        var query = _dbContext.GpuBenchmarks.AsNoTracking();
+
+        if (minScore.HasValue)
+            query = query.Where(x => x.Score >= minScore);
+        
+        return query.AsAsyncEnumerable();
+    }
+
     public async Task<MotherboardRenamedForOmnissiah?> GetMotherboard(Guid id) => await _dbContext.FindAsync<MotherboardRenamedForOmnissiah>(id);
 
     public async Task<Cpu?> GetCpu(Guid id) => await _dbContext.FindAsync<Cpu>(id);
@@ -79,6 +99,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
     public async Task<Cooler?> GetCooler(Guid id) => await _dbContext.FindAsync<Cooler>(id);
 
     public async Task<Psu?> GetPsu(Guid id) => await _dbContext.FindAsync<Psu>(id);
+
+    public async Task<CpuBenchmark?> GetCpuBenchmark(Guid id) => await _dbContext.FindAsync<CpuBenchmark>(id);
+
+    public async Task<GpuBenchmark?> GetGpuBenchmark(Guid id) => await _dbContext.FindAsync<GpuBenchmark>(id);
 
     public async Task AddMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah)
     {
@@ -119,6 +143,18 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
     public async Task AddPsu(Psu psu)
     {
         _dbContext.Add(psu);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddCpuBenchmark(CpuBenchmark cpuBenchmark)
+    {
+        _dbContext.Add(cpuBenchmark);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddGpuBenchmark(GpuBenchmark gpuBenchmark)
+    {
+        _dbContext.Add(gpuBenchmark);
         await _dbContext.SaveChangesAsync();
     }
 
@@ -164,6 +200,18 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task UpdateCpuBenchmark(CpuBenchmark cpuBenchmark)
+    {
+        _dbContext.CpuBenchmarks.Update(cpuBenchmark);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateGpuBenchmark(GpuBenchmark gpuBenchmark)
+    {
+        _dbContext.GpuBenchmarks.Update(gpuBenchmark);
+        await _dbContext.SaveChangesAsync();
+    }
+
     public async Task RemoveMotherboard(Guid id)
         => await _dbContext.Motherboards.Where(x => x.Id == id).ExecuteDeleteAsync();
 
@@ -184,4 +232,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 
     public async Task RemovePsu(Guid id)
         => await _dbContext.Psus.Where(x => x.Id == id).ExecuteDeleteAsync();
+    
+    public async Task RemoveCpuBenchmark(Guid id)
+        => await _dbContext.CpuBenchmarks.Where(x => x.Id == id).ExecuteDeleteAsync();
+
+    public async Task RemoveGpuBenchmark(Guid id)
+        => await _dbContext.GpuBenchmarks.Where(x => x.Id == id).ExecuteDeleteAsync();
 }

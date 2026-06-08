@@ -11,6 +11,8 @@ public interface IStorageContext
     IAsyncEnumerable<InternalDrive> GetInternalDrives(string? type = null, int? capacity = null);
     IAsyncEnumerable<Cooler> GetCoolers(string? socket = null);
     IAsyncEnumerable<Psu> GetPsus(int? minPower = null);
+    IAsyncEnumerable<CpuBenchmark> GetCpuBenchmarks(int? minScore = null);
+    IAsyncEnumerable<GpuBenchmark> GetGpuBenchmarks(int? minScore = null);
 
     Task<MotherboardRenamedForOmnissiah?> GetMotherboard(Guid id);
     Task<Cpu?> GetCpu(Guid id);
@@ -19,6 +21,8 @@ public interface IStorageContext
     Task<InternalDrive?> GetInternalDrive(Guid id);
     Task<Cooler?> GetCooler(Guid id);
     Task<Psu?> GetPsu(Guid id);
+    Task<CpuBenchmark?> GetCpuBenchmark(Guid id);
+    Task<GpuBenchmark?> GetGpuBenchmark(Guid id);
 
     Task AddMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah);
     Task AddCpu(Cpu cpu);
@@ -27,6 +31,8 @@ public interface IStorageContext
     Task AddInternalDrive(InternalDrive internalDrive);
     Task AddCooler(Cooler cooler);
     Task AddPsu(Psu psu);
+    Task AddCpuBenchmark(CpuBenchmark cpuBenchmark);
+    Task AddGpuBenchmark(GpuBenchmark gpuBenchmark);
 
     Task UpdateMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah);
     Task UpdateCpu(Cpu cpu);
@@ -35,6 +41,8 @@ public interface IStorageContext
     Task UpdateInternalDrive(InternalDrive internalDrive);
     Task UpdateCooler(Cooler cooler);
     Task UpdatePsu(Psu psu);
+    Task UpdateCpuBenchmark(CpuBenchmark cpuBenchmark);
+    Task UpdateGpuBenchmark(GpuBenchmark gpuBenchmark);
 
     Task RemoveMotherboard(Guid id);
     Task RemoveCpu(Guid id);
@@ -43,4 +51,6 @@ public interface IStorageContext
     Task RemoveInternalDrive(Guid id);
     Task RemoveCooler(Guid id);
     Task RemovePsu(Guid id);
+    Task RemoveCpuBenchmark(Guid id);
+    Task RemoveGpuBenchmark(Guid id);
 }
