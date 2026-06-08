@@ -13,4 +13,7 @@ public class StorageDbContext(DbContextOptions<StorageDbContext> options) : DbCo
     public DbSet<Psu> Psus { get; set; }
     public DbSet<InternalDrive> InternalDrives { get; set; }
     public DbSet<Cooler> Coolers { get; set; }
+
+    public DbSet<CpuBenchmark> CpuBenchmarks { get; set; }
+    public DbSet<GpuBenchmark> GpuBenchmarks { get; set; }
 }
