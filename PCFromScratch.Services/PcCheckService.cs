@@ -46,6 +46,7 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         warnings.AddRange(ValidateMotherboard(cpu, motherboard));
         warnings.AddRange(ValidateRam(cpu, motherboard, ram));
         warnings.AddRange(ValidateCooler(cpu, motherboard, cooler));
+        warnings.AddRange(ValidatePsu(psu, cpu, gpu));
 
         return warnings;
     }
@@ -101,9 +102,27 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         List<Warning> warnings = [];
         if (cpu?.Tdp * 1.4 > cooler.Tdp)
             warnings.Add(new(WarningSeverity.Info,
-                    "Вибраний кулер може не забезпечити оптимальний тепловий запас (рекомендовано: 1.4x TDP процесора)"
+                    "Обраний кулер може не забезпечити оптимальний тепловий запас (рекомендовано: 1.4x TDP процесора)"
                     ));
 
         return warnings;
+    }
+
+    private static List<Warning> ValidatePsu(Psu? psu, Cpu? cpu, Gpu? gpu)
+    {
+        if (psu is null) return [];
+
+        var totalPower = 150;
+        if (cpu is not null)
+        totalPower += cpu.Tdp;
+        if (gpu is not null)
+        totalPower += gpu.Tdp * 2;
+        totalPower += (int)(totalPower * 0.4);
+
+        if (totalPower >= psu.Power) return [];
+
+        return [ new(WarningSeverity.Incompatibility,
+                    "Обраний блок живлення не є достатньо потужним для інших обраних компонентів."
+                    ) ];
     }
 }
