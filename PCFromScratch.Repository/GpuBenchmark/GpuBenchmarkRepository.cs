@@ -12,6 +12,8 @@ public class GpuBenchmarkRepository(IStorageContext storageContext) : IGpuBenchm
 
     public Task<GpuBenchmark?> GetGpuBenchmark(Guid id) => _storageContext.GetGpuBenchmark(id);
 
+    public Task<GpuBenchmark?> GetGpuBenchmark(string gpuName) => _storageContext.GetGpuBenchmark(gpuName);
+
     public Task AddGpuBenchmark(GpuBenchmark gpuBenchmark) => _storageContext.AddGpuBenchmark(gpuBenchmark);
 
     public Task UpdateGpuBenchmark(GpuBenchmark gpuBenchmark) => _storageContext.UpdateGpuBenchmark(gpuBenchmark);
