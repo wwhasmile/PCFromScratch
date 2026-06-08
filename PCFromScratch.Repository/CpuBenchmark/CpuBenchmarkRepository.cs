@@ -12,6 +12,8 @@ public class CpuBenchmarkRepository(IStorageContext storageContext) : ICpuBenchm
 
     public Task<CpuBenchmark?> GetCpuBenchmark(Guid id) => _storageContext.GetCpuBenchmark(id);
 
+    public Task<CpuBenchmark?> GetCpuBenchmark(string cpuName) => _storageContext.GetCpuBenchmark(cpuName);
+
     public Task AddCpuBenchmark(CpuBenchmark cpuBenchmark) => _storageContext.AddCpuBenchmark(cpuBenchmark);
 
     public Task UpdateCpuBenchmark(CpuBenchmark cpuBenchmark) => _storageContext.UpdateCpuBenchmark(cpuBenchmark);
