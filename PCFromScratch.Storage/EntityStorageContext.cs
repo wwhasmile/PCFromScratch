@@ -129,7 +129,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         if (existing is null)
             _dbContext.Add(cpu);
         else
+        {
+            cpu.Id = existing.Id;
             _dbContext.Entry(existing).CurrentValues.SetValues(cpu);
+        }
 
         await _dbContext.SaveChangesAsync();
     }
@@ -141,7 +144,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         if (existing is null)
             _dbContext.Add(gpu);
         else
+        {
+            gpu.Id = existing.Id;
             _dbContext.Entry(existing).CurrentValues.SetValues(gpu);
+        }
         
         await _dbContext.SaveChangesAsync();
     }
@@ -153,8 +159,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         if (existing is null)
             _dbContext.Add(ram);
         else
-            _dbContext.Entry(existing).CurrentValues.SetValues(ram);
-
+        {
+            ram.Id = existing.Id;
+            _dbContext.Entry(existing).CurrentValues.SetValues(rpu);
+        }
         await _dbContext.SaveChangesAsync();
     }
 
@@ -165,7 +173,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         if (existing is null)
             _dbContext.Add(internalDrive);
         else
+        {
+            internalDrive.Id = existing.Id;
             _dbContext.Entry(existing).CurrentValues.SetValues(internalDrive);
+        }
 
         await _dbContext.SaveChangesAsync();
     }
@@ -177,7 +188,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         if (existing is null)
             _dbContext.Add(cooler);
         else
+        {
+            cooler.Id = existing.Id;
             _dbContext.Entry(existing).CurrentValues.SetValues(cooler);
+        }
 
         await _dbContext.SaveChangesAsync();
     }
@@ -189,7 +203,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         if (existing is null)
             _dbContext.Add(psu);
         else
+        {
+            psu.Id = existing.Id;
             _dbContext.Entry(existing).CurrentValues.SetValues(psu);
+        }
         
         await _dbContext.SaveChangesAsync();
     }
@@ -201,7 +218,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         if (existing is null)
             _dbContext.Add(cpuBenchmark);
         else
+        {
+            cpuBenchmark.Id = existing.Id;
             _dbContext.Entry(existing).CurrentValues.SetValues(cpuBenchmark);
+        }
 
         await _dbContext.SaveChangesAsync();
     }
@@ -213,7 +233,10 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         if (existing is null)
             _dbContext.Add(gpuBenchmark);
         else
+        {
+            gpuBenchmark.Id = existing.Id;
             _dbContext.Entry(existing).CurrentValues.SetValues(gpuBenchmark);
+        }
         
         await _dbContext.SaveChangesAsync();
     }
