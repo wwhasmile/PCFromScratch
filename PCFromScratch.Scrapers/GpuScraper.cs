@@ -10,7 +10,7 @@ namespace PCFromScratch.Scrapers;
 
 public class GpuScraper
 {
-    public static async Task GetGpus()
+    public static async Task<List<Gpu>> GetGpus()
     {
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -108,13 +108,7 @@ public class GpuScraper
             await browser.CloseAsync();
         }
 
-        using (var writer = new StreamWriter("data/gpus.csv"))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(gpus);
-        }
-        
-        Console.WriteLine($"Successfully saved {gpus.Count} GPUs to 'data/gpus.csv'.");
+        return gpus;
     }
 
     private static (int, int) CheckDetails(INodeList details)
