@@ -17,9 +17,12 @@ builder.Services.AddDbContext<StorageDbContext>(options =>
         x => x.MigrationsAssembly("PCFromScratch.Migrations")));
 builder.Services.AddScoped<IStorageContext, EntityStorageContext>();
 builder.Services.AddScoped<ICpuRepository, StorageCpuRepository>();
+builder.Services.AddScoped<IGpuRepository, StorageGpuRepository>();
 builder.Services.AddScoped<ICpuService, CpuService>();
+builder.Services.AddScoped<IGpuService, GpuService>();
 
 builder.Services.AddHostedService<CpuScraperBackgroundService>();
+builder.Services.AddHostedService<GpuScraperBackgroundService>();
 
 var app = builder.Build();
 
@@ -39,5 +42,14 @@ app.MapGet("/cpu/{id}", async (Guid id, ICpuService cpuService) =>
 });
 app.MapGet("/cpu/{id}/offers", async (Guid id, ICpuService cpuService) =>
     await cpuService.GetCpuOffers(id).ToListAsync());
+
+app.MapGet("/gpu", async (IGpuService gpuService) => await gpuService.GetGpus().ToListAsync());
+app.MapGet("/gpu/{id}", async (Guid id, IGpuService gpuService) =>
+{
+    var gpu = await gpuService.GetGpu(id);
+    return gpu is null ? Results.NotFound() : Results.Ok(gpu);
+});
+app.MapGet("/gpu/{id}/offers", async (Guid id, IGpuService gpuService) =>
+    await gpuService.GetGpuOffers(id).ToListAsync());
 
 app.Run();
