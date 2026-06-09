@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 
+using PCFromScratch.API;
+using PCFromScratch.Repository;
+using PCFromScratch.Services;
 using PCFromScratch.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +15,11 @@ builder.Services.AddDbContext<StorageDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         x => x.MigrationsAssembly("PCFromScratch.Migrations")));
+builder.Services.AddScoped<IStorageContext, EntityStorageContext>();
+builder.Services.AddScoped<ICpuRepository, StorageCpuRepository>();
+builder.Services.AddScoped<ICpuService, CpuService>();
+
+builder.Services.AddHostedService<CpuScraperBackgroundService>();
 
 var app = builder.Build();
 
@@ -23,28 +31,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/cpu", async (ICpuService cpuService) => await cpuService.GetCpus().ToListAsync());
+app.MapGet("/cpu/{id}", async (Guid id, ICpuService cpuService) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var cpu = await cpuService.GetCpu(id);
+    return cpu is null ? Results.NotFound() : Results.Ok(cpu);
+});
+app.MapGet("/cpu/{id}/offers", async (Guid id, ICpuService cpuService) =>
+    await cpuService.GetCpuOffers(id).ToListAsync());
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

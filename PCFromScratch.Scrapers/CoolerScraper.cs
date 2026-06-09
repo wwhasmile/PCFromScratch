@@ -16,8 +16,6 @@ public class CoolerScraper
 
     public static async Task GetCoolers()
     {
-        BaseScraper.CreatePath(FilePath);
-
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {

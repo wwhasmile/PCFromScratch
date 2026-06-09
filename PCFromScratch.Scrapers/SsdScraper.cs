@@ -10,12 +10,8 @@ namespace PCFromScratch.Scrapers;
 
 public class SsdScraper
 {
-    private static readonly string FilePath = "data/ssds.csv";
-
-    public static async Task GetSsds()
+    public static async Task<List<InternalDrive>> GetSsds()
     {
-        BaseScraper.CreatePath(FilePath);
-
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -95,13 +91,7 @@ public class SsdScraper
             await browser.CloseAsync();
         }
 
-        using (var writer = new StreamWriter(FilePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(ssds);
-        }
-        
-        Console.WriteLine($"Successfully saved {ssds.Count} SSDs to '{FilePath}'.");
+        return ssds;
     }
 
     private static (string, string) GetModelDetails(IElement? detailsDiv)

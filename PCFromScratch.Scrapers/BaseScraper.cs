@@ -94,18 +94,4 @@ public class BaseScraper
         }
         return (min, max, offers);
     }
-
-
-    public static void CreatePath(string filePath)
-    {
-        if (!File.Exists(filePath))
-        {
-            string? directoryName = Path.GetDirectoryName(filePath);
-            if (directoryName is not null && !Directory.Exists(directoryName))
-            {
-                Directory.CreateDirectory(directoryName);
-            }
-            File.Create(filePath).Close();
-        }
-    }
 }

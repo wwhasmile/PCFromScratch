@@ -10,12 +10,8 @@ namespace PCFromScratch.Scrapers;
 
 public class HddScraper
 {
-    private static readonly string FilePath = "data/hdds.csv";
-
-    public static async Task GetHdds()
+    public static async Task<List<InternalDrive>> GetHdds()
     {
-        BaseScraper.CreatePath(FilePath);
-
         using var playwright = await Playwright.CreateAsync();
         await using var browser =
             await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
@@ -93,13 +89,7 @@ public class HddScraper
             await browser.CloseAsync();
         }
 
-        using (var writer = new StreamWriter(FilePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(hdds);
-        }
-
-        Console.WriteLine($"Successfully saved {hdds.Count} HDDs to '{FilePath}'.");
+        return hdds;
     }
 
     private static string GetModelDetails(IElement? detailsDiv)

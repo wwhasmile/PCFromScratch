@@ -12,12 +12,8 @@ namespace PCFromScratch.Scrapers;
 
 public class MotherboardScraper
 {
-    private static readonly string FilePath = "data/motherboards.csv";
-
-    public static async Task GetMotherboards()
+    public static async Task<List<MotherboardRenamedForOmnissiah>> GetMotherboards()
     {
-        BaseScraper.CreatePath(FilePath);
-        
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -116,13 +112,7 @@ public class MotherboardScraper
             await browser.CloseAsync();
         }
 
-        using (var writer = new StreamWriter(FilePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(motherboards);
-        }
-        
-        Console.WriteLine($"Successfully saved {motherboards.Count} motherboards to '{FilePath}'.");
+        return motherboards;
     }
 
     private static (string, MotherboardFormFactor, string, string, int, int, bool) CheckDetails(INodeList details)

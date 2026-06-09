@@ -9,9 +9,5 @@ public interface ICpuService
 
     Task<CpuDtoModel?> GetCpu(Guid id);
 
-    IAsyncEnumerable<OfferDtoModel> GetCpuOffes(Guid id);
-
-    Task AddCpu(Cpu cpu);
-    Task UpdateCpu(Cpu cpu);
-    Task RemoveCpu(Guid id);
+    IAsyncEnumerable<OfferDtoModel> GetCpuOffers(Guid id);
 }

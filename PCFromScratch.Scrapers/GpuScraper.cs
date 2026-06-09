@@ -10,11 +10,8 @@ namespace PCFromScratch.Scrapers;
 
 public class GpuScraper
 {
-    private static readonly string FilePath = "data/gpus.csv";
     public static async Task GetGpus()
     {
-        BaseScraper.CreatePath(FilePath);
-        
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {

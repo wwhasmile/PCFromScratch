@@ -27,7 +27,7 @@ public class CpuService(ICpuRepository cpuRepository) : ICpuService
             cpu.Packing.GetDisplayName(), cpu.ImageUrl, cpu.MinPrice, cpu.MaxPrice);
     }
 
-    public async IAsyncEnumerable<OfferDtoModel> GetCpuOffes(Guid id)
+    public async IAsyncEnumerable<OfferDtoModel> GetCpuOffers(Guid id)
     {
         var cpu = await _cpuRepository.GetCpu(id);
         if (cpu is not null)
@@ -36,10 +36,4 @@ public class CpuService(ICpuRepository cpuRepository) : ICpuService
                 yield return new(offer.ShopName, offer.Price, offer.City);
         }
     }
-
-    public Task AddCpu(Cpu cpu) => _cpuRepository.AddCpu(cpu);
-
-    public Task UpdateCpu(Cpu cpu) => _cpuRepository.UpdateCpu(cpu);
-
-    public Task RemoveCpu(Guid id) => _cpuRepository.RemoveCpu(id);
 }

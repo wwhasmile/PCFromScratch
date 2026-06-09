@@ -13,11 +13,8 @@ namespace PCFromScratch.Scrapers;
 //For now install Playwright browsers by writing in code Microsoft.Playwright.Program.Main(new[] { "install" }); during first launch, then I'm planning to add browsers in release app
 public class CpuScraper
 {
-    private static readonly string FilePath = "data/cpus.csv";
-    public static async Task GetCpus()
+    public static async Task<List<Cpu>> GetCpus()
     {
-        BaseScraper.CreatePath(FilePath);
-
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -111,13 +108,7 @@ public class CpuScraper
             await browser.CloseAsync();
         }
 
-        using (var writer = new StreamWriter(FilePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(cpus);
-        }
-        
-        Console.WriteLine($"Successfully saved {cpus.Count} CPUs to '{FilePath}'.");
+        return cpus;
     }
 
     private static (string, string) GetModelDetails(IElement? detailsDiv)

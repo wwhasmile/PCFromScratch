@@ -10,12 +10,8 @@ namespace PCFromScratch.Scrapers;
 
 public class PsuScraper
 {
-    private static readonly string FilePath = "data/psus.csv";
-
-    public static async Task GetPsus()
+    public static async Task<List<Psu>> GetPsus()
     {
-        BaseScraper.CreatePath(FilePath);
-
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -102,13 +98,7 @@ public class PsuScraper
             await browser.CloseAsync();
         }
 
-        using (var writer = new StreamWriter(FilePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(psus);
-        }
-        
-        Console.WriteLine($"Successfully saved {psus.Count} PSUs to '{FilePath}'.");
+        return psus;
     }
 
     private static (int, PsuFormFactor, PsuModularity) GetModelDetails(IElement? detailsDiv)

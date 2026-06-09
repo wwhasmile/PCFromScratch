@@ -88,17 +88,23 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 
     public async Task<MotherboardRenamedForOmnissiah?> GetMotherboard(Guid id) => await _dbContext.FindAsync<MotherboardRenamedForOmnissiah>(id);
 
-    public async Task<Cpu?> GetCpu(Guid id) => await _dbContext.FindAsync<Cpu>(id);
+    public async Task<Cpu?> GetCpu(Guid id)
+        => await _dbContext.Cpus.Include(c => c.Offers).FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<Gpu?> GetGpu(Guid id) => await _dbContext.FindAsync<Gpu>(id);
+    public async Task<Gpu?> GetGpu(Guid id)
+        => await _dbContext.Gpus.Include(c => c.Offers).FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<Ram?> GetRam(Guid id) => await _dbContext.FindAsync<Ram>(id);
+    public async Task<Ram?> GetRam(Guid id)
+                => await _dbContext.Rams.Include(c => c.Offers).FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<InternalDrive?> GetInternalDrive(Guid id) => await _dbContext.FindAsync<InternalDrive>(id);
+    public async Task<InternalDrive?> GetInternalDrive(Guid id)
+            => await _dbContext.InternalDrives.Include(c => c.Offers).FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<Cooler?> GetCooler(Guid id) => await _dbContext.FindAsync<Cooler>(id);
+    public async Task<Cooler?> GetCooler(Guid id)
+                => await _dbContext.Coolers.Include(c => c.Offers).FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<Psu?> GetPsu(Guid id) => await _dbContext.FindAsync<Psu>(id);
+    public async Task<Psu?> GetPsu(Guid id)
+                => await _dbContext.Psus.Include(c => c.Offers).FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task<CpuBenchmark?> GetCpuBenchmark(Guid id) => await _dbContext.FindAsync<CpuBenchmark>(id);
 
@@ -118,49 +124,97 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
 
     public async Task AddCpu(Cpu cpu)
     {
-        _dbContext.Add(cpu);
+        var existing = await _dbContext.Cpus.FirstOrDefaultAsync(x => x.Name == cpu.Name);
+
+        if (existing is null)
+            _dbContext.Add(cpu);
+        else
+            _dbContext.Entry(existing).CurrentValues.SetValues(cpu);
+
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task AddGpu(Gpu gpu)
     {
-        _dbContext.Add(gpu);
+        var existing = await _dbContext.Gpus.FirstOrDefaultAsync(x => x.Name == gpu.Name);
+
+        if (existing is null)
+            _dbContext.Add(gpu);
+        else
+            _dbContext.Entry(existing).CurrentValues.SetValues(gpu);
+        
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task AddRam(Ram ram)
     {
-        _dbContext.Add(ram);
+        var existing = await _dbContext.Rams.FirstOrDefaultAsync(x => x.Model == ram.Model);
+
+        if (existing is null)
+            _dbContext.Add(ram);
+        else
+            _dbContext.Entry(existing).CurrentValues.SetValues(ram);
+
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task AddInternalDrive(InternalDrive internalDrive)
     {
-        _dbContext.Add(internalDrive);
+        var existing = await _dbContext.InternalDrives.FirstOrDefaultAsync(x => x.Name == internalDrive.Name);
+
+        if (existing is null)
+            _dbContext.Add(internalDrive);
+        else
+            _dbContext.Entry(existing).CurrentValues.SetValues(internalDrive);
+
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task AddCooler(Cooler cooler)
     {
-        _dbContext.Add(cooler);
+        var existing = await _dbContext.Coolers.FirstOrDefaultAsync(x => x.Name == cooler.Name);
+
+        if (existing is null)
+            _dbContext.Add(cooler);
+        else
+            _dbContext.Entry(existing).CurrentValues.SetValues(cooler);
+
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task AddPsu(Psu psu)
     {
-        _dbContext.Add(psu);
+        var existing = await _dbContext.Psus.FirstOrDefaultAsync(x => x.Name == psu.Name);
+
+        if (existing is null)
+            _dbContext.Add(psu);
+        else
+            _dbContext.Entry(existing).CurrentValues.SetValues(psu);
+        
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task AddCpuBenchmark(CpuBenchmark cpuBenchmark)
     {
-        _dbContext.Add(cpuBenchmark);
+        var existing = await _dbContext.CpuBenchmarks.FirstOrDefaultAsync(x => x.Name == cpuBenchmark.Name);
+
+        if (existing is null)
+            _dbContext.Add(cpuBenchmark);
+        else
+            _dbContext.Entry(existing).CurrentValues.SetValues(cpuBenchmark);
+
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task AddGpuBenchmark(GpuBenchmark gpuBenchmark)
     {
-        _dbContext.Add(gpuBenchmark);
+        var existing = await _dbContext.GpuBenchmarks.FirstOrDefaultAsync(x => x.Name == gpuBenchmark.Name);
+
+        if (existing is null)
+            _dbContext.Add(gpuBenchmark);
+        else
+            _dbContext.Entry(existing).CurrentValues.SetValues(gpuBenchmark);
+        
         await _dbContext.SaveChangesAsync();
     }
 

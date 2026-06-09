@@ -9,12 +9,8 @@ namespace PCFromScratch.Scrapers;
 
 public class RamScraper
 {
-    private static readonly string FilePath = "data/ram.csv";
-
-    public static async Task GetRams()
+    public static async Task<List<Ram>> GetRams()
     {
-        BaseScraper.CreatePath(FilePath);
-
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -97,13 +93,7 @@ public class RamScraper
             await browser.CloseAsync();
         }
 
-        using (var writer = new StreamWriter(FilePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(rams);
-        }
-        
-        Console.WriteLine($"Successfully saved {rams.Count} RAM modules to '{FilePath}'.");
+        return rams;
     }
 
     private static (string, string) GetModelDetails(IElement? detailsDiv)
