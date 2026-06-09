@@ -161,7 +161,7 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         else
         {
             ram.Id = existing.Id;
-            _dbContext.Entry(existing).CurrentValues.SetValues(rpu);
+            _dbContext.Entry(existing).CurrentValues.SetValues(ram);
         }
         await _dbContext.SaveChangesAsync();
     }
