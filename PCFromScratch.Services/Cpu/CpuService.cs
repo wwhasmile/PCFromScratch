@@ -10,7 +10,7 @@ public class CpuService(ICpuRepository cpuRepository) : ICpuService
     public async IAsyncEnumerable<CpuDtoModel> GetCpus(string? socket = null)
     {
         await foreach (var cpu in cpuRepository.GetCpus(socket))
-            yield return new(cpu.Id, cpu.Name, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency, cpu.Packing,
+            yield return new(cpu.Id, cpu.Name, cpu.Link, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency, cpu.Packing,
                 cpu.ImageUrl, cpu.MinPrice, cpu.MaxPrice);
     }
 
@@ -19,7 +19,7 @@ public class CpuService(ICpuRepository cpuRepository) : ICpuService
         var cpu = await cpuRepository.GetCpu(id);
         if (cpu is null) return null;
 
-        return new(cpu.Id, cpu.Name, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency, cpu.Packing,
+        return new(cpu.Id, cpu.Name, cpu.Link, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency, cpu.Packing,
             cpu.ImageUrl, cpu.MinPrice, cpu.MaxPrice);
     }
 
