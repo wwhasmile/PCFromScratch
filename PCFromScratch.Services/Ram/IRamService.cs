@@ -1,3 +1,5 @@
+using PCFromScratch.DTOModels;
+
 namespace PCFromScratch.Services;
 
 public interface IRamService
