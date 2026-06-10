@@ -1,7 +1,7 @@
 using PCFromScratch.Repository;
 using PCFromScratch.Scrapers;
 
-namespace PCFromScratch.API;
+namespace PCFromScratch.API.Services;
 
 public class CpuScraperBackgroundService(IServiceScopeFactory serviceScopeFactory, ILogger<CpuScraperBackgroundService> logger)
     : BackgroundService

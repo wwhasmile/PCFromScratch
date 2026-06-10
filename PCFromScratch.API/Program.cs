@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-using PCFromScratch.API;
+using PCFromScratch.API.Services;
 using PCFromScratch.Repository;
 using PCFromScratch.Services;
 using PCFromScratch.Storage;
