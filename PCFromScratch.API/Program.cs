@@ -22,6 +22,7 @@ builder.Services.AddScoped<IMotherboardRepository, StorageMotherboardRepository>
 builder.Services.AddScoped<ICoolerRepository, StorageCoolerRepository>();
 builder.Services.AddScoped<IGpuRepository, StorageGpuRepository>();
 builder.Services.AddScoped<IInternalDriveRepository, StorageInternalDriveRepository>();
+builder.Services.AddScoped<IPsuRepository, StoragePsuRepository>();
 
 builder.Services.AddScoped<ICpuService, CpuService>();
 builder.Services.AddScoped<IRamService, RamService>();
@@ -29,6 +30,7 @@ builder.Services.AddScoped<IMotherboardService, MotherboardService>();
 builder.Services.AddScoped<ICoolerService, CoolerService>();
 builder.Services.AddScoped<IGpuService, GpuService>();
 builder.Services.AddScoped<IInternalDriveService, InternalDriveService>();
+builder.Services.AddScoped<IPsuService, PsuService>();
 
 builder.Services.AddHostedService<CpuScraperBackgroundService>();
 builder.Services.AddHostedService<RamScraperBackgroundService>();
@@ -37,6 +39,7 @@ builder.Services.AddHostedService<CoolerScraperBackgroundService>();
 builder.Services.AddHostedService<GpuScraperBackgroundService>();
 builder.Services.AddHostedService<HddScraperBackgroundService>();
 builder.Services.AddHostedService<SsdScraperBackgroundService>();
+builder.Services.AddHostedService<PsuScraperBackgroundService>();
 
 var app = builder.Build();
 
