@@ -1,12 +1,4 @@
 ﻿namespace PCFromScratch.DTOModels;
 
-public class PcDtoModel
-{
-    public Guid? Cpu { get; set; }
-    public Guid? Motherboard { get; set; }
-    public Guid? Gpu { get; set; }
-    public Guid? Ram { get; set; }
-    public Guid? Cooler { get; set; }
-    public HashSet<Guid> InternalDrives { get; set; } = [];
-    public Guid? Psu { get; set; }
-}
+public record struct PcDtoModel(Guid? Cpu, Guid? Motherboard, Guid? Gpu, Guid? Ram, Guid? Cooler,
+    List<Guid> InternalDrives, Guid? Psu);
