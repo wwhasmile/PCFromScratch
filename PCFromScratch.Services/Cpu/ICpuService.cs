@@ -5,7 +5,7 @@ namespace PCFromScratch.Services;
 
 public interface ICpuService
 {
-    IAsyncEnumerable<CpuDtoModel> GetCpus();
+    IAsyncEnumerable<CpuDtoModel> GetCpus(string? socket = null);
 
     Task<CpuDtoModel?> GetCpu(Guid id);
 

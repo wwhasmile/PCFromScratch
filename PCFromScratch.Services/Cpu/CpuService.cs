@@ -9,9 +9,9 @@ public class CpuService(ICpuRepository cpuRepository) : ICpuService
 {
     private readonly ICpuRepository _cpuRepository = cpuRepository;
 
-    public async IAsyncEnumerable<CpuDtoModel> GetCpus()
+    public async IAsyncEnumerable<CpuDtoModel> GetCpus(string? socket = null)
     {
-        await foreach (var cpu in _cpuRepository.GetCpus())
+        await foreach (var cpu in _cpuRepository.GetCpus(socket))
         {
             yield return new(cpu.Id, cpu.Name, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency, cpu.Packing,
                 cpu.ImageUrl, cpu.MinPrice, cpu.MaxPrice);
