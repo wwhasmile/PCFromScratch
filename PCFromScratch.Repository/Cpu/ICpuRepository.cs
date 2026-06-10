@@ -4,7 +4,7 @@ namespace PCFromScratch.Repository;
 
 public interface ICpuRepository
 {
-    IAsyncEnumerable<Cpu> GetCpus();
+    IAsyncEnumerable<Cpu> GetCpus(string? socket = null);
 
     Task<Cpu?> GetCpu(Guid id);
 

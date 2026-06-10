@@ -7,7 +7,7 @@ public class StorageCpuRepository(IStorageContext storageContext) : ICpuReposito
 {
     private readonly IStorageContext _storageContext = storageContext;
 
-    public IAsyncEnumerable<Cpu> GetCpus() => _storageContext.GetCpus();
+    public IAsyncEnumerable<Cpu> GetCpus(string? socket) => _storageContext.GetCpus(socket);
 
     public Task<Cpu?> GetCpu(Guid id) => _storageContext.GetCpu(id);
 

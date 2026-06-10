@@ -49,11 +49,12 @@ public class FakeCpu : ICpuRepository
             }
         };
     }
-    public async IAsyncEnumerable<Cpu> GetCpus()
+    public async IAsyncEnumerable<Cpu> GetCpus(string? socket)
     {
         foreach (var cpu in _cpus)
         {
-            yield return cpu;
+            if (socket is null || cpu.Socket == socket)
+                yield return cpu;
         }
     }
 
