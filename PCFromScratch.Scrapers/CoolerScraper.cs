@@ -12,9 +12,7 @@ namespace PCFromScratch.Scrapers;
 
 public class CoolerScraper
 {
-    private static readonly string FilePath = "data/coolers.csv";
-
-    public static async Task GetCoolers()
+    public static async Task<List<Cooler>> GetCoolers()
     {
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
@@ -93,13 +91,7 @@ public class CoolerScraper
             await browser.CloseAsync();
         }
 
-        using (var writer = new StreamWriter(FilePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(coolers);
-        }
-        
-        Console.WriteLine($"Successfully saved {coolers.Count} coolers to '{FilePath}'.");
+        return coolers;
     }
 
     private static (int, List<string>, List<string>, int, CoolerType) GetModelDetails(IElement? detailsDiv)
