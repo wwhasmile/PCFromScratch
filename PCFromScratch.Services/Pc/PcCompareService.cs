@@ -14,13 +14,6 @@ public class PcCompareService(ICpuRepository cpuRepository,
     IRamRepository ramRepository,
     IInternalDriveRepository internalDriveRepository) : IPcCompareService
 {
-    private readonly ICpuRepository _cpuRepository = cpuRepository;
-    private readonly IGpuRepository _gpuRepository = gpuRepository;
-    private readonly ICpuBenchmarkRepository _cpuBenchmarkRepository = cpuBenchmarkRepository;
-    private readonly IGpuBenchmarkRepository _gpuBenchmarkRepository = gpuBenchmarkRepository;
-    private readonly IRamRepository _ramRepository = ramRepository;
-    private readonly IInternalDriveRepository _internalDriveRepository = internalDriveRepository;
-
     public async Task<(bool, Dictionary<string, string>)> IsFitRequirements(PcDtoModel pc, SystemRequirementsDtoModel requirements)
     {
         var result = true;
@@ -44,8 +37,8 @@ public class PcCompareService(ICpuRepository cpuRepository,
         if (!cpuId.HasValue) return true;
         if (!cpuBenchmarkId.HasValue) return true;
         
-        var cpuTask = _cpuRepository.GetCpu(cpuId.Value);
-        var targetCpuBenchmarkTask = _cpuBenchmarkRepository.GetCpuBenchmark(cpuBenchmarkId.Value);
+        var cpuTask = cpuRepository.GetCpu(cpuId.Value);
+        var targetCpuBenchmarkTask = cpuBenchmarkRepository.GetCpuBenchmark(cpuBenchmarkId.Value);
         await Task.WhenAll(cpuTask, targetCpuBenchmarkTask);
 
         var cpu = await cpuTask;
@@ -54,7 +47,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
         if (cpu is null) return true;
         if (targetCpuBenchmark is null) return true;
 
-        var cpuBenchmark = await _cpuBenchmarkRepository.GetCpuBenchmark(cpu.Name);
+        var cpuBenchmark = await cpuBenchmarkRepository.GetCpuBenchmark(cpu.Name);
         if (cpuBenchmark is null) return true;
 
         if (cpuBenchmark.Score >= targetCpuBenchmark.Score) return true;
@@ -68,8 +61,8 @@ public class PcCompareService(ICpuRepository cpuRepository,
         if (!gpuId.HasValue) return true;
         if (!gpuBenchmarkId.HasValue) return true;
         
-        var gpuTask = _gpuRepository.GetGpu(gpuId.Value);
-        var targetGpuBenchmarkTask = _gpuBenchmarkRepository.GetGpuBenchmark(gpuBenchmarkId.Value);
+        var gpuTask = gpuRepository.GetGpu(gpuId.Value);
+        var targetGpuBenchmarkTask = gpuBenchmarkRepository.GetGpuBenchmark(gpuBenchmarkId.Value);
         await Task.WhenAll(gpuTask, targetGpuBenchmarkTask);
 
         var gpu = await gpuTask;
@@ -78,7 +71,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
         if (gpu is null) return true;
         if (targetGpuBenchmark is null) return true;
 
-        var gpuBenchmark = await _gpuBenchmarkRepository.GetGpuBenchmark(gpu.Name);
+        var gpuBenchmark = await gpuBenchmarkRepository.GetGpuBenchmark(gpu.Name);
         if (gpuBenchmark is null) return true;
 
         if (gpuBenchmark.Score >= targetGpuBenchmark.Score) return true;
@@ -91,7 +84,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
     {
         if (!ramId.HasValue) return true;
         
-        var ram = await _ramRepository.GetRam(ramId.Value);
+        var ram = await ramRepository.GetRam(ramId.Value);
         if (ram is null) return true;
 
         if (ram.Amount * ram.Sticks >= ramInMb) return true;
@@ -103,7 +96,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
     private async Task<bool> CheckDrives(IEnumerable<Guid> driveIds, int capacity, bool requireSsd,
             ConcurrentDictionary<string, string> messages)
     {
-        var drives = await Task.WhenAll(driveIds.Select(id => _internalDriveRepository.GetInternalDrive(id)));
+        var drives = await Task.WhenAll(driveIds.Select(id => internalDriveRepository.GetInternalDrive(id)));
         var totalSize = 0;
 
         var hasSsd = false;
