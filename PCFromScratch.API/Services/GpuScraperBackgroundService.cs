@@ -20,7 +20,7 @@ public class GpuScraperBackgroundService(IServiceScopeFactory serviceScopeFactor
 
             try
             {
-                await ScrapeCpus();
+                await ScrapeGpus();
             }
             catch (Exception ex)
             {
@@ -31,7 +31,7 @@ public class GpuScraperBackgroundService(IServiceScopeFactory serviceScopeFactor
         }
     }
 
-    private async Task ScrapeCpus()
+    private async Task ScrapeGpus()
     {
         var gpus = await GpuScraper.GetGpus();
 
