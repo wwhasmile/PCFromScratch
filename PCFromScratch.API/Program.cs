@@ -41,6 +41,9 @@ builder.Services.AddHostedService<HddScraperBackgroundService>();
 builder.Services.AddHostedService<SsdScraperBackgroundService>();
 builder.Services.AddHostedService<PsuScraperBackgroundService>();
 
+builder.Services.AddScoped<IPcCheckService, PcCheckService>();
+builder.Services.AddScoped<IPcCompareService, PcCompareService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
