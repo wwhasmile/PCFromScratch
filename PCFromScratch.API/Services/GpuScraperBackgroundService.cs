@@ -12,11 +12,11 @@ public class GpuScraperBackgroundService(IServiceScopeFactory serviceScopeFactor
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Started Cpu Scraper background task.");
+        _logger.LogInformation("Started Gpu Scraper background task.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Cpu Scraping started at: {time}.", DateTimeOffset.Now);
+            _logger.LogInformation("Gpu Scraping started at: {time}.", DateTimeOffset.Now);
 
             try
             {
@@ -24,7 +24,7 @@ public class GpuScraperBackgroundService(IServiceScopeFactory serviceScopeFactor
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred executing Cpu Scraper work.");
+                _logger.LogError(ex, "An error occurred executing Gpu Scraper work.");
             }
 
             await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
