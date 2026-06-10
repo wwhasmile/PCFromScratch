@@ -38,7 +38,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/cpu", async (ICpuService cpuService) => await cpuService.GetCpus().ToListAsync());
+app.MapGet("/cpu", async (string? socket, ICpuService cpuService) => await cpuService.GetCpus(socket).ToListAsync());
 app.MapGet("/cpu/{id}", async (Guid id, ICpuService cpuService) =>
 {
     var cpu = await cpuService.GetCpu(id);
