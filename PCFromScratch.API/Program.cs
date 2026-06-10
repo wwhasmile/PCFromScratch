@@ -53,6 +53,16 @@ app.MapGet("/cpu/{id}", async (Guid id, ICpuService cpuService) =>
 app.MapGet("/cpu/{id}/offers", async (Guid id, ICpuService cpuService) =>
     await cpuService.GetCpuOffers(id).ToListAsync());
 
+app.MapGet("/ram", async (string? generation, IRamService ramService) =>
+    await ramService.GetRams(generation).ToListAsync());
+app.MapGet("/ram/{id}", async (Guid id, IRamService ramService) =>
+{
+    var cpu = await ramService.GetRam(id);
+    return cpu is null ? Results.NotFound() : Results.Ok(cpu);
+});
+app.MapGet("/ram/{id}/offers", async (Guid id, IRamService ramService) =>
+    await ramService.GetRamOffers(id).ToListAsync());
+
 app.MapGet("/motherboard", async (string? socket, IMotherboardService motherboardService) =>
     await motherboardService.GetMotherboards(socket).ToListAsync());
 app.MapGet("/motherboard/{id}", async (Guid id, IMotherboardService motherboardService) =>
