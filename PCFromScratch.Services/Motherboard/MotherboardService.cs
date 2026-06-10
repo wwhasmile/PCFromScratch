@@ -8,9 +8,9 @@ public class MotherboardService(IMotherboardRepository motherboardRepository) : 
     public async IAsyncEnumerable<MotherboardDtoModel> GetMotherboards(string? socket = null)
     {
         await foreach (var motherboard in motherboardRepository.GetMotherboards(socket))
-            yield return new(motherboard.Id, motherboard.Name, motherboard.Socket, motherboard.FormFactor,
-                motherboard.Chipset, motherboard.RamGeneration, motherboard.RamSlots, motherboard.RamFrequency,
-                motherboard.HasM2Slot, motherboard.ImageUrl, motherboard.MinPrice, motherboard.MaxPrice);
+            yield return new(motherboard.Id, motherboard.Name, motherboard.Link, motherboard.Socket,
+                motherboard.FormFactor, motherboard.Chipset, motherboard.RamGeneration, motherboard.RamSlots,
+                motherboard.RamFrequency, motherboard.HasM2Slot, motherboard.ImageUrl, motherboard.MinPrice, motherboard.MaxPrice);
     }
 
     public async Task<MotherboardDtoModel?> GetMotherboard(Guid id)
@@ -18,9 +18,9 @@ public class MotherboardService(IMotherboardRepository motherboardRepository) : 
         var motherboard = await motherboardRepository.GetMotherboard(id);
         if (motherboard is null) return null;
 
-        return new(motherboard.Id, motherboard.Name, motherboard.Socket, motherboard.FormFactor, motherboard.Chipset,
-            motherboard.RamGeneration, motherboard.RamSlots, motherboard.RamFrequency, motherboard.HasM2Slot,
-            motherboard.ImageUrl, motherboard.MinPrice, motherboard.MaxPrice);
+        return new(motherboard.Id, motherboard.Name, motherboard.Link, motherboard.Socket, motherboard.FormFactor,
+            motherboard.Chipset, motherboard.RamGeneration, motherboard.RamSlots, motherboard.RamFrequency,
+            motherboard.HasM2Slot, motherboard.ImageUrl, motherboard.MinPrice, motherboard.MaxPrice);
     }
 
     public async IAsyncEnumerable<OfferDtoModel> GetMotherboardOffers(Guid id)
