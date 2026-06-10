@@ -17,15 +17,18 @@ builder.Services.AddDbContext<StorageDbContext>(options =>
         x => x.MigrationsAssembly("PCFromScratch.Migrations")));
 builder.Services.AddScoped<IStorageContext, EntityStorageContext>();
 builder.Services.AddScoped<ICpuRepository, StorageCpuRepository>();
+builder.Services.AddScoped<IRamRepository, StorageRamRepository>();
 builder.Services.AddScoped<IMotherboardRepository, StorageMotherboardRepository>();
 builder.Services.AddScoped<IGpuRepository, StorageGpuRepository>();
 builder.Services.AddScoped<IInternalDriveRepository, StorageInternalDriveRepository>();
 builder.Services.AddScoped<ICpuService, CpuService>();
+builder.Services.AddScoped<IRamService, RamService>();
 builder.Services.AddScoped<IMotherboardService, MotherboardService>();
 builder.Services.AddScoped<IGpuService, GpuService>();
 builder.Services.AddScoped<IInternalDriveService, InternalDriveService>();
 
 builder.Services.AddHostedService<CpuScraperBackgroundService>();
+builder.Services.AddHostedService<RamScraperBackgroundService>();
 builder.Services.AddHostedService<MotherboardScraperBackgroundService>();
 builder.Services.AddHostedService<GpuScraperBackgroundService>();
 builder.Services.AddHostedService<HddScraperBackgroundService>();
