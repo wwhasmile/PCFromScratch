@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using PCFromScratch.API.Services;
+using PCFromScratch.DTOModels;
 using PCFromScratch.Repository;
 using PCFromScratch.Services;
 using PCFromScratch.Storage;
@@ -121,5 +122,10 @@ app.MapGet("/psu/{id}", async (Guid id, IPsuService psuService) =>
 });
 app.MapGet("/psu/{id}/offers", async (Guid id, IPsuService psuService) =>
     await psuService.GetPsuOffers(id).ToListAsync());
+
+app.MapGet("/pc/check", async (PcDtoModel pc, IPcCheckService pcCheckService) =>
+    await pcCheckService.CheckPc(pc));
+app.MapGet("/pc/compare", async (PcDtoModel pc, SystemRequirementsDtoModel systemRequirements, IPcCompareService pcCompareService) =>
+    await pcCompareService.IsFitRequirements(pc, systemRequirements));
 
 app.Run();
