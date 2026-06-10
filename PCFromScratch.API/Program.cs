@@ -61,8 +61,8 @@ app.MapGet("/ram", async (string? generation, IRamService ramService) =>
     await ramService.GetRams(generation).ToListAsync());
 app.MapGet("/ram/{id}", async (Guid id, IRamService ramService) =>
 {
-    var cpu = await ramService.GetRam(id);
-    return cpu is null ? Results.NotFound() : Results.Ok(cpu);
+    var ram = await ramService.GetRam(id);
+    return ram is null ? Results.NotFound() : Results.Ok(ram);
 });
 app.MapGet("/ram/{id}/offers", async (Guid id, IRamService ramService) =>
     await ramService.GetRamOffers(id).ToListAsync());
@@ -76,6 +76,16 @@ app.MapGet("/motherboard/{id}", async (Guid id, IMotherboardService motherboardS
 });
 app.MapGet("/motherboard/{id}/offers", async (Guid id, IMotherboardService motherboardService) =>
     await motherboardService.GetMotherboardOffers(id).ToListAsync());
+
+app.MapGet("/cooler", async (string? socket, ICoolerService coolerService) =>
+    await coolerService.GetCoolers(socket).ToListAsync());
+app.MapGet("/cooler/{id}", async (Guid id, ICoolerService coolerService) =>
+{
+    var cooler = await coolerService.GetCooler(id);
+    return cooler is null ? Results.NotFound() : Results.Ok(cooler);
+});
+app.MapGet("/cooler/{id}/offers", async (Guid id, ICoolerService coolerService) =>
+    await coolerService.GetCoolerOffers(id).ToListAsync());
 
 app.MapGet("/gpu", async (IGpuService gpuService) => await gpuService.GetGpus().ToListAsync());
 app.MapGet("/gpu/{id}", async (Guid id, IGpuService gpuService) =>
