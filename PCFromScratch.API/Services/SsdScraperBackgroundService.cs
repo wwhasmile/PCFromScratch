@@ -21,7 +21,7 @@ public class SsdScraperBackgroundService(IServiceScopeFactory serviceScopeFactor
 
             try
             {
-                await ScrapeCpus();
+                await ScrapeSsds();
             }
             catch (Exception ex)
             {
@@ -32,7 +32,7 @@ public class SsdScraperBackgroundService(IServiceScopeFactory serviceScopeFactor
         }
     }
 
-    private async Task ScrapeCpus()
+    private async Task ScrapeSsds()
     {
         var ssds = await SsdScraper.GetSsds();
 
