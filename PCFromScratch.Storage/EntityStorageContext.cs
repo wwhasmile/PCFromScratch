@@ -17,8 +17,15 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         return query.AsAsyncEnumerable();
     }
 
-    public IAsyncEnumerable<Cpu> GetCpus()
-        => _dbContext.Cpus.AsNoTracking().AsAsyncEnumerable();
+    public IAsyncEnumerable<Cpu> GetCpus(string? socket)
+    {
+        var query = _dbContext.Cpus.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(socket))
+            query = query.Where(x => x.Socket == socket);
+
+        return query.AsAsyncEnumerable();
+    }
 
     public IAsyncEnumerable<Gpu> GetGpus()
         => _dbContext.Gpus.AsNoTracking().AsAsyncEnumerable();

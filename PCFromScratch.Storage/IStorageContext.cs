@@ -5,7 +5,7 @@ namespace PCFromScratch.Storage;
 public interface IStorageContext
 {
     IAsyncEnumerable<MotherboardRenamedForOmnissiah> GetMotherboards(string? socket = null);
-    IAsyncEnumerable<Cpu> GetCpus();
+    IAsyncEnumerable<Cpu> GetCpus(string? socket = null);
     IAsyncEnumerable<Gpu> GetGpus();
     IAsyncEnumerable<Ram> GetRams(string? generation = null);
     IAsyncEnumerable<InternalDrive> GetInternalDrives(string? type = null, int? capacity = null);
