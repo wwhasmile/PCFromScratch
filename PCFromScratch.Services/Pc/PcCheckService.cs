@@ -9,30 +9,21 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
                             ICpuRepository cpuRepository,
                             IGpuRepository gpuRepository,
                             IRamRepository ramRepository,
-                            IInternalDriveRepository internalDriveRepository,
                             ICoolerRepository coolerRepository,
                             IPsuRepository psuRepository) : IPcCheckService
 {
-    private readonly IMotherboardRepository _motherboardRepository = motherboardRepository;
-    private readonly ICpuRepository _cpuRepository = cpuRepository;
-    private readonly IGpuRepository _gpuRepository = gpuRepository;
-    private readonly IRamRepository _ramRepository = ramRepository;
-    private readonly IInternalDriveRepository _internalDriveRepository = internalDriveRepository;
-    private readonly ICoolerRepository _coolerRepository = coolerRepository;
-    private readonly IPsuRepository _psuRepository = psuRepository;
-
     public async Task<List<Warning>> CheckPc(PcDtoModel pc)
     {
         List<Warning> warnings = [];
 
-        var cpuTask = pc.Cpu.HasValue ? _cpuRepository.GetCpu(pc.Cpu.Value) : Task.FromResult<Cpu?>(null);
-        var motherboardTask = pc.Motherboard.HasValue ? _motherboardRepository.GetMotherboard(pc.Motherboard.Value)
+        var cpuTask = pc.Cpu.HasValue ? cpuRepository.GetCpu(pc.Cpu.Value) : Task.FromResult<Cpu?>(null);
+        var motherboardTask = pc.Motherboard.HasValue ? motherboardRepository.GetMotherboard(pc.Motherboard.Value)
             : Task.FromResult<MotherboardRenamedForOmnissiah?>(null);
-        var ramTask = pc.Ram.HasValue ? _ramRepository.GetRam(pc.Ram.Value) : Task.FromResult<Ram?>(null);
-        var gpuTask = pc.Gpu.HasValue ? _gpuRepository.GetGpu(pc.Gpu.Value) : Task.FromResult<Gpu?>(null);
-        var coolerTask = pc.Cooler.HasValue ? _coolerRepository.GetCooler(pc.Cooler.Value)
+        var ramTask = pc.Ram.HasValue ? ramRepository.GetRam(pc.Ram.Value) : Task.FromResult<Ram?>(null);
+        var gpuTask = pc.Gpu.HasValue ? gpuRepository.GetGpu(pc.Gpu.Value) : Task.FromResult<Gpu?>(null);
+        var coolerTask = pc.Cooler.HasValue ? coolerRepository.GetCooler(pc.Cooler.Value)
             : Task.FromResult<Cooler?>(null);
-        var psuTask = pc.Psu.HasValue ? _psuRepository.GetPsu(pc.Psu.Value) : Task.FromResult<Psu?>(null);
+        var psuTask = pc.Psu.HasValue ? psuRepository.GetPsu(pc.Psu.Value) : Task.FromResult<Psu?>(null);
 
         await Task.WhenAll(cpuTask, motherboardTask, ramTask, coolerTask, psuTask);
 
