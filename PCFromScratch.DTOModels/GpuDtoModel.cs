@@ -1,3 +1,4 @@
 namespace PCFromScratch.DTOModels;
 
-public record struct GpuDtoModel(Guid Id, string Name, int Tdp, int Length, string? Image, int MinPrice, int MaxPrice);
+public record struct GpuDtoModel(Guid Id, string Name, string Link, int Tdp, int Length, string? Image, int MinPrice,
+        int MaxPrice);

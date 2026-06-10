@@ -10,7 +10,7 @@ public class GpuService(IGpuRepository gpuRepository) : IGpuService
     public async IAsyncEnumerable<GpuDtoModel> GetGpus()
     {
         await foreach (var gpu in gpuRepository.GetGpus())
-            yield return new(gpu.Id, gpu.Name, gpu.Tdp, gpu.Length, gpu.ImageUrl, gpu.MinPrice, gpu.MaxPrice);
+            yield return new(gpu.Id, gpu.Name, gpu.Link, gpu.Tdp, gpu.Length, gpu.ImageUrl, gpu.MinPrice, gpu.MaxPrice);
     }
 
     public async Task<GpuDtoModel?> GetGpu(Guid id)
@@ -18,7 +18,7 @@ public class GpuService(IGpuRepository gpuRepository) : IGpuService
         var gpu = await gpuRepository.GetGpu(id);
         if (gpu is null) return null;
 
-        return new(gpu.Id, gpu.Name, gpu.Tdp, gpu.Length, gpu.ImageUrl, gpu.MinPrice, gpu.MaxPrice);
+        return new(gpu.Id, gpu.Name, gpu.Link, gpu.Tdp, gpu.Length, gpu.ImageUrl, gpu.MinPrice, gpu.MaxPrice);
     }
 
     public async IAsyncEnumerable<OfferDtoModel> GetGpuOffers(Guid id)
