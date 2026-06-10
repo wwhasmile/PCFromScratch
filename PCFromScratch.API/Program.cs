@@ -17,13 +17,16 @@ builder.Services.AddDbContext<StorageDbContext>(options =>
         x => x.MigrationsAssembly("PCFromScratch.Migrations")));
 builder.Services.AddScoped<IStorageContext, EntityStorageContext>();
 builder.Services.AddScoped<ICpuRepository, StorageCpuRepository>();
+builder.Services.AddScoped<IMotherboardRepository, StorageMotherboardRepository>();
 builder.Services.AddScoped<IGpuRepository, StorageGpuRepository>();
 builder.Services.AddScoped<IInternalDriveRepository, StorageInternalDriveRepository>();
 builder.Services.AddScoped<ICpuService, CpuService>();
+builder.Services.AddScoped<IMotherboardService, MotherboardService>();
 builder.Services.AddScoped<IGpuService, GpuService>();
 builder.Services.AddScoped<IInternalDriveService, InternalDriveService>();
 
 builder.Services.AddHostedService<CpuScraperBackgroundService>();
+builder.Services.AddHostedService<MotherboardScraperBackgroundService>();
 builder.Services.AddHostedService<GpuScraperBackgroundService>();
 builder.Services.AddHostedService<HddScraperBackgroundService>();
 builder.Services.AddHostedService<SsdScraperBackgroundService>();
@@ -46,6 +49,16 @@ app.MapGet("/cpu/{id}", async (Guid id, ICpuService cpuService) =>
 });
 app.MapGet("/cpu/{id}/offers", async (Guid id, ICpuService cpuService) =>
     await cpuService.GetCpuOffers(id).ToListAsync());
+
+app.MapGet("/motherboard", async (string? socket, IMotherboardService motherboardService) =>
+    await motherboardService.GetMotherboards(socket).ToListAsync());
+app.MapGet("/motherboard/{id}", async (Guid id, IMotherboardService motherboardService) =>
+{
+    var motherboard = await motherboardService.GetMotherboard(id);
+    return motherboard is null ? Results.NotFound() : Results.Ok(motherboard);
+});
+app.MapGet("/motherboard/{id}/offers", async (Guid id, IMotherboardService motherboardService) =>
+    await motherboardService.GetMotherboardOffers(id).ToListAsync());
 
 app.MapGet("/gpu", async (IGpuService gpuService) => await gpuService.GetGpus().ToListAsync());
 app.MapGet("/gpu/{id}", async (Guid id, IGpuService gpuService) =>
