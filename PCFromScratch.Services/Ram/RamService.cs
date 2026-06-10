@@ -8,8 +8,8 @@ public class RamService(IRamRepository ramRepository) : IRamService
     public async IAsyncEnumerable<RamDtoModel> GetRams(string? generation)
     {
         await foreach (var ram in ramRepository.GetRams(generation))
-            yield return new(ram.Id, ram.Model, ram.Submodel, ram.Amount, ram.Sticks, ram.Voltage, ram.Generation,
-                ram.Frequency, ram.ImageUrl, ram.MinPrice, ram.MaxPrice);
+            yield return new(ram.Id, ram.Model, ram.Submodel, ram.Link, ram.Amount, ram.Sticks, ram.Voltage,
+                ram.Generation, ram.Frequency, ram.ImageUrl, ram.MinPrice, ram.MaxPrice);
     }
 
     public async Task<RamDtoModel?> GetRam(Guid id)
@@ -17,8 +17,8 @@ public class RamService(IRamRepository ramRepository) : IRamService
         var ram = await ramRepository.GetRam(id);
         if (ram is null) return null;
 
-        return new(ram.Id, ram.Model, ram.Submodel, ram.Amount, ram.Sticks, ram.Voltage, ram.Generation, ram.Frequency,
-            ram.ImageUrl, ram.MinPrice, ram.MaxPrice);
+        return new(ram.Id, ram.Model, ram.Submodel, ram.Link, ram.Amount, ram.Sticks, ram.Voltage, ram.Generation,
+            ram.Frequency, ram.ImageUrl, ram.MinPrice, ram.MaxPrice);
     }
 
     public async IAsyncEnumerable<OfferDtoModel> GetRamOffers(Guid id)
