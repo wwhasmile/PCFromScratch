@@ -7,6 +7,7 @@ using CsvHelper;
 using Microsoft.Playwright;
 using PCFromScratch.DBModels;
 using PCFromScratch.Common;
+using AngleSharp.Text;
 
 namespace PCFromScratch.Scrapers;
 
@@ -143,6 +144,8 @@ public class CpuScraper
 
     private static async Task CreateAndAddCpu(List<Cpu> list, string model, string? packing, string socket, int tdp, string ram, string? image, ILocator card)
     {
+        socket = socket.ReplaceFirst("AMD ", string.Empty).ReplaceFirst("Intel ", string.Empty);
+
         var priceInfo = card.Locator("td.model-hot-prices-td");
         var (minPr, maxPr, offers) = await BaseScraper.GetPriceInfoAsync(priceInfo);
 
