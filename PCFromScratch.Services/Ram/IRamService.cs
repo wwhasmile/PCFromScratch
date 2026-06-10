@@ -8,5 +8,5 @@ public interface IRamService
 
     Task<RamDtoModel?> GetRam(Guid id);
 
-    IAsyncEnumerable<RamDtoModel> GetRamOffers(Guid id);
+    IAsyncEnumerable<OfferDtoModel> GetRamOffers(Guid id);
 }
