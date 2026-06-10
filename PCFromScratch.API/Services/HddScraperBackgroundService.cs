@@ -21,7 +21,7 @@ public class HddScraperBackgroundService(IServiceScopeFactory serviceScopeFactor
 
             try
             {
-                await ScrapeCpus();
+                await ScrapeHdds();
             }
             catch (Exception ex)
             {
@@ -32,7 +32,7 @@ public class HddScraperBackgroundService(IServiceScopeFactory serviceScopeFactor
         }
     }
 
-    private async Task ScrapeCpus()
+    private async Task ScrapeHdds()
     {
         var hdds = await HddScraper.GetHdds();
 
