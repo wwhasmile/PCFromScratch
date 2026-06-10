@@ -13,8 +13,8 @@ public class CpuService(ICpuRepository cpuRepository) : ICpuService
     {
         await foreach (var cpu in _cpuRepository.GetCpus())
         {
-            yield return new(cpu.Id, cpu.Name, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency,
-                cpu.Packing.GetDisplayName(), cpu.ImageUrl, cpu.MinPrice, cpu.MaxPrice);
+            yield return new(cpu.Id, cpu.Name, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency, cpu.Packing,
+                cpu.ImageUrl, cpu.MinPrice, cpu.MaxPrice);
         }
     }
 
@@ -23,8 +23,8 @@ public class CpuService(ICpuRepository cpuRepository) : ICpuService
         var cpu = await _cpuRepository.GetCpu(id);
         if (cpu is null) return null;
 
-        return new(cpu.Id, cpu.Name, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency,
-            cpu.Packing.GetDisplayName(), cpu.ImageUrl, cpu.MinPrice, cpu.MaxPrice);
+        return new(cpu.Id, cpu.Name, cpu.Socket, cpu.Tdp, cpu.RamGen, cpu.RamFrequency, cpu.Packing,
+            cpu.ImageUrl, cpu.MinPrice, cpu.MaxPrice);
     }
 
     public async IAsyncEnumerable<OfferDtoModel> GetCpuOffers(Guid id)
