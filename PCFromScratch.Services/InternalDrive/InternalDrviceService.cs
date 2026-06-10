@@ -8,8 +8,8 @@ public class InternalDriveService(IInternalDriveRepository internalDriveReposito
     public async IAsyncEnumerable<InternalDriveDtoModel> GetInternalDrives(string? type = null, int? capacity = null)
     {
         await foreach (var internalDrive in internalDriveRepository.GetInternalDrives(type, capacity))
-            yield return new(internalDrive.Id, internalDrive.Name, internalDrive.Capacity, internalDrive.Type,
-                internalDrive.Port, internalDrive.ImageUrl, internalDrive.MinPrice, internalDrive.MaxPrice);
+            yield return new(internalDrive.Id, internalDrive.Name, internalDrive.Link, internalDrive.Capacity,
+                internalDrive.Type, internalDrive.Port, internalDrive.ImageUrl, internalDrive.MinPrice, internalDrive.MaxPrice);
     }
 
     public async Task<InternalDriveDtoModel?> GetInternalDrive(Guid id)
@@ -17,7 +17,7 @@ public class InternalDriveService(IInternalDriveRepository internalDriveReposito
         var internalDrive = await internalDriveRepository.GetInternalDrive(id);
         if (internalDrive is null) return null;
 
-        return new(internalDrive.Id, internalDrive.Name, internalDrive.Capacity, internalDrive.Type,
+        return new(internalDrive.Id, internalDrive.Name, internalDrive.Link, internalDrive.Capacity, internalDrive.Type,
             internalDrive.Port, internalDrive.ImageUrl, internalDrive.MinPrice, internalDrive.MaxPrice);
     }
 
