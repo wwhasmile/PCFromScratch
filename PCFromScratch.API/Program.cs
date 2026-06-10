@@ -56,4 +56,14 @@ app.MapGet("/gpu/{id}", async (Guid id, IGpuService gpuService) =>
 app.MapGet("/gpu/{id}/offers", async (Guid id, IGpuService gpuService) =>
     await gpuService.GetGpuOffers(id).ToListAsync());
 
+app.MapGet("/drive", async (string? type, int? capacity, IInternalDriveService internalDriveService) =>
+    await internalDriveService.GetInternalDrives(type, capacity).ToListAsync());
+app.MapGet("/drive/{id}", async (Guid id, IInternalDriveService internalDriveService) =>
+{
+    var internalDrive = await internalDriveService.GetInternalDrive(id);
+    return internalDrive is null ? Results.NotFound() : Results.Ok(internalDrive);
+});
+app.MapGet("/drive/{id}/offers", async (Guid id, IInternalDriveService internalDriveService) =>
+    await internalDriveService.GetInternalDriveOffers(id).ToListAsync());
+
 app.Run();
