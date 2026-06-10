@@ -109,4 +109,14 @@ app.MapGet("/drive/{id}", async (Guid id, IInternalDriveService internalDriveSer
 app.MapGet("/drive/{id}/offers", async (Guid id, IInternalDriveService internalDriveService) =>
     await internalDriveService.GetInternalDriveOffers(id).ToListAsync());
 
+app.MapGet("/psu", async (int? minPower, IPsuService psuService) =>
+    await psuService.GetPsus(minPower).ToListAsync());
+app.MapGet("/psu/{id}", async (Guid id, IPsuService psuService) =>
+{
+    var psu = await psuService.GetPsu(id);
+    return psu is null ? Results.NotFound() : Results.Ok(psu);
+});
+app.MapGet("/psu/{id}/offers", async (Guid id, IPsuService psuService) =>
+    await psuService.GetPsuOffers(id).ToListAsync());
+
 app.Run();
