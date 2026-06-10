@@ -18,11 +18,15 @@ builder.Services.AddDbContext<StorageDbContext>(options =>
 builder.Services.AddScoped<IStorageContext, EntityStorageContext>();
 builder.Services.AddScoped<ICpuRepository, StorageCpuRepository>();
 builder.Services.AddScoped<IGpuRepository, StorageGpuRepository>();
+builder.Services.AddScoped<IInternalDriveRepository, StorageInternalDriveRepository>();
 builder.Services.AddScoped<ICpuService, CpuService>();
 builder.Services.AddScoped<IGpuService, GpuService>();
+builder.Services.AddScoped<IInternalDriveService, InternalDriveService>();
 
 builder.Services.AddHostedService<CpuScraperBackgroundService>();
 builder.Services.AddHostedService<GpuScraperBackgroundService>();
+builder.Services.AddHostedService<HddScraperBackgroundService>();
+builder.Services.AddHostedService<SsdScraperBackgroundService>();
 
 var app = builder.Build();
 
