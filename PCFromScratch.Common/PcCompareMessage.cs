@@ -1,3 +1,3 @@
 namespace PCFromScratch.Common;
 
-public record struct PcCompareMessage(string Component, string Text, PcCompareMetric Metric);
+public record struct PcCompareMessage(string Component, PcCompareMetric Metric, string? Text = null);
