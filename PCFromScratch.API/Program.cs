@@ -23,6 +23,7 @@ builder.Services.AddScoped<IRamRepository, StorageRamRepository>();
 builder.Services.AddScoped<IMotherboardRepository, StorageMotherboardRepository>();
 builder.Services.AddScoped<ICoolerRepository, StorageCoolerRepository>();
 builder.Services.AddScoped<IGpuRepository, StorageGpuRepository>();
+builder.Services.AddScoped<IGpuBenchmarkRepository, GpuBenchmarkRepository>();
 builder.Services.AddScoped<IInternalDriveRepository, StorageInternalDriveRepository>();
 builder.Services.AddScoped<IPsuRepository, StoragePsuRepository>();
 
@@ -32,6 +33,7 @@ builder.Services.AddScoped<IRamService, RamService>();
 builder.Services.AddScoped<IMotherboardService, MotherboardService>();
 builder.Services.AddScoped<ICoolerService, CoolerService>();
 builder.Services.AddScoped<IGpuService, GpuService>();
+builder.Services.AddScoped<IGpuBenchmarkService, GpuBenchmarkService>();
 builder.Services.AddScoped<IInternalDriveService, InternalDriveService>();
 builder.Services.AddScoped<IPsuService, PsuService>();
 
