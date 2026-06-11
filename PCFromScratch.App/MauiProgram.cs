@@ -4,9 +4,6 @@ using Microsoft.Extensions.Logging;
 using PCFromScratch.App.Pages;
 using PCFromScratch.App.Utils;
 using PCFromScratch.App.ViewModels;
-using PCFromScratch.Repository;
-using PCFromScratch.Services;
-using PCFromScratch.Storage;
 
 namespace PCFromScratch.App;
 
@@ -30,17 +27,6 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
         builder.Services.AddSingleton<ServerRequests>();
-        
-        builder.Services.AddSingleton<ICpuRepository, FakeCpu>();
-        builder.Services.AddSingleton<IGpuRepository, FakeGpu>();
-        builder.Services.AddSingleton<ICoolerRepository, FakeCooler>();
-        builder.Services.AddSingleton<IMotherboardRepository, FakeMotherboard>();
-        builder.Services.AddSingleton<IRamRepository, FakeRam>();
-        builder.Services.AddSingleton<IInternalDriveRepository, FakeInternalDrive>();
-        builder.Services.AddSingleton<IPsuRepository, FakePsu>();
-        
-        builder.Services.AddSingleton<IPcCheckService, PcCheckService>();
-        builder.Services.AddSingleton<IPcCompareService, PcCompareService>();
 
         builder.Services.AddSingleton<ComponentsCompareViewModel>();
         builder.Services.AddSingleton<PcConstructorViewModel>();
@@ -51,7 +37,8 @@ public static class MauiProgram
         builder.Services.AddTransient<StorageSelectionViewModel>();
         builder.Services.AddTransient<GpuSelectionViewModel>();
         builder.Services.AddTransient<PsuSelectionViewModel>();
-        builder.Services.AddSingleton<CanIRunOnItViewModel>();
+        builder.Services.AddTransient<CanIRunOnItViewModel>();
+        builder.Services.AddSingleton<PcCompareViewModel>();
 
         builder.Services.AddSingleton<ComponentsComparePage>();
         builder.Services.AddSingleton<PcConstructorPage>();
@@ -62,7 +49,8 @@ public static class MauiProgram
         builder.Services.AddTransient<StorageSelectionPage>();
         builder.Services.AddTransient<GpuSelectionPage>();
         builder.Services.AddTransient<PsuSelectionPage>();
-        builder.Services.AddSingleton<CanIRunOnItPage>();
+        builder.Services.AddTransient<CanIRunOnItPage>();
+        builder.Services.AddSingleton<PcComparePage>();
 
         return builder.Build();
     }
