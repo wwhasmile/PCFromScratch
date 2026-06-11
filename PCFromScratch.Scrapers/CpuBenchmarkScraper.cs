@@ -1,6 +1,6 @@
-﻿using System.Globalization;
+﻿using System.Text.RegularExpressions;
 using AngleSharp;
-using CsvHelper;
+using PCFromScratch.DBModels;
 
 namespace PCFromScratch.Scrapers;
 
@@ -12,21 +12,9 @@ public class CpuBenchmarkScraper
         "https://www.cpubenchmark.net/cpu-list/amd"
     };
 
-    private const string FilePath = "data/cpu_benchmarks.csv";
-
-    public static async Task ScrapeCpuBenchmarks()
+    public static async Task<List<CpuBenchmark>> ScrapeCpuBenchmarks()
     {
-        if (!File.Exists(FilePath))
-        {
-            string? directoryName = Path.GetDirectoryName(FilePath);
-            if (directoryName is not null && !Directory.Exists(Path.GetDirectoryName(FilePath)))
-            {
-                Directory.CreateDirectory(directoryName);
-            }
-            File.Create(FilePath).Close();
-        }
-        
-        var allCpus = new List<CSVModels.CpuBenchmark>();
+        var allCpus = new List<CpuBenchmark>();
         
         // Setup HttpClient with headers to mimic a real browser
         using var httpClient = new HttpClient();
@@ -49,7 +37,7 @@ public class CpuBenchmarkScraper
 
                 var document = await context.OpenAsync(req => req.Content(htmlContent));
                 
-                var cpuData = new List<CSVModels.CpuBenchmark>();
+                var cpuData = new List<CpuBenchmark>();
 
                 // Attempt 1: Look for the standard PassMark table format
                 var table = document.QuerySelector("table#cputable");
@@ -64,11 +52,12 @@ public class CpuBenchmarkScraper
                         if (cols.Length >= 2)
                         {
                             var cpuName = cols[0].TextContent.Trim();
-                            var score = cols[1].TextContent.Trim();
+                            var scoreStr = cols[1].TextContent.Trim();
+                            int.TryParse(Regex.Replace(scoreStr, "[^0-9]", ""), out var score);
 
-                            if (!string.IsNullOrEmpty(cpuName) && !string.IsNullOrEmpty(score) && cpuName != "CPU Name")
+                            if (!string.IsNullOrEmpty(cpuName) && cpuName != "CPU Name")
                             {
-                                cpuData.Add(new CSVModels.CpuBenchmark { CpuName = cpuName, BenchmarkScore = score });
+                                cpuData.Add(new CpuBenchmark { Id = Guid.NewGuid(), Name = cpuName, Score = score });
                             }
                         }
                     }
@@ -81,13 +70,15 @@ public class CpuBenchmarkScraper
                     {
                         var nameTag = item.QuerySelector("span.prdname");
                         var scoreTag = item.QuerySelector("span.count");
-
-                        if (nameTag != null && scoreTag != null)
+                        if (scoreTag == null) continue;
+                        int.TryParse(Regex.Replace(scoreTag.TextContent.Trim(), "[^0-9]", ""), out var score);
+                        if (nameTag != null)
                         {
-                            cpuData.Add(new CSVModels.CpuBenchmark 
+                            cpuData.Add(new CpuBenchmark 
                             { 
-                                CpuName = nameTag.TextContent.Trim(), 
-                                BenchmarkScore = scoreTag.TextContent.Trim() 
+                                Id = Guid.NewGuid(),
+                                Name = nameTag.TextContent.Trim(), 
+                                Score = score
                             });
                         }
                     }
@@ -108,20 +99,6 @@ public class CpuBenchmarkScraper
                 Console.WriteLine($"Error fetching {url}: {e.Message}");
             }
         }
-        
-        // Ensure data directory exists
-        var dataDir = Path.GetDirectoryName(FilePath);
-        if (!string.IsNullOrEmpty(dataDir) && !Directory.Exists(dataDir))
-        {
-            Directory.CreateDirectory(dataDir);
-        }
-
-        using (var writer = new StreamWriter(FilePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-        {
-            csv.WriteRecords(allCpus);
-        }
-        
-        Console.WriteLine($"\nSuccessfully saved {allCpus.Count} CPUs to '{FilePath}'.");
+        return allCpus;
     }
 }
