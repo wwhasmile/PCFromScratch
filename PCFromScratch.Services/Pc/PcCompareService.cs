@@ -119,64 +119,113 @@ public class PcCompareService(ICpuRepository cpuRepository,
         return false;
     }
 
-    public async IAsyncEnumerable<PcCompareMessage> ComparePcs(PcDtoModel a, PcDtoModel b)
+    public async Task<List<PcCompareMessage>> ComparePcs(PcDtoModel a, PcDtoModel b)
     {
-        var tasks = await Task.WhenAll(CompareCpus(a.Cpu, b.Cpu), CompareGpus(a.Gpu, b.Gpu));
+        List<PcCompareMessage> result = [];
 
-        foreach (var message in tasks)
-            if (message.HasValue)
-                yield return message.Value;
+        await foreach (var message in CompareCpus(a.Cpu, b.Cpu))
+            result.Add(message);
+
+        await foreach (var message in CompareRams(a.Ram, b.Ram))
+            result.Add(message);
+        
+        await foreach (var message in CompareGpus(a.Gpu, b.Gpu))
+            result.Add(message);
+
+        return result;
     }
 
-    private async Task<PcCompareMessage?> CompareCpus(Guid? a, Guid? b)
+    private async IAsyncEnumerable<PcCompareMessage> CompareCpus(Guid? a, Guid? b)
     {
-        if (!a.HasValue || !b.HasValue) return null;
+        if (!a.HasValue || !b.HasValue) yield break;
 
         var cpuTaskA = cpuRepository.GetCpu(a.Value);
         var cpuTaskB = cpuRepository.GetCpu(b.Value);
         await Task.WhenAll(cpuTaskA, cpuTaskB);
         var cpuA = await cpuTaskA;
         var cpuB = await cpuTaskB;
-        if (cpuA is null || cpuB is null) return null;
+        if (cpuA is null || cpuB is null) yield break;
 
         var cpuBenchmarkTaskA = cpuBenchmarkRepository.GetCpuBenchmark(cpuA.Name);
         var cpuBenchmarkTaskB = cpuBenchmarkRepository.GetCpuBenchmark(cpuB.Name);
         await Task.WhenAll(cpuBenchmarkTaskA, cpuBenchmarkTaskB);
         var cpuBenchmarkA = await cpuBenchmarkTaskA;
         var cpuBenchmarkB = await cpuBenchmarkTaskB;
-        if (cpuBenchmarkA is null || cpuBenchmarkB is null) return null;
+        if (cpuBenchmarkA is null || cpuBenchmarkB is null) yield break;
 
         if (cpuBenchmarkA.Score < cpuBenchmarkB.Score)
-            return new("Процесор", PcCompareMetric.Better);
+            yield return new("Процесор", PcCompareMetric.Better);
         else if (cpuBenchmarkA.Score == cpuBenchmarkB.Score)
-            return new("Процесор", PcCompareMetric.Equal);
+            yield return new("Процесор", PcCompareMetric.Equal);
         else
-            return new("Процесор", PcCompareMetric.Worse);
+            yield return new("Процесор", PcCompareMetric.Worse);
     }
 
-    private async Task<PcCompareMessage?> CompareGpus(Guid? a, Guid? b)
+    private async IAsyncEnumerable<PcCompareMessage> CompareGpus(Guid? a, Guid? b)
     {
-        if (!a.HasValue || !b.HasValue) return null;
+        if (!a.HasValue || !b.HasValue) yield break;
 
         var gpuTaskA = gpuRepository.GetGpu(a.Value);
         var gpuTaskB = gpuRepository.GetGpu(b.Value);
         await Task.WhenAll(gpuTaskA, gpuTaskB);
         var gpuA = await gpuTaskA;
         var gpuB = await gpuTaskB;
-        if (gpuA is null || gpuB is null) return null;
+        if (gpuA is null || gpuB is null) yield break;
 
         var gpuBenchmarkTaskA = gpuBenchmarkRepository.GetGpuBenchmark(gpuA.Name);
         var gpuBenchmarkTaskB = gpuBenchmarkRepository.GetGpuBenchmark(gpuB.Name);
         await Task.WhenAll(gpuBenchmarkTaskA, gpuBenchmarkTaskB);
         var gpuBenchmarkA = await gpuBenchmarkTaskA;
         var gpuBenchmarkB = await gpuBenchmarkTaskB;
-        if (gpuBenchmarkA is null || gpuBenchmarkB is null) return null;
+        if (gpuBenchmarkA is null || gpuBenchmarkB is null) yield break;
 
         if (gpuBenchmarkA.Score < gpuBenchmarkB.Score)
-            return new("Відеокарта", PcCompareMetric.Better);
+            yield return new("Відеокарта", PcCompareMetric.Better);
         else if (gpuBenchmarkA.Score == gpuBenchmarkB.Score)
-            return new("Відеокарта", PcCompareMetric.Equal);
+            yield return new("Відеокарта", PcCompareMetric.Equal);
         else
-            return new("Відеокарта", PcCompareMetric.Worse);
+            yield return new("Відеокарта", PcCompareMetric.Worse);
+    }
+
+    private async IAsyncEnumerable<PcCompareMessage> CompareRams(Guid? a, Guid? b)
+    {
+        if (!a.HasValue || !b.HasValue) yield break;
+
+        var ramTaskA = ramRepository.GetRam(a.Value);
+        var ramTaskB = ramRepository.GetRam(b.Value);
+        await Task.WhenAll(ramTaskA, ramTaskB);
+        var ramA = await ramTaskA;
+        var ramB = await ramTaskB;
+        if (ramA is null || ramB is null) yield break;
+
+        if (ramA.Amount * ramA.Sticks > ramB.Amount * ramB.Sticks)
+            yield return new("Оперативна пам'ять", PcCompareMetric.Better,
+                "У вашій збірці більше оперативної пам'яті");
+        else if (ramA.Amount * ramA.Sticks == ramB.Amount * ramB.Sticks)
+            yield return new("Оперативна пам'ять", PcCompareMetric.Equal,
+                "У вашій збірці така сама кількість оперативної пам'яті");
+        else
+            yield return new("Оперативна пам'ять", PcCompareMetric.Worse,
+                "У вашій збірці менша кількість оперативної пам'яті");
+        
+        if (ramA.Frequency > ramB.Frequency)
+            yield return new("Оперативна пам'ять", PcCompareMetric.Better,
+                "У вашій збірці швидка оперативна пам'ять");
+        else if (ramA.Frequency == ramB.Frequency)
+            yield return new("Оперативна пам'ять", PcCompareMetric.Equal,
+                "У вашій збірці така сама швидкість оперативної пам'яті");
+        else
+            yield return new("Оперативна пам'ять", PcCompareMetric.Worse,
+                "У вашій збірці повільніша оперативна пам'ять");
+        
+        yield return ramA.Generation.CompareTo(ramB.Generation) switch
+        {
+            1 => new("Оперативна пам'ять", PcCompareMetric.Better,
+                "У вашій збірці оперативна пам'ять більш нового покоління"),
+            -1 => new("Оперативна пам'ять", PcCompareMetric.Worse,
+                "У вашій збірці оперативна пам'ять більш старого покоління"),
+            _ => new("Оперативна пам'ять", PcCompareMetric.Equal,
+                "У вашій збірці оперативна пам'ять такого самого покоління"),
+        };
     }
 }
