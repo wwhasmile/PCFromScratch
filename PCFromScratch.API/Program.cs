@@ -37,6 +37,8 @@ builder.Services.AddScoped<IGpuBenchmarkService, GpuBenchmarkService>();
 builder.Services.AddScoped<IInternalDriveService, InternalDriveService>();
 builder.Services.AddScoped<IPsuService, PsuService>();
 
+builder.Services.AddHostedService<CpuBenchmarkScraperBackgroundService>();
+builder.Services.AddHostedService<GpuBenchmarkScraperBackgroundService>();
 builder.Services.AddHostedService<CpuScraperBackgroundService>();
 builder.Services.AddHostedService<RamScraperBackgroundService>();
 builder.Services.AddHostedService<MotherboardScraperBackgroundService>();
