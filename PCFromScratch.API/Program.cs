@@ -18,6 +18,7 @@ builder.Services.AddDbContext<StorageDbContext>(options =>
         x => x.MigrationsAssembly("PCFromScratch.Migrations")));
 builder.Services.AddScoped<IStorageContext, EntityStorageContext>();
 builder.Services.AddScoped<ICpuRepository, StorageCpuRepository>();
+builder.Services.AddScoped<ICpuBenchmarkRepository, CpuBenchmarkRepository>();
 builder.Services.AddScoped<IRamRepository, StorageRamRepository>();
 builder.Services.AddScoped<IMotherboardRepository, StorageMotherboardRepository>();
 builder.Services.AddScoped<ICoolerRepository, StorageCoolerRepository>();
@@ -26,6 +27,7 @@ builder.Services.AddScoped<IInternalDriveRepository, StorageInternalDriveReposit
 builder.Services.AddScoped<IPsuRepository, StoragePsuRepository>();
 
 builder.Services.AddScoped<ICpuService, CpuService>();
+builder.Services.AddScoped<ICpuBenchmarkService, CpuBenchmarkService>();
 builder.Services.AddScoped<IRamService, RamService>();
 builder.Services.AddScoped<IMotherboardService, MotherboardService>();
 builder.Services.AddScoped<ICoolerService, CoolerService>();
