@@ -1,26 +1,32 @@
-﻿using PCFromScratch.DBModels;
-using PCFromScratch.Repository;
+﻿using PCFromScratch.App.Utils;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels
 {
-    public class StorageSelectionViewModel : BaseComponentViewModel<InternalDrive>
+    public class StorageSelectionViewModel : BaseComponentViewModel<InternalDriveDtoModel>
     {
-        private readonly IInternalDriveRepository _storageRepository;
+        private readonly ServerRequests _serverRequests;
 
-        public StorageSelectionViewModel(IInternalDriveRepository storageRepository)
+        public StorageSelectionViewModel(ServerRequests serverRequests)
         {
-            _storageRepository = storageRepository;
-            LoadParts();
+            _serverRequests = serverRequests;
+            _ = FetchParts();
         }
 
-        protected override async void LoadParts()
+        protected override async Task FetchParts()
         {
-            _allParts.Clear();
-            await foreach (var storage in _storageRepository.GetInternalDrives())
+            if (IsBusy) return;
+
+            try
             {
-                _allParts.Add(storage);
+                IsBusy = true;
+                _allParts = await _serverRequests.GetItems<InternalDriveDtoModel>("/drive") ?? new List<InternalDriveDtoModel>();
+                LoadParts();
             }
-            UpdateList();
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }

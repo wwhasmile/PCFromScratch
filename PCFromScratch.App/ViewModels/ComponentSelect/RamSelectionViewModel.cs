@@ -1,25 +1,31 @@
-﻿using PCFromScratch.DBModels;
-using PCFromScratch.Repository;
+﻿using PCFromScratch.App.Utils;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
-public class RamSelectionViewModel : BaseComponentViewModel<Ram>
+public class RamSelectionViewModel : BaseComponentViewModel<RamDtoModel>
 {
-    private readonly IRamRepository _ramRepository;
+    private readonly ServerRequests _serverRequests;
 
-    public RamSelectionViewModel(IRamRepository ramRepository)
+    public RamSelectionViewModel(ServerRequests serverRequests)
     {
-        _ramRepository = ramRepository;
-        LoadParts();
+        _serverRequests = serverRequests;
+        _ = FetchParts();
     }
 
-    protected override async void LoadParts()
+    protected override async Task FetchParts()
     {
-        _allParts.Clear();
-        await foreach (var ram in _ramRepository.GetRams())
+        if (IsBusy) return;
+
+        try
         {
-            _allParts.Add(ram);
+            IsBusy = true;
+            _allParts = await _serverRequests.GetItems<RamDtoModel>("/ram") ?? new List<RamDtoModel>();
+            LoadParts();
         }
-        UpdateList();
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

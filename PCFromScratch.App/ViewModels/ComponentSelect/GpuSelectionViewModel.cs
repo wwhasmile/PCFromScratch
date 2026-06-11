@@ -1,25 +1,31 @@
-﻿using PCFromScratch.DBModels;
-using PCFromScratch.Repository;
+﻿using PCFromScratch.App.Utils;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
-public class GpuSelectionViewModel : BaseComponentViewModel<Gpu>
+public class GpuSelectionViewModel : BaseComponentViewModel<GpuDtoModel>
 {
-    private readonly IGpuRepository _gpuRepository;
+    private readonly ServerRequests _serverRequests;
 
-    public GpuSelectionViewModel(IGpuRepository gpuRepository)
+    public GpuSelectionViewModel(ServerRequests serverRequests)
     {
-        _gpuRepository = gpuRepository;
-        LoadParts();
+        _serverRequests = serverRequests;
+        _ = FetchParts();
     }
 
-    protected override async void LoadParts()
+    protected override async Task FetchParts()
     {
-        _allParts.Clear();
-        await foreach (var gpu in _gpuRepository.GetGpus())
+        if (IsBusy) return;
+
+        try
         {
-            _allParts.Add(gpu);
+            IsBusy = true;
+            _allParts = await _serverRequests.GetItems<GpuDtoModel>("/gpu") ?? new List<GpuDtoModel>();
+            LoadParts();
         }
-        UpdateList();
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

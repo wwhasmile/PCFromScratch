@@ -1,25 +1,31 @@
-﻿using PCFromScratch.DBModels;
-using PCFromScratch.Repository;
+﻿using PCFromScratch.App.Utils;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
-public class CpuSelectionViewModel : BaseComponentViewModel<Cpu>
+public class CpuSelectionViewModel : BaseComponentViewModel<CpuDtoModel>
 {
-    private readonly ICpuRepository _cpuRepository;
+    private readonly ServerRequests _serverRequests;
 
-    public CpuSelectionViewModel(ICpuRepository cpuRepository)
+    public CpuSelectionViewModel(ServerRequests serverRequests)
     {
-        _cpuRepository = cpuRepository;
-        LoadParts();
+        _serverRequests = serverRequests;
+        _ = FetchParts();
     }
 
-    protected override async void LoadParts()
+    protected override async Task FetchParts()
     {
-        _allParts.Clear();
-        await foreach (var cpu in _cpuRepository.GetCpus())
+        if (IsBusy) return;
+
+        try
         {
-            _allParts.Add(cpu);
+            IsBusy = true;
+            _allParts = await _serverRequests.GetItems<CpuDtoModel>("/cpu") ?? new List<CpuDtoModel>();
+            LoadParts();
         }
-        UpdateList();
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

@@ -3,15 +3,12 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-using PCFromScratch.Common;
-using PCFromScratch.DBModels;
-
 namespace PCFromScratch.App.ViewModels
 {
-    public abstract class BaseComponentViewModel<T> : INotifyPropertyChanged where T: class
+    public abstract class BaseComponentViewModel<T> : INotifyPropertyChanged
     {
-        public ObservableCollection<T> Parts { get; set; }
-        protected ObservableCollection<T> _allParts;
+        public ObservableCollection<T> Parts { get; }
+        protected IEnumerable<T> _allParts;
 
         private string _searchTerm;
         public string SearchTerm
@@ -19,36 +16,75 @@ namespace PCFromScratch.App.ViewModels
             get => _searchTerm;
             set
             {
+                if (_searchTerm == value) return;
                 _searchTerm = value;
-                UpdateList(_searchTerm);
                 OnPropertyChanged();
+                LoadParts(true);
             }
         }
 
         public ICommand SelectCommand { get; }
+        public ICommand LoadMorePartsCommand { get; }
+
+        protected int PageSize = 20;
+        protected int _currentPage = 0;
+        
+        private bool _isBusy;
+        public bool IsBusy
+        {
+            get => _isBusy;
+            set
+            {
+                if (_isBusy == value) return;
+                _isBusy = value;
+                OnPropertyChanged();
+            }
+        }
 
         protected BaseComponentViewModel()
         {
             Parts = new ObservableCollection<T>();
-            _allParts = new ObservableCollection<T>();
+            _allParts = new List<T>();
             SelectCommand = new Command<T>(OnSelect);
+            LoadMorePartsCommand = new Command(() => LoadParts());
             _searchTerm = "";
         }
 
-        protected abstract void LoadParts();
-
-        protected void UpdateList(string searchTerm = "")
+        protected void LoadParts(bool fromSearch = false)
         {
-            Parts.Clear();
-            var filteredParts = string.IsNullOrWhiteSpace(searchTerm)
-                ? _allParts
-                : _allParts.Where(p => ((dynamic)p).Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
-
-            foreach (var part in filteredParts)
+            try
             {
-                Parts.Add(part);
+                IsBusy = true;
+
+                if (fromSearch)
+                {
+                    Parts.Clear();
+                    _currentPage = 0;
+                }
+
+                var filteredParts = string.IsNullOrWhiteSpace(SearchTerm)
+                    ? _allParts
+                    : _allParts.Where(p => ((dynamic)p).Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
+
+                var pagedParts = filteredParts.Skip(_currentPage * PageSize).Take(PageSize).ToList();
+
+                foreach (var part in pagedParts)
+                {
+                    Parts.Add(part);
+                }
+
+                if (pagedParts.Any())
+                {
+                    _currentPage++;
+                }
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
+
+        protected abstract Task FetchParts();
 
         private async void OnSelect(T part)
         {

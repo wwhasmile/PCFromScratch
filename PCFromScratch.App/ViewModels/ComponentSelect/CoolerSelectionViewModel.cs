@@ -1,26 +1,32 @@
-﻿using PCFromScratch.DBModels;
-using PCFromScratch.Repository;
+﻿using PCFromScratch.App.Utils;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels
 {
-    public class CoolerSelectionViewModel : BaseComponentViewModel<Cooler>
+    public class CoolerSelectionViewModel : BaseComponentViewModel<CoolerDtoModel>
     {
-        private readonly ICoolerRepository _coolerRepository;
+        private readonly ServerRequests _serverRequests;
 
-        public CoolerSelectionViewModel(ICoolerRepository coolerRepository)
+        public CoolerSelectionViewModel(ServerRequests serverRequests)
         {
-            _coolerRepository = coolerRepository;
-            LoadParts();
+            _serverRequests = serverRequests;
+            _ = FetchParts();
         }
 
-        protected override async void LoadParts()
+        protected override async Task FetchParts()
         {
-            _allParts.Clear();
-            await foreach (var cooler in _coolerRepository.GetCoolers())
+            if (IsBusy) return;
+
+            try
             {
-                _allParts.Add(cooler);
+                IsBusy = true;
+                _allParts = await _serverRequests.GetItems<CoolerDtoModel>("/cooler") ?? new List<CoolerDtoModel>();
+                LoadParts();
             }
-            UpdateList();
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }

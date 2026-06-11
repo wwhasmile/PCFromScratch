@@ -1,25 +1,31 @@
-﻿using PCFromScratch.DBModels;
-using PCFromScratch.Repository;
+﻿using PCFromScratch.App.Utils;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
-public class MotherboardSelectionViewModel : BaseComponentViewModel<MotherboardRenamedForOmnissiah>
+public class MotherboardSelectionViewModel : BaseComponentViewModel<MotherboardDtoModel>
 {
-    private readonly IMotherboardRepository _motherboardRepository;
+    private readonly ServerRequests _serverRequests;
 
-    public MotherboardSelectionViewModel(IMotherboardRepository motherboardRepository)
+    public MotherboardSelectionViewModel(ServerRequests serverRequests)
     {
-        _motherboardRepository = motherboardRepository;
-        LoadParts();
+        _serverRequests = serverRequests;
+        _ = FetchParts();
     }
 
-    protected override async void LoadParts()
+    protected override async Task FetchParts()
     {
-        _allParts.Clear();
-        await foreach (var motherboard in _motherboardRepository.GetMotherboards())
+        if (IsBusy) return;
+
+        try
         {
-            _allParts.Add(motherboard);
+            IsBusy = true;
+            _allParts = await _serverRequests.GetItems<MotherboardDtoModel>("/motherboard") ?? new List<MotherboardDtoModel>();
+            LoadParts();
         }
-        UpdateList();
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

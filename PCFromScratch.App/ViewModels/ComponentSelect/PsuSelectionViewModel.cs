@@ -1,26 +1,32 @@
-﻿using PCFromScratch.DBModels;
-using PCFromScratch.Repository;
+﻿using PCFromScratch.App.Utils;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels
 {
-    public class PsuSelectionViewModel : BaseComponentViewModel<Psu>
+    public class PsuSelectionViewModel : BaseComponentViewModel<PsuDtoModel>
     {
-        private readonly IPsuRepository _psuRepository;
+        private readonly ServerRequests _serverRequests;
 
-        public PsuSelectionViewModel(IPsuRepository psuRepository)
+        public PsuSelectionViewModel(ServerRequests serverRequests)
         {
-            _psuRepository = psuRepository;
-            LoadParts();
+            _serverRequests = serverRequests;
+            _ = FetchParts();
         }
 
-        protected override async void LoadParts()
+        protected override async Task FetchParts()
         {
-            _allParts.Clear();
-            await foreach (var psu in _psuRepository.GetPsus())
+            if (IsBusy) return;
+
+            try
             {
-                _allParts.Add(psu);
+                IsBusy = true;
+                _allParts = await _serverRequests.GetItems<PsuDtoModel>("/psu") ?? new List<PsuDtoModel>();
+                LoadParts();
             }
-            UpdateList();
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }
