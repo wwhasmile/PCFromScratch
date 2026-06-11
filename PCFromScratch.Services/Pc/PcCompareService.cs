@@ -118,4 +118,65 @@ public class PcCompareService(ICpuRepository cpuRepository,
         messages.TryAdd("Диски", "Загальна кількість місця на накопичувачах не відповідає вимогам");
         return false;
     }
+
+    public async IAsyncEnumerable<PcCompareMessage> ComparePcs(PcDtoModel a, PcDtoModel b)
+    {
+        var tasks = await Task.WhenAll(CompareCpus(a.Cpu, b.Cpu), CompareGpus(a.Gpu, b.Gpu));
+
+        foreach (var message in tasks)
+            if (message.HasValue)
+                yield return message.Value;
+    }
+
+    private async Task<PcCompareMessage?> CompareCpus(Guid? a, Guid? b)
+    {
+        if (!a.HasValue || !b.HasValue) return null;
+
+        var cpuTaskA = cpuRepository.GetCpu(a.Value);
+        var cpuTaskB = cpuRepository.GetCpu(b.Value);
+        await Task.WhenAll(cpuTaskA, cpuTaskB);
+        var cpuA = await cpuTaskA;
+        var cpuB = await cpuTaskB;
+        if (cpuA is null || cpuB is null) return null;
+
+        var cpuBenchmarkTaskA = cpuBenchmarkRepository.GetCpuBenchmark(cpuA.Name);
+        var cpuBenchmarkTaskB = cpuBenchmarkRepository.GetCpuBenchmark(cpuB.Name);
+        await Task.WhenAll(cpuBenchmarkTaskA, cpuBenchmarkTaskB);
+        var cpuBenchmarkA = await cpuBenchmarkTaskA;
+        var cpuBenchmarkB = await cpuBenchmarkTaskB;
+        if (cpuBenchmarkA is null || cpuBenchmarkB is null) return null;
+
+        if (cpuBenchmarkA.Score < cpuBenchmarkB.Score)
+            return new("Процесор", PcCompareMetric.Better);
+        else if (cpuBenchmarkA.Score == cpuBenchmarkB.Score)
+            return new("Процесор", PcCompareMetric.Equal);
+        else
+            return new("Процесор", PcCompareMetric.Worse);
+    }
+
+    private async Task<PcCompareMessage?> CompareGpus(Guid? a, Guid? b)
+    {
+        if (!a.HasValue || !b.HasValue) return null;
+
+        var gpuTaskA = gpuRepository.GetGpu(a.Value);
+        var gpuTaskB = gpuRepository.GetGpu(b.Value);
+        await Task.WhenAll(gpuTaskA, gpuTaskB);
+        var gpuA = await gpuTaskA;
+        var gpuB = await gpuTaskB;
+        if (gpuA is null || gpuB is null) return null;
+
+        var gpuBenchmarkTaskA = gpuBenchmarkRepository.GetGpuBenchmark(gpuA.Name);
+        var gpuBenchmarkTaskB = gpuBenchmarkRepository.GetGpuBenchmark(gpuB.Name);
+        await Task.WhenAll(gpuBenchmarkTaskA, gpuBenchmarkTaskB);
+        var gpuBenchmarkA = await gpuBenchmarkTaskA;
+        var gpuBenchmarkB = await gpuBenchmarkTaskB;
+        if (gpuBenchmarkA is null || gpuBenchmarkB is null) return null;
+
+        if (gpuBenchmarkA.Score < gpuBenchmarkB.Score)
+            return new("Відеокарта", PcCompareMetric.Better);
+        else if (gpuBenchmarkA.Score == gpuBenchmarkB.Score)
+            return new("Відеокарта", PcCompareMetric.Equal);
+        else
+            return new("Відеокарта", PcCompareMetric.Worse);
+    }
 }
