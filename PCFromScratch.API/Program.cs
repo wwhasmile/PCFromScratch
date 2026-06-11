@@ -127,6 +127,17 @@ app.MapGet("/psu/{id}", async (Guid id, IPsuService psuService) =>
 app.MapGet("/psu/{id}/offers", async (Guid id, IPsuService psuService) =>
     await psuService.GetPsuOffers(id).ToListAsync());
 
+app.MapGet("/benchmarks/cpu/byId/{id}", async (Guid id, ICpuBenchmarkService cpuBenchmarkService) =>
+{
+    var cpuBenchmark = await cpuBenchmarkService.GetCpuBenchmark(id);
+    return cpuBenchmark is null ? Results.NotFound() : Results.Ok(cpuBenchmark);
+});
+app.MapGet("/benchmarks/cpu/byName/{name}", async (string name, ICpuBenchmarkService cpuBenchmarkService) =>
+{
+    var cpuBenchmark = await cpuBenchmarkService.GetCpuBenchmark(name);
+    return cpuBenchmark is null ? Results.NotFound() : Results.Ok(cpuBenchmark);
+});
+
 app.MapGet("/pc/check", async (PcDtoModel pc, IPcCheckService pcCheckService) =>
     await pcCheckService.CheckPc(pc));
 app.MapGet("/pc/compare", async (PcDtoModel pc, SystemRequirementsDtoModel systemRequirements, IPcCompareService pcCompareService) =>
