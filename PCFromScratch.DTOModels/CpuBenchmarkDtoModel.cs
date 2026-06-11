@@ -1,3 +1,3 @@
 ﻿namespace PCFromScratch.DTOModels;
 
-public record struct CpuBenchmark(Guid Id, string Name, int Score);
+public record struct CpuBenchmarkDtoModel(Guid Id, string Name, int Score);
