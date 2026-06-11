@@ -12,7 +12,8 @@ public class PcCompareService(ICpuRepository cpuRepository,
     ICpuBenchmarkRepository cpuBenchmarkRepository,
     IGpuBenchmarkRepository gpuBenchmarkRepository,
     IRamRepository ramRepository,
-    IInternalDriveRepository internalDriveRepository) : IPcCompareService
+    IInternalDriveRepository internalDriveRepository,
+    IPsuRepository psuRepository) : IPcCompareService
 {
     public async Task<(bool, Dictionary<string, string>)> IsFitRequirements(PcDtoModel pc, SystemRequirementsDtoModel requirements)
     {
@@ -131,6 +132,12 @@ public class PcCompareService(ICpuRepository cpuRepository,
         
         await foreach (var message in CompareGpus(a.Gpu, b.Gpu))
             result.Add(message);
+        
+        await foreach (var message in CompareDrives(a.InternalDrives, b.InternalDrives))
+            result.Add(message);
+        
+        await foreach (var message in ComparePsus(a.Psu, b.Psu))
+            result.Add(message);
 
         return result;
     }
@@ -227,5 +234,59 @@ public class PcCompareService(ICpuRepository cpuRepository,
             _ => new("Оперативна пам'ять", PcCompareMetric.Equal,
                 "У вашій збірці оперативна пам'ять такого самого покоління"),
         };
+    }
+
+    private async IAsyncEnumerable<PcCompareMessage> CompareDrives(List<Guid> a, List<Guid> b)
+    {
+        var driveTasksA = a.Select(x => internalDriveRepository.GetInternalDrive(x));
+        var driveTasksB = b.Select(x => internalDriveRepository.GetInternalDrive(x));
+
+        var drivesA = await Task.WhenAll(driveTasksA);
+        var drivesB = await Task.WhenAll(driveTasksB);
+
+        var capacityA = drivesA.Sum(x => x?.Capacity ?? 0);
+        var capacityB = drivesB.Sum(x => x?.Capacity ?? 0);
+
+        if (capacityA > capacityB)
+            yield return new("Диски", PcCompareMetric.Better,
+                "У вашій збірці більше дискового простору");
+        else if (capacityA == capacityB)
+            yield return new("Диски", PcCompareMetric.Equal,
+                "У вашій збірці такий самий дисковий простір");
+        else
+            yield return new("Диски", PcCompareMetric.Worse,
+                "У вашій збірці менше дискового простору");
+    }
+
+    private async IAsyncEnumerable<PcCompareMessage> ComparePsus(Guid? a, Guid? b)
+    {
+        if (!a.HasValue || !b.HasValue) yield break;
+
+        var psuTaskA = psuRepository.GetPsu(a.Value);
+        var psuTaskB = psuRepository.GetPsu(b.Value);
+        await Task.WhenAll(psuTaskA, psuTaskB);
+        var psuA = await psuTaskA;
+        var psuB = await psuTaskB;
+        if (psuA is null || psuB is null) yield break;
+
+        if (psuA.Power > psuB.Power)
+            yield return new("Блок живлення", PcCompareMetric.Better,
+                "У вашій збірці більш потужний блок живлення");
+        else if (psuA.Power == psuB.Power)
+            yield return new("Блок живлення", PcCompareMetric.Equal,
+                "У вашій збірці так само потужний блок живлення");
+        else
+            yield return new("Блок живлення", PcCompareMetric.Worse,
+                "У вашій збірці менш потужний блок живлення");
+        
+        if (psuA.Level > psuB.Level)
+            yield return new("Блок живлення", PcCompareMetric.Better,
+                "У вашій збірці краще сертифікований блок живлення");
+        else if (psuA.Level == psuB.Level)
+            yield return new("Блок живлення", PcCompareMetric.Equal,
+                "У вашій збірці так само сертифікований блок живлення");
+        else
+            yield return new("Блок живлення", PcCompareMetric.Worse,
+                "У вашій збірці гірше сертифікований блок живлення");
     }
 }
