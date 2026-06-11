@@ -2,15 +2,17 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
+using PCFromScratch.DTOModels;
+
 namespace PCFromScratch.App.Pages;
 
-public class Part (Guid id, string name, IEnumerable<Offer> offers) : INotifyPropertyChanged
+public class Part (Guid id, string name, IEnumerable<OfferDtoModel> offers) : INotifyPropertyChanged
 {
     public Guid Id { get; set; } = id;
     public string Name { get; set; } = name;
-    public ObservableCollection<Offer> Offers { get; set; } = new (offers);
+    public ObservableCollection<OfferDtoModel> Offers { get; set; } = new (offers);
     
-    public Offer? SelectedOffer
+    public OfferDtoModel? SelectedOffer
     {
         get;
         set
@@ -28,11 +30,4 @@ public class Part (Guid id, string name, IEnumerable<Offer> offers) : INotifyPro
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-}
-
-public class Offer(string shop, string link, decimal price)
-{
-    public string Shop { get; set; } = shop;
-    public string Link { get; set; } = link;
-    public decimal Price { get; set; } = price;
 }
