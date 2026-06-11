@@ -1,3 +1,5 @@
+using FuzzySharp;
+
 using PCFromScratch.DBModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -116,12 +118,20 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
     public async Task<CpuBenchmark?> GetCpuBenchmark(Guid id) => await _dbContext.FindAsync<CpuBenchmark>(id);
 
     public Task<CpuBenchmark?> GetCpuBenchmark(string cpuName)
-        => _dbContext.CpuBenchmarks.FirstOrDefaultAsync(x => x.Name == cpuName);
+    {
+        var names = _dbContext.CpuBenchmarks.Select(n => n.Name).ToList();
+        var result = Process.ExtractOne(cpuName, names);
+        return _dbContext.CpuBenchmarks.FirstOrDefaultAsync(x => x.Name == result.Value);
+    }
 
     public async Task<GpuBenchmark?> GetGpuBenchmark(Guid id) => await _dbContext.FindAsync<GpuBenchmark>(id);
 
     public Task<GpuBenchmark?> GetGpuBenchmark(string gpuName)
-        => _dbContext.GpuBenchmarks.FirstOrDefaultAsync(x => x.Name == gpuName);
+    {
+        var names = _dbContext.GpuBenchmarks.Select(n => n.Name).ToList();
+        var result = Process.ExtractOne(gpuName, names);
+        return _dbContext.GpuBenchmarks.FirstOrDefaultAsync(x => x.Name == result.Value);
+    }
 
     public async Task AddMotherboard(MotherboardRenamedForOmnissiah motherboardRenamedForOmnissiah)
     {
