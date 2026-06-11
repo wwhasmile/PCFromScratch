@@ -1,15 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using PCFromScratch.Repository;
-using PCFromScratch.Scrapers;
+using PCFromScratch.App.Utils;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
 public class ComponentsCompareViewModel : INotifyPropertyChanged
 {
-    private readonly ICpuRepository _cpuRepository;
-    private readonly IGpuRepository _gpuRepository;
+    private readonly ServerRequests _requests;
 
     public ObservableCollection<string> ComponentTypes { get; } = new() { "CPU", "GPU" };
     public string? SelectedComponentType
@@ -33,7 +32,7 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         {
             field = value;
             OnPropertyChanged();
-            CompareComponents();
+            _ = CompareComponents();
         }
     }
     
@@ -44,16 +43,15 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         {
             field = value;
             OnPropertyChanged();
-            CompareComponents();
+            _ = CompareComponents();
         }
     }
 
     public ObservableCollection<BenchmarkChartEntry> ChartData { get; } = new();
 
-    public ComponentsCompareViewModel(ICpuRepository cpuRepository, IGpuRepository gpuRepository)
+    public ComponentsCompareViewModel(ServerRequests requests)
     {
-        _cpuRepository = cpuRepository;
-        _gpuRepository = gpuRepository;
+        _requests = requests;
     }
 
     private async void LoadComponents()
@@ -63,7 +61,7 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
 
         if (SelectedComponentType == "CPU")
         {
-            await foreach (var cpu in _cpuRepository.GetCpus())
+            foreach (var cpu in await _requests.GetItems<CpuDtoModel>("/cpu") ?? [])
             {
                 ComponentNames1.Add(cpu.Name);
                 ComponentNames2.Add(cpu.Name);
@@ -71,7 +69,7 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         }
         else if (SelectedComponentType == "GPU")
         {
-            await foreach (var gpu in _gpuRepository.GetGpus())
+            foreach (var gpu in await _requests.GetItems<GpuDtoModel>("/gpu") ?? [])
             {
                 ComponentNames1.Add(gpu.Name);
                 ComponentNames2.Add(gpu.Name);
@@ -79,7 +77,7 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         }
     }
 
-    private void CompareComponents()
+    private async Task CompareComponents()
     {
         if (string.IsNullOrEmpty(SelectedComponent1) || string.IsNullOrEmpty(SelectedComponent2))
         {
@@ -90,25 +88,23 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         var screenWidth = DeviceDisplay.MainDisplayInfo.Width;
         if (SelectedComponentType == "CPU")
         {
-            var benchmark1 = CpuMatcher.GetBenchmark(SelectedComponent1);
-            var benchmark2 = CpuMatcher.GetBenchmark(SelectedComponent2);
-            var score1 = int.Parse(benchmark1.BenchmarkScore.Replace(",", ""));
-            var score2 = int.Parse(benchmark2.BenchmarkScore.Replace(",", ""));
-            var width1 = (score1 * screenWidth / int.Max(score1, score2)) * 0.6;
-            var width2 = (score2 * screenWidth / int.Max(score1, score2)) * 0.6;
-            ChartData.Add(new BenchmarkChartEntry(SelectedComponent1, score1, width1));
-            ChartData.Add(new BenchmarkChartEntry(SelectedComponent2, score2, width2));
+            var benchmark1 = await _requests.GetCpuBenchmark(SelectedComponent1);
+            var benchmark2 = await _requests.GetCpuBenchmark(SelectedComponent2);
+            if (benchmark1 is null || benchmark2 is null) return;
+            var width1 = (benchmark1.Value.Score * screenWidth / int.Max(benchmark1.Value.Score, benchmark2.Value.Score)) * 0.6;
+            var width2 = (benchmark2.Value.Score * screenWidth / int.Max(benchmark1.Value.Score, benchmark2.Value.Score)) * 0.6;
+            ChartData.Add(new BenchmarkChartEntry(SelectedComponent1, benchmark1.Value.Score, width1));
+            ChartData.Add(new BenchmarkChartEntry(SelectedComponent2, benchmark2.Value.Score, width2));
         }
         else if (SelectedComponentType == "GPU")
         {
-            var benchmark1 = GpuMatcher.GetBenchmark(SelectedComponent1);
-            var benchmark2 = GpuMatcher.GetBenchmark(SelectedComponent2);
-            var score1 = int.Parse(benchmark1.BenchmarkScore.Replace(",", ""));
-            var score2 = int.Parse(benchmark2.BenchmarkScore.Replace(",", ""));
-            var width1 = (score1 * screenWidth / int.Max(score1, score2)) * 0.6;
-            var width2 = (score2 * screenWidth / int.Max(score1, score2)) * 0.6;
-            ChartData.Add(new BenchmarkChartEntry(SelectedComponent1, score1, width1));
-            ChartData.Add(new BenchmarkChartEntry(SelectedComponent2, score2, width2));
+            var benchmark1 = await _requests.GetGpuBenchmark(SelectedComponent1);
+            var benchmark2 = await _requests.GetGpuBenchmark(SelectedComponent2);
+            if (benchmark1 is null || benchmark2 is null) return;
+            var width1 = (benchmark1.Value.Score * screenWidth / int.Max(benchmark1.Value.Score, benchmark2.Value.Score)) * 0.6;
+            var width2 = (benchmark2.Value.Score * screenWidth / int.Max(benchmark1.Value.Score, benchmark2.Value.Score)) * 0.6;
+            ChartData.Add(new BenchmarkChartEntry(SelectedComponent1, benchmark1.Value.Score, width1));
+            ChartData.Add(new BenchmarkChartEntry(SelectedComponent2, benchmark2.Value.Score, width2));
         }
     }
 

@@ -1,5 +1,7 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Json;
+using System.Text.Json;
 
+using PCFromScratch.Common;
 using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.Utils;
@@ -8,13 +10,13 @@ public class ServerRequests
 {
     public readonly string ServerAddress;
     private readonly HttpClient _httpClient;
-    private JsonSerializerOptions options;
+    private readonly JsonSerializerOptions _options;
 
     public ServerRequests()
     {
         ServerAddress = "http://192.168.0.77:5160";
         _httpClient = new HttpClient();
-        options = new JsonSerializerOptions
+        _options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
@@ -26,7 +28,7 @@ public class ServerRequests
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<IEnumerable<T>>(content, options);
+            return JsonSerializer.Deserialize<IEnumerable<T>>(content, _options);
         }
         return null;
     }
@@ -37,7 +39,7 @@ public class ServerRequests
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<T>(content, options);
+            return JsonSerializer.Deserialize<T>(content, _options);
         }
         return default;
     }
@@ -48,8 +50,50 @@ public class ServerRequests
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<IEnumerable<OfferDtoModel>>(content, options);
+            return JsonSerializer.Deserialize<IEnumerable<OfferDtoModel>>(content, _options);
         }
         return null;
+    }
+
+    public async Task<IEnumerable<Warning>?> CheckPc(PcDtoModel pc)
+    {
+        var send = await _httpClient.PostAsJsonAsync($"{ServerAddress}/pc/check",pc);
+        if (!send.IsSuccessStatusCode) return null;
+        var response = await _httpClient.GetAsync($"{ServerAddress}/pc/check");
+        if (!response.IsSuccessStatusCode) return null;
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<IEnumerable<Warning>>(content, _options);
+    }
+
+    public async Task<CpuBenchmarkDtoModel?> GetCpuBenchmark(Guid id)
+    {
+        var response = await _httpClient.GetAsync($"{ServerAddress}/benchmarks/cpu/byId/{id}");
+        if (!response.IsSuccessStatusCode) return null;
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<CpuBenchmarkDtoModel>(content, _options);
+    }
+    
+    public async Task<CpuBenchmarkDtoModel?> GetCpuBenchmark(string name)
+    {
+        var response = await _httpClient.GetAsync($"{ServerAddress}/benchmarks/cpu/byName/{name}");
+        if (!response.IsSuccessStatusCode) return null;
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<CpuBenchmarkDtoModel>(content, _options);
+    }
+
+    public async Task<GpuBenchmarkDtoModel?> GetGpuBenchmark(Guid id)
+    {
+        var response = await _httpClient.GetAsync($"{ServerAddress}/benchmarks/gpu/byId/{id}");
+        if (!response.IsSuccessStatusCode) return null;
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<GpuBenchmarkDtoModel>(content, _options);
+    }
+    
+    public async Task<GpuBenchmarkDtoModel?> GetGpuBenchmark(string name)
+    {
+        var response = await _httpClient.GetAsync($"{ServerAddress}/benchmarks/gpu/byName/{name}");
+        if (!response.IsSuccessStatusCode) return null;
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<GpuBenchmarkDtoModel>(content, _options);
     }
 }
