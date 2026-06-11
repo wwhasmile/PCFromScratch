@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using PCFromScratch.App.ViewModels;
+using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.Pages;
 
@@ -61,7 +62,7 @@ public class SingleComponentCategory (string name): BaseComponentCategory (name)
         }
     }
     
-    public Offer? SelectedOffer
+    public OfferDtoModel? SelectedOffer
     {
         get => field;
         set

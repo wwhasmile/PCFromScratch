@@ -1,30 +1,25 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.Input;
 
 using PCFromScratch.App.Pages;
+using PCFromScratch.App.Utils;
 using PCFromScratch.Common;
 using PCFromScratch.DTOModels;
-using PCFromScratch.Repository;
 using PCFromScratch.Services;
 
 namespace PCFromScratch.App.ViewModels;
 
 public class PcConstructorViewModel : INotifyPropertyChanged
 {
-    private readonly ICpuRepository _cpuRepository;
-    private readonly ICoolerRepository _coolerRepository;
-    private readonly IMotherboardRepository _motherboardRepository;
-    private readonly IRamRepository _ramRepository;
-    private readonly IInternalDriveRepository _storageRepository;
-    private readonly IGpuRepository _gpuRepository;
-    private readonly IPsuRepository _psuRepository;
+    private readonly ServerRequests _serverRequests;
     private readonly IPcCheckService _pcCheckService;
 
-    public PcDtoModel Pc { get; set; }
+    private PcDtoModel _pc;
     public ObservableCollection<BaseComponentCategory> Components { get; set; }
     public ObservableCollection<Warning> Warnings { get; set; }
     
@@ -41,11 +36,9 @@ public class PcConstructorViewModel : INotifyPropertyChanged
     public ICommand ChooseCommand { get; }
     public ICommand RemoveCommand { get; }
     public ICommand CheckCompatibilityCommand { get; }
+    public ICommand GoToCanIRunOnItPageCommand { get; }
 
-    public PcConstructorViewModel(ICpuRepository cpuRepository, ICoolerRepository coolerRepository, 
-        IMotherboardRepository motherboardRepository, IRamRepository ramRepository, 
-        IInternalDriveRepository storageRepository, IGpuRepository gpuRepository, IPsuRepository psuRepository,
-        IPcCheckService pcCheckService)
+    public PcConstructorViewModel(ServerRequests serverRequests, IPcCheckService pcCheckService)
     {
         Components = new ObservableCollection<BaseComponentCategory>
         {
@@ -86,21 +79,16 @@ public class PcConstructorViewModel : INotifyPropertyChanged
                 };
             }
         }
-
-        _cpuRepository = cpuRepository;
-        _coolerRepository = coolerRepository;
-        _motherboardRepository = motherboardRepository;
-        _ramRepository = ramRepository;
-        _storageRepository = storageRepository;
-        _gpuRepository = gpuRepository;
-        _psuRepository = psuRepository;
+        _serverRequests = serverRequests;
+        
         _pcCheckService = pcCheckService;
 
         ChooseCommand = new AsyncRelayCommand<BaseComponentCategory>(OnChoose);
         RemoveCommand = new Command<Part>(OnRemove);
         CheckCompatibilityCommand = new AsyncRelayCommand(CheckCompatibility);
+        GoToCanIRunOnItPageCommand = new AsyncRelayCommand(GoToCanIRunOnItPage);
 
-        Pc = new PcDtoModel();
+        _pc = new PcDtoModel();
     }
     
     private void Part_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -145,9 +133,9 @@ public class PcConstructorViewModel : INotifyPropertyChanged
                 break;
             }
         }
-        if (Pc.InternalDrives.Contains(partToRemove.Id))
+        if (_pc.InternalDrives.Contains(partToRemove.Id))
         {
-            Pc.InternalDrives.Remove(partToRemove.Id);
+            _pc.InternalDrives.Remove(partToRemove.Id);
         }
     }
 
@@ -164,59 +152,65 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             "Psu" => "Блок живлення",
             _ => string.Empty
         };
-
+        
         string name = category switch
         {
-            "Cpu" => (await _cpuRepository.GetCpu(selectedPartId)).Name,
-            "Cooler" => (await _coolerRepository.GetCooler(selectedPartId)).Name,
-            "Motherboard" => (await _motherboardRepository.GetMotherboard(selectedPartId)).Name,
-            "Ram" => (await _ramRepository.GetRam(selectedPartId)).Model,
-            "Storage" => (await _storageRepository.GetInternalDrive(selectedPartId)).Name,
-            "Gpu" => (await _gpuRepository.GetGpu(selectedPartId)).Name,
-            "Psu" => (await _psuRepository.GetPsu(selectedPartId)).Name,
+            "Cpu" => (await _serverRequests.GetItem<CpuDtoModel>("/cpu", selectedPartId)).Name,
+            "Cooler" => (await _serverRequests.GetItem<CoolerDtoModel>("/cooler", selectedPartId)).Name,
+            "Motherboard" => (await _serverRequests.GetItem<MotherboardDtoModel>("/motherboard", selectedPartId)).Name,
+            "Ram" => (await _serverRequests.GetItem<RamDtoModel>("/ram", selectedPartId)).Model,
+            "Storage" => (await _serverRequests.GetItem<InternalDriveDtoModel>("/storage", selectedPartId)).Name,
+            "Gpu" => (await _serverRequests.GetItem<GpuDtoModel>("/gpu", selectedPartId)).Name,
+            "Psu" => (await _serverRequests.GetItem<PsuDtoModel>("/psu", selectedPartId)).Name,
             _ => string.Empty
         };
 
-        if (name == null) return;
+        if (name == string.Empty) return;
 
+        IEnumerable<OfferDtoModel>? offers = category switch
+        {
+            "Cpu" => await _serverRequests.GetOffers("/cpu", selectedPartId),
+            "Gpu" => await _serverRequests.GetOffers("/gpu", selectedPartId),
+            "Cooler" => await _serverRequests.GetOffers("/cooler", selectedPartId),
+            "Motherboard" => await _serverRequests.GetOffers("/motherboard", selectedPartId),
+            "Ram" => await _serverRequests.GetOffers("/ram", selectedPartId),
+            "Storage" => await _serverRequests.GetOffers("/storage", selectedPartId),
+            "Psu" => await _serverRequests.GetOffers("/psu", selectedPartId),
+            _ => null
+        };
         var component = Components.FirstOrDefault(c => c.Name == categoryName);
         if (component is SingleComponentCategory single)
         {
-            single.SelectedPart = new Part(selectedPartId, name, new List<Offer>());
+            single.SelectedPart = new Part(selectedPartId, name, offers ?? new List<OfferDtoModel>());
         }
         else if (component is MultiComponentCategory multi)
         {
-            multi.SelectedParts.Add(new Part(selectedPartId, name, new List<Offer>()));
+            multi.SelectedParts.Add(new Part(selectedPartId, name, offers ?? new List<OfferDtoModel>()));
         }
         switch (category)
         {
             case "Cpu":
-                Pc.Cpu = selectedPartId;
+                _pc.Cpu = selectedPartId;
                 break;
             case "Cooler":
-                Pc.Cooler = selectedPartId;
+                _pc.Cooler = selectedPartId;
                 break;
             case "Motherboard":
-                Pc.Motherboard = selectedPartId;
+                _pc.Motherboard = selectedPartId;
                 break;
             case "Ram":
-                Pc.Ram = selectedPartId;
+                _pc.Ram = selectedPartId;
                 break;
             case "Storage":
-                Pc.InternalDrives.Add(selectedPartId);
+                _pc.InternalDrives.Add(selectedPartId);
                 break;
             case "Gpu":
-                Pc.Gpu = selectedPartId;
+                _pc.Gpu = selectedPartId;
                 break;
             case "Psu":
-                Pc.Psu = selectedPartId;
+                _pc.Psu = selectedPartId;
                 break;
         }
-    }
-
-    public void ScrapePrices()
-    {
-        
     }
 
     private void RecalculateTotal()
@@ -226,11 +220,11 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         {
             if (component is SingleComponentCategory single && single.SelectedOffer != null)
             {
-                total += single.SelectedOffer.Price;
+                total += single.SelectedOffer.Value.Price;
             }
             else if (component is MultiComponentCategory multi)
             {
-                total += multi.SelectedParts.Sum(p => p.SelectedOffer != null ? p.SelectedOffer.Price : 0);
+                total += multi.SelectedParts.Sum(p => p.SelectedOffer != null ? p.SelectedOffer.Value.Price : 0);
             }
         }
         TotalCost = total;
@@ -238,13 +232,19 @@ public class PcConstructorViewModel : INotifyPropertyChanged
     
     private async Task CheckCompatibility()
     {
-        var results = await _pcCheckService.CheckPc(Pc);
+        var results = await _pcCheckService.CheckPc(_pc);
         
         Warnings.Clear();
         foreach (var warning in results)
         {
             Warnings.Add(warning);
         }
+    }
+
+    private async Task GoToCanIRunOnItPage()
+    {
+        var pcJson = JsonSerializer.Serialize(_pc);
+        await Shell.Current.GoToAsync($"{nameof(CanIRunOnItPage)}?pc={pcJson}");
     }
     
     public event PropertyChangedEventHandler? PropertyChanged;

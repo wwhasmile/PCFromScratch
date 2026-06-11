@@ -5,24 +5,29 @@
              xmlns:viewModels="clr-namespace:PCFromScratch.App.ViewModels"
              xmlns:common="clr-namespace:PCFromScratch.Common;assembly=PCFromScratch.Common"
              x:Class="PCFromScratch.App.Pages.PcConstructorPage"
-             x:DataType="viewModels:PcConstructorViewModel"
-             Title="Конструктор ПК">
+             x:DataType="viewModels:PcConstructorViewModel">
+    <Shell.TitleView>
+        <Label Text="Конструктор ПК"
+               FontFamily="DniproCityBold"
+               FontSize="36"
+               TextColor="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDarkText}}"
+               HorizontalOptions="Center" />
+    </Shell.TitleView>
     <ContentPage.Resources>
         <local:IsNotNullConverter x:Key="IsNotNullConverter" />
         <!-- Single Component Category Template -->
         <DataTemplate x:Key="SingleComponentCategory" x:DataType="local:SingleComponentCategory">
             <Border Padding="5"  StrokeShape="RoundRectangle 10" StrokeThickness="2">
-                <Grid ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding ., Converter={local:TypeCheckConverter TargetType={x:Type local:SingleComponentCategory}}}">
+                <Grid ColumnDefinitions="*,*,Auto" IsVisible="{Binding ., Converter={local:TypeCheckConverter TargetType={x:Type local:SingleComponentCategory}}}">
                     <VerticalStackLayout Padding="2, 0" VerticalOptions="Center">
                         <Label Text="{Binding Name}" VerticalOptions="Center" />
                         <Label Text="{Binding SelectedPart.Name}" VerticalOptions="Center" IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}" />
                     </VerticalStackLayout>
                     <Picker Grid.Column="1" 
                             ItemsSource="{Binding SelectedPart.Offers}" 
-                            ItemDisplayBinding="{Binding Shop}" 
+                            ItemDisplayBinding="{Binding Display}" 
                             SelectedItem="{Binding SelectedOffer}" 
-                            IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}"
-                            WidthRequest="150"/>
+                            IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}"/>
                     <Button Grid.Column="2" Text="{Binding ButtonText}" Command="{Binding Path=BindingContext.ChooseCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
                 </Grid>
             </Border>
@@ -38,13 +43,12 @@
                     <CollectionView ItemsSource="{Binding SelectedParts}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="local:Part">
-                                <Grid Padding="5,5,5,0" ColumnDefinitions="*,Auto,Auto">
+                                <Grid Padding="5,5,5,0" ColumnDefinitions="*,*,Auto">
                                     <Label Text="{Binding Name}" VerticalOptions="Center" />
                                     <Picker Grid.Column="1" 
                                             ItemsSource="{Binding Offers}" 
-                                            ItemDisplayBinding="{Binding Shop}" 
-                                            SelectedItem="{Binding SelectedOffer}"
-                                            WidthRequest="150"/>
+                                            ItemDisplayBinding="{Binding Display}" 
+                                            SelectedItem="{Binding SelectedOffer}"/>
                                     <Button Grid.Column="2" Text="Видалити" Command="{Binding Path=BindingContext.RemoveCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" Padding="5" />
                                 </Grid>
                             </DataTemplate>
@@ -58,13 +62,23 @@
                                                  SingleComponentCategoryTemplate="{StaticResource SingleComponentCategory}"
                                                  MultiComponentCategoryTemplate="{StaticResource MultiComponentCategory}"/>
     </ContentPage.Resources>
-    <StackLayout>
-        <CollectionView ItemsSource="{Binding Components}" ItemTemplate="{StaticResource ComponentCategoryTemplateSelector}"/>
+    <StackLayout Margin="2, 0">
+        <CollectionView ItemsSource="{Binding Components}" ItemTemplate="{StaticResource ComponentCategoryTemplateSelector}">   
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"></LinearItemsLayout>
+            </CollectionView.ItemsLayout>
+        </CollectionView>
         <Label Text="{Binding TotalCost, StringFormat='Загальна вартість: {0:C}'}" FontSize="Medium" HorizontalOptions="End" Margin="20"/>
         
-        <Button Text="Check Compatibility" Command="{Binding CheckCompatibilityCommand}" Margin="10" />
+        <HorizontalStackLayout Spacing="10" Margin="10" HorizontalOptions="Center">
+            <Button Text="Check Compatibility" Command="{Binding CheckCompatibilityCommand}" />
+            <Button Text="Can I Run On It?" Command="{Binding GoToCanIRunOnItPageCommand}" />
+        </HorizontalStackLayout>
 
-        <CollectionView ItemsSource="{Binding Warnings}">
+        <CollectionView ItemsSource="{Binding Warnings}" >
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"></LinearItemsLayout>
+            </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="common:Warning">
                     <Border Margin="10,5" Padding="15" StrokeThickness="2">
