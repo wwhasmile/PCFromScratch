@@ -95,7 +95,7 @@ public class EntityStorageContext(StorageDbContext dbContext) : IStorageContext
         return query.AsAsyncEnumerable();
     }
 
-    public async Task<MotherboardRenamedForOmnissiah?> GetMotherboard(Guid id) => await _dbContext.FindAsync<MotherboardRenamedForOmnissiah>(id);
+    public async Task<MotherboardRenamedForOmnissiah?> GetMotherboard(Guid id) => await _dbContext.Motherboards.Include(c => c.Offers).FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task<Cpu?> GetCpu(Guid id)
         => await _dbContext.Cpus.Include(c => c.Offers).FirstOrDefaultAsync(x => x.Id == id);

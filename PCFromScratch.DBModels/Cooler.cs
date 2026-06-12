@@ -9,8 +9,8 @@ public class Cooler
     public required string Link { get; set; }
 
     public int Tdp { get; set; }
-    public ICollection<string> IntelSockets { get; set; } = new HashSet<string>();
-    public ICollection<string> AmdSockets { get; set; } = new HashSet<string>();
+    public List<string> IntelSockets { get; set; } = new ();
+    public List<string> AmdSockets { get; set; } = new ();
 
     public int FanCount { get; set; }
     public int Radius { get; set; }
