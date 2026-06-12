@@ -154,10 +154,7 @@ app.MapPost("/pc/check", async (PcDtoModel pc, IPcCheckService pcCheckService) =
     await pcCheckService.CheckPc(pc));
 app.MapPost("/pc/compare/requirements", async (CompareRequirementsRequest request, IPcCompareService pcCompareService) =>
     await pcCompareService.IsFitRequirements(request.Pc, request.SystemRequirements));
-app.MapPost("/pc/compare/pc", async (ComparePcRequest request, IPcCompareService pcCompareService) =>
+app.MapPost("/pc/compare/pc", async (ComparePcsRequest request, IPcCompareService pcCompareService) =>
     await pcCompareService.ComparePcs(request.Pc1, request.Pc2));
 
 app.Run();
-
-record CompareRequirementsRequest(PcDtoModel Pc, SystemRequirementsDtoModel SystemRequirements);
-record ComparePcRequest(PcDtoModel Pc1, PcDtoModel Pc2);
