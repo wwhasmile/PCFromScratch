@@ -152,9 +152,12 @@ app.MapGet("/benchmarks/gpu/byName/{name}", async (string name, IGpuBenchmarkSer
 
 app.MapPost("/pc/check", async (PcDtoModel pc, IPcCheckService pcCheckService) =>
     await pcCheckService.CheckPc(pc));
-app.MapGet("/pc/compare/requirements", async (PcDtoModel pc, SystemRequirementsDtoModel systemRequirements, IPcCompareService pcCompareService) =>
-    await pcCompareService.IsFitRequirements(pc, systemRequirements));
-app.MapGet("/pc/compare/pc", async (PcDtoModel a, PcDtoModel b, IPcCompareService pcCompareService) =>
-    await pcCompareService.ComparePcs(a, b));
+app.MapPost("/pc/compare/requirements", async (CompareRequirementsRequest request, IPcCompareService pcCompareService) =>
+    await pcCompareService.IsFitRequirements(request.Pc, request.SystemRequirements));
+app.MapPost("/pc/compare/pc", async (ComparePcRequest request, IPcCompareService pcCompareService) =>
+    await pcCompareService.ComparePcs(request.Pc1, request.Pc2));
 
 app.Run();
+
+record CompareRequirementsRequest(PcDtoModel Pc, SystemRequirementsDtoModel SystemRequirements);
+record ComparePcRequest(PcDtoModel Pc1, PcDtoModel Pc2);
