@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.Input;
@@ -10,14 +9,12 @@ using PCFromScratch.App.Pages;
 using PCFromScratch.App.Utils;
 using PCFromScratch.Common;
 using PCFromScratch.DTOModels;
-using PCFromScratch.Services;
 
 namespace PCFromScratch.App.ViewModels;
 
 public class PcConstructorViewModel : INotifyPropertyChanged
 {
     private readonly ServerRequests _serverRequests;
-    private readonly IPcCheckService _pcCheckService;
 
     private PcDtoModel _pc;
     public ObservableCollection<BaseComponentCategory> Components { get; set; }
@@ -38,7 +35,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
     public ICommand CheckCompatibilityCommand { get; }
     public ICommand GoToCanIRunOnItPageCommand { get; }
 
-    public PcConstructorViewModel(ServerRequests serverRequests, IPcCheckService pcCheckService)
+    public PcConstructorViewModel(ServerRequests serverRequests)
     {
         Components = new ObservableCollection<BaseComponentCategory>
         {
@@ -80,8 +77,6 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             }
         }
         _serverRequests = serverRequests;
-        
-        _pcCheckService = pcCheckService;
 
         ChooseCommand = new AsyncRelayCommand<BaseComponentCategory>(OnChoose);
         RemoveCommand = new Command<Part>(OnRemove);
@@ -159,7 +154,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             "Cooler" => (await _serverRequests.GetItem<CoolerDtoModel>("/cooler", selectedPartId)).Name,
             "Motherboard" => (await _serverRequests.GetItem<MotherboardDtoModel>("/motherboard", selectedPartId)).Name,
             "Ram" => (await _serverRequests.GetItem<RamDtoModel>("/ram", selectedPartId)).Model,
-            "Storage" => (await _serverRequests.GetItem<InternalDriveDtoModel>("/storage", selectedPartId)).Name,
+            "Storage" => (await _serverRequests.GetItem<InternalDriveDtoModel>("/drive", selectedPartId)).Name,
             "Gpu" => (await _serverRequests.GetItem<GpuDtoModel>("/gpu", selectedPartId)).Name,
             "Psu" => (await _serverRequests.GetItem<PsuDtoModel>("/psu", selectedPartId)).Name,
             _ => string.Empty
@@ -174,7 +169,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             "Cooler" => await _serverRequests.GetOffers("/cooler", selectedPartId),
             "Motherboard" => await _serverRequests.GetOffers("/motherboard", selectedPartId),
             "Ram" => await _serverRequests.GetOffers("/ram", selectedPartId),
-            "Storage" => await _serverRequests.GetOffers("/storage", selectedPartId),
+            "Storage" => await _serverRequests.GetOffers("/drive", selectedPartId),
             "Psu" => await _serverRequests.GetOffers("/psu", selectedPartId),
             _ => null
         };
@@ -232,7 +227,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
     
     private async Task CheckCompatibility()
     {
-        var results = await _pcCheckService.CheckPc(_pc);
+        var results = await _serverRequests.CheckPc(_pc) ?? new List<Warning>();
         
         Warnings.Clear();
         foreach (var warning in results)
@@ -243,8 +238,11 @@ public class PcConstructorViewModel : INotifyPropertyChanged
 
     private async Task GoToCanIRunOnItPage()
     {
-        var pcJson = JsonSerializer.Serialize(_pc);
-        await Shell.Current.GoToAsync($"{nameof(CanIRunOnItPage)}?pc={pcJson}");
+        var navigationParameter = new Dictionary<string, object>
+        {
+            { "pc", _pc }
+        };
+        await Shell.Current.GoToAsync($"{nameof(CanIRunOnItPage)}", navigationParameter);
     }
     
     public event PropertyChangedEventHandler? PropertyChanged;
