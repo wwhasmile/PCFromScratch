@@ -15,5 +15,9 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(StorageSelectionPage), typeof(StorageSelectionPage));
         Routing.RegisterRoute(nameof(GpuSelectionPage), typeof(GpuSelectionPage));
         Routing.RegisterRoute(nameof(PsuSelectionPage), typeof(PsuSelectionPage));
+        Routing.RegisterRoute(nameof(CpuBenchmarkSelectionPage), typeof(CpuBenchmarkSelectionPage));
+        Routing.RegisterRoute(nameof(GpuBenchmarkSelectionPage), typeof(GpuBenchmarkSelectionPage));
+        Routing.RegisterRoute(nameof(CanIRunOnItPage), typeof(CanIRunOnItPage));
+        Routing.RegisterRoute(nameof(PcComparePage), typeof(PcComparePage));
     }
 }
