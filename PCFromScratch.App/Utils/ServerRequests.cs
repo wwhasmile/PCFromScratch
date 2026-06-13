@@ -64,13 +64,28 @@ public class ServerRequests
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<IEnumerable<Warning>>(content, _options);
     }
-
-    public async Task<CpuBenchmarkDtoModel?> GetCpuBenchmark(Guid id)
+    
+    public async Task<(bool, Dictionary<string, string>)?> CheckRequirements(PcDtoModel pc,
+        SystemRequirementsDtoModel systemRequirements)
     {
-        var response = await _httpClient.GetAsync($"{ServerAddress}/benchmarks/cpu/byId/{id}");
+        CompareRequirementsRequest body = new (pc, systemRequirements);
+        var send = await _httpClient.PostAsJsonAsync($"{ServerAddress}/pc/check", body);
+        if (!send.IsSuccessStatusCode) return null;
+        var response = await _httpClient.GetAsync($"{ServerAddress}/pc/check");
         if (!response.IsSuccessStatusCode) return null;
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<CpuBenchmarkDtoModel>(content, _options);
+        return JsonSerializer.Deserialize<(bool, Dictionary<string, string>)>(content, _options);
+    }
+
+    public async Task<List<PcCompareMessage>?> ComparePcs(PcDtoModel a, PcDtoModel b)
+    {
+        ComparePcsRequest body = new(a, b);
+        var send = await _httpClient.PostAsJsonAsync($"{ServerAddress}/pc/compare/pc", body);
+        if (!send.IsSuccessStatusCode) return null;
+        var response = await _httpClient.GetAsync($"{ServerAddress}/pc/compare/pc");
+        if (!response.IsSuccessStatusCode) return null;
+        var content = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<List<PcCompareMessage>>(content, _options);
     }
     
     public async Task<CpuBenchmarkDtoModel?> GetCpuBenchmark(string name)
@@ -79,14 +94,6 @@ public class ServerRequests
         if (!response.IsSuccessStatusCode) return null;
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<CpuBenchmarkDtoModel>(content, _options);
-    }
-
-    public async Task<GpuBenchmarkDtoModel?> GetGpuBenchmark(Guid id)
-    {
-        var response = await _httpClient.GetAsync($"{ServerAddress}/benchmarks/gpu/byId/{id}");
-        if (!response.IsSuccessStatusCode) return null;
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<GpuBenchmarkDtoModel>(content, _options);
     }
     
     public async Task<GpuBenchmarkDtoModel?> GetGpuBenchmark(string name)
