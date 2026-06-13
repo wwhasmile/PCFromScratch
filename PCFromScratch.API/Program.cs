@@ -149,6 +149,10 @@ app.MapGet("/benchmarks/gpu/byName/{name}", async (string name, IGpuBenchmarkSer
     var gpuBenchmark = await gpuBenchmarkService.GetGpuBenchmark(name);
     return gpuBenchmark is null ? Results.NotFound() : Results.Ok(gpuBenchmark);
 });
+app.MapGet("/benchmarks/cpu", async (int? minScore, ICpuBenchmarkService cpuBenchmarkService) =>
+    await cpuBenchmarkService.GetCpuBenchmarks(minScore).ToListAsync());
+app.MapGet("/benchmarks/gpu", async (int? minScore, IGpuBenchmarkService gpuBenchmarkService) =>
+    await gpuBenchmarkService.GetGpuBenchmarks(minScore).ToListAsync());
 
 app.MapPost("/pc/check", async (PcDtoModel pc, IPcCheckService pcCheckService) =>
     await pcCheckService.CheckPc(pc));

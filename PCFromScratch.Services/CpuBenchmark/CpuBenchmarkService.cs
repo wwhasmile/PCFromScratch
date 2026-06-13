@@ -7,6 +7,11 @@ namespace PCFromScratch.Services;
 
 public class CpuBenchmarkService(ICpuBenchmarkRepository cpuBenchmarkRepository) : ICpuBenchmarkService
 {
+    public async IAsyncEnumerable<CpuBenchmarkDtoModel> GetCpuBenchmarks(int? minScore = null)
+    {
+        await foreach(var cpuBenchmark in cpuBenchmarkRepository.GetCpuBenchmarks(minScore))
+            yield return new(cpuBenchmark.Id, cpuBenchmark.Name, cpuBenchmark.Score);
+    }
     public async Task<CpuBenchmarkDtoModel?> GetCpuBenchmark(Guid id)
     {
         var cpuBenchmark = await cpuBenchmarkRepository.GetCpuBenchmark(id);
