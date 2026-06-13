@@ -5,8 +5,10 @@ using System.Windows.Input;
 
 namespace PCFromScratch.App.ViewModels
 {
+    [QueryProperty(nameof(PcIndex), "PcIndex")]
     public abstract class BaseComponentViewModel<T> : INotifyPropertyChanged
     {
+        public int PcIndex { get; set; }
         public ObservableCollection<T> Parts { get; }
         protected IEnumerable<T> _allParts;
 
@@ -91,7 +93,8 @@ namespace PCFromScratch.App.ViewModels
             var navigationParameter = new Dictionary<string, object>
             {
                 { "SelectedPartId", ((dynamic)part).Id },
-                { "Category", GetType().Name.Replace("SelectionViewModel", "") }
+                { "Category", GetType().Name.Replace("SelectionViewModel", "") },
+                { "PcIndex", PcIndex }
             };
             await Shell.Current.GoToAsync("..", navigationParameter);
         }
