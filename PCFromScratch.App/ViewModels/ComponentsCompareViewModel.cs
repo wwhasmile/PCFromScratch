@@ -1,85 +1,120 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using PCFromScratch.App.Utils;
 using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
+[QueryProperty(nameof(SelectedPartId), "SelectedPartId")]
+[QueryProperty(nameof(Category), "Category")]
+[QueryProperty(nameof(PcIndex), "PcIndex")]
 public class ComponentsCompareViewModel : INotifyPropertyChanged
 {
     private readonly ServerRequests _requests;
+    private static readonly Color ActiveCategoryColor = Color.FromArgb("#0275c9");
+    private static readonly Color InactiveCategoryColor = Application.Current.RequestedTheme == AppTheme.Light? Color.FromArgb("#C8C8C8") : Color.FromArgb("#212121") ;
 
-    public ObservableCollection<string> ComponentTypes { get; } = new() { "CPU", "GPU" };
-    public string? SelectedComponentType
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-            LoadComponents();
-        }
-    }
+    public string SelectedComponentType { get; set; } = "CPU";
 
-    public ObservableCollection<string> ComponentNames1 { get; } = new();
-    public ObservableCollection<string> ComponentNames2 { get; } = new();
-    
-    public string? SelectedComponent1
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-            _ = CompareComponents();
-        }
-    }
-    
-    public string? SelectedComponent2
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-            _ = CompareComponents();
-        }
-    }
+    public Guid? SelectedPartId { get; set; }
+    public string Category { get; set; }
+    public int PcIndex { get; set; }
+
+    public string Component1Name { get; set; } = "Оберіть компонент";
+    public string Component2Name { get; set; } = "Оберіть компонент";
+
+    public Color CpuButtonColor { get; set; } = ActiveCategoryColor;
+    public Color GpuButtonColor { get; set; } = InactiveCategoryColor;
 
     public ObservableCollection<BenchmarkChartEntry> ChartData { get; } = new();
+    public bool AreResultsAvailable => ChartData.Count > 0;
+    
+    public ICommand SelectComponentCommand { get; }
+    public ICommand SetComponentTypeCommand { get; }
 
     public ComponentsCompareViewModel(ServerRequests requests)
     {
         _requests = requests;
+        SelectComponentCommand = new AsyncRelayCommand<string>(SelectComponent);
+        SetComponentTypeCommand = new Command<string>(SetComponentType);
     }
 
-    private async void LoadComponents()
+    private void SetComponentType(string componentType)
     {
-        ComponentNames1.Clear();
-        ComponentNames2.Clear();
+        SelectedComponentType = componentType;
+        Component1Name = "Оберіть компонент";
+        Component2Name = "Оберіть компонент";
+        ChartData.Clear();
+        OnPropertyChanged(nameof(Component1Name));
+        OnPropertyChanged(nameof(Component2Name));
 
-        if (SelectedComponentType == "CPU")
+        if (componentType == "CPU")
         {
-            foreach (var cpu in await _requests.GetItems<CpuDtoModel>("/cpu") ?? [])
+            CpuButtonColor = ActiveCategoryColor;
+            GpuButtonColor = InactiveCategoryColor;
+        }
+        else
+        {
+            CpuButtonColor = InactiveCategoryColor;
+            GpuButtonColor = ActiveCategoryColor;
+        }
+        OnPropertyChanged(nameof(CpuButtonColor));
+        OnPropertyChanged(nameof(GpuButtonColor));
+    }
+    
+    private async Task SelectComponent(string pcIndex)
+    {
+        var pageName = SelectedComponentType == "CPU" ? "CpuBenchmarkSelectionPage" : "GpuBenchmarkSelectionPage";
+        await Shell.Current.GoToAsync($"{pageName}?PcIndex={pcIndex}");
+    }
+
+    public async Task UpdateSelectedComponent()
+    {
+        if (SelectedPartId == null) return;
+
+        var benchmarkName = "";
+        if (Category == "CpuBenchmark")
+        {
+            var benchmark = await _requests.GetItem<CpuBenchmarkDtoModel>("/benchmarks/cpu/byId", SelectedPartId.Value);
+            if (benchmark != null)
             {
-                ComponentNames1.Add(cpu.Name);
-                ComponentNames2.Add(cpu.Name);
+                benchmarkName = benchmark.Name;
             }
         }
-        else if (SelectedComponentType == "GPU")
+        else if (Category == "GpuBenchmark")
         {
-            foreach (var gpu in await _requests.GetItems<GpuDtoModel>("/gpu") ?? [])
+            var benchmark = await _requests.GetItem<GpuBenchmarkDtoModel>("/benchmarks/gpu/byId", SelectedPartId.Value);
+            if (benchmark != null)
             {
-                ComponentNames1.Add(gpu.Name);
-                ComponentNames2.Add(gpu.Name);
+                benchmarkName = benchmark.Name;
             }
         }
+
+        if (PcIndex == 1)
+        {
+            Component1Name = benchmarkName;
+        }
+        else
+        {
+            Component2Name = benchmarkName;
+        }
+        
+        OnPropertyChanged(nameof(Component1Name));
+        OnPropertyChanged(nameof(Component2Name));
+
+        await CompareComponents();
+        
+        SelectedPartId = null;
+        Category = null;
+        PcIndex = 0;
     }
 
     private async Task CompareComponents()
     {
-        if (string.IsNullOrEmpty(SelectedComponent1) || string.IsNullOrEmpty(SelectedComponent2))
+        if (Component1Name == "Оберіть компонент" || Component2Name == "Оберіть компонент")
         {
             return;
         }
@@ -88,23 +123,23 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         var screenWidth = DeviceDisplay.MainDisplayInfo.Width;
         if (SelectedComponentType == "CPU")
         {
-            var benchmark1 = await _requests.GetCpuBenchmark(SelectedComponent1);
-            var benchmark2 = await _requests.GetCpuBenchmark(SelectedComponent2);
+            var benchmark1 = await _requests.GetCpuBenchmark(Component1Name);
+            var benchmark2 = await _requests.GetCpuBenchmark(Component2Name);
             if (benchmark1 is null || benchmark2 is null) return;
             var width1 = (benchmark1.Value.Score * screenWidth / int.Max(benchmark1.Value.Score, benchmark2.Value.Score)) * 0.6;
             var width2 = (benchmark2.Value.Score * screenWidth / int.Max(benchmark1.Value.Score, benchmark2.Value.Score)) * 0.6;
-            ChartData.Add(new BenchmarkChartEntry(SelectedComponent1, benchmark1.Value.Score, width1));
-            ChartData.Add(new BenchmarkChartEntry(SelectedComponent2, benchmark2.Value.Score, width2));
+            ChartData.Add(new BenchmarkChartEntry(Component1Name, benchmark1.Value.Score, width1));
+            ChartData.Add(new BenchmarkChartEntry(Component2Name, benchmark2.Value.Score, width2));
         }
         else if (SelectedComponentType == "GPU")
         {
-            var benchmark1 = await _requests.GetGpuBenchmark(SelectedComponent1);
-            var benchmark2 = await _requests.GetGpuBenchmark(SelectedComponent2);
+            var benchmark1 = await _requests.GetGpuBenchmark(Component1Name);
+            var benchmark2 = await _requests.GetGpuBenchmark(Component2Name);
             if (benchmark1 is null || benchmark2 is null) return;
             var width1 = (benchmark1.Value.Score * screenWidth / int.Max(benchmark1.Value.Score, benchmark2.Value.Score)) * 0.6;
             var width2 = (benchmark2.Value.Score * screenWidth / int.Max(benchmark1.Value.Score, benchmark2.Value.Score)) * 0.6;
-            ChartData.Add(new BenchmarkChartEntry(SelectedComponent1, benchmark1.Value.Score, width1));
-            ChartData.Add(new BenchmarkChartEntry(SelectedComponent2, benchmark2.Value.Score, width2));
+            ChartData.Add(new BenchmarkChartEntry(Component1Name, benchmark1.Value.Score, width1));
+            ChartData.Add(new BenchmarkChartEntry(Component2Name, benchmark2.Value.Score, width2));
         }
     }
 

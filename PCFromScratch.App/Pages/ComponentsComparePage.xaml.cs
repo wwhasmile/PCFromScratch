@@ -9,4 +9,15 @@ public partial class ComponentsComparePage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
     }
+
+    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+
+        var viewModel = (ComponentsCompareViewModel)BindingContext;
+        if (viewModel.SelectedPartId != null)
+        {
+            await viewModel.UpdateSelectedComponent();
+        }
+    }
 }

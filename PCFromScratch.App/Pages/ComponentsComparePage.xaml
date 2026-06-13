@@ -3,27 +3,38 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="using:PCFromScratch.App.ViewModels"
              x:Class="PCFromScratch.App.Pages.ComponentsComparePage"
-             x:DataType="viewModels:ComponentsCompareViewModel"
-             Title="Порівняння компонентів">
+             x:DataType="viewModels:ComponentsCompareViewModel">
+    <Shell.TitleView>
+        <Label Text="Порівняння компонентів"
+               FontFamily="DniproCityBold"
+               FontSize="36"
+               TextColor="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDarkText}}"
+               HorizontalOptions="Center" />
+    </Shell.TitleView>
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15">
-            <Label Text="Порівняння компонентів" FontSize="24" HorizontalOptions="Center" />
-
-            <Picker Title="Оберіть тип компонента" 
-                    ItemsSource="{Binding ComponentTypes}" 
-                    SelectedItem="{Binding SelectedComponentType}" />
-
             <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                <Picker Grid.Column="0" Title="Компонент 1" 
-                        ItemsSource="{Binding ComponentNames1}"
-                        SelectedItem="{Binding SelectedComponent1}" />
-
-                <Picker Grid.Column="1" Title="Компонент 2"
-                        ItemsSource="{Binding ComponentNames2}"
-                        SelectedItem="{Binding SelectedComponent2}" />
+                <Button Grid.Column="0" Text="Процесор" Command="{Binding SetComponentTypeCommand}" CommandParameter="CPU" BackgroundColor="{Binding CpuButtonColor}"/>
+                <Button Grid.Column="1" Text="Відеокарта" Command="{Binding SetComponentTypeCommand}" CommandParameter="GPU" BackgroundColor="{Binding GpuButtonColor}"/>
             </Grid>
 
-            <Label Text="Результати порівняння" FontSize="20" HorizontalOptions="Center" Margin="0,20,0,0" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Border Grid.Column="0" Padding="10" StrokeShape="RoundRectangle 10" StrokeThickness="2">
+                    <Label Text="{Binding Component1Name}" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectComponentCommand}" CommandParameter="1" />
+                    </Border.GestureRecognizers>
+                </Border>
+
+                <Border Grid.Column="1" Padding="10" StrokeShape="RoundRectangle 10" StrokeThickness="2">
+                    <Label Text="{Binding Component2Name}" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectComponentCommand}" CommandParameter="2" />
+                    </Border.GestureRecognizers>
+                </Border>
+            </Grid>
+
+            <Label IsVisible="{Binding AreResultsAvailable}" Text="Результати порівняння" FontSize="20" HorizontalOptions="Center" Margin="0,20,0,0" />
 
             <CollectionView ItemsSource="{Binding ChartData}">
                 <CollectionView.ItemTemplate>
