@@ -29,16 +29,15 @@ namespace PCFromScratch.App.ViewModels
         public ICommand LoadMorePartsCommand { get; }
 
         protected int PageSize = 20;
-        protected int _currentPage = 0;
+        protected int _currentPage;
         
-        private bool _isBusy;
         public bool IsBusy
         {
-            get => _isBusy;
+            get => field;
             set
             {
-                if (_isBusy == value) return;
-                _isBusy = value;
+                if (field == value) return;
+                field = value;
                 OnPropertyChanged();
             }
         }
@@ -66,7 +65,7 @@ namespace PCFromScratch.App.ViewModels
 
                 var filteredParts = string.IsNullOrWhiteSpace(SearchTerm)
                     ? _allParts
-                    : _allParts.Where(p => ((dynamic)p).Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
+                    : _allParts.Where(p => ((dynamic)p!).Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
 
                 var pagedParts = filteredParts.Skip(_currentPage * PageSize).Take(PageSize).ToList();
 
@@ -92,7 +91,7 @@ namespace PCFromScratch.App.ViewModels
         {
             var navigationParameter = new Dictionary<string, object>
             {
-                { "SelectedPartId", ((dynamic)part).Id },
+                { "SelectedPartId", ((dynamic)part!).Id },
                 { "Category", GetType().Name.Replace("SelectionViewModel", "") },
                 { "PcIndex", PcIndex }
             };

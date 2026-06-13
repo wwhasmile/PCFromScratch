@@ -8,7 +8,7 @@ namespace PCFromScratch.App.Pages;
 public partial class PcComparePage : ContentPage
 {
     public Guid SelectedPartId { get; set; }
-    public string Category { get; set; }
+    public string? Category { get; set; }
     public int PcIndex { get; set; }
 
     public PcComparePage(PcCompareViewModel viewModel)
@@ -33,7 +33,7 @@ public partial class PcComparePage : ContentPage
         }
     }
 
-    private async void OnSelectComponent(object sender, TappedEventArgs e)
+    private async void OnSelectComponent(object? sender, TappedEventArgs e)
     {
         if (e.Parameter is not string component) return;
         
@@ -56,7 +56,7 @@ public partial class PcComparePage : ContentPage
         }
     }
     
-    private void OnCompareClicked(object sender, EventArgs e)
+    private void OnCompareClicked(object? sender, EventArgs e)
     {
         var viewModel = (PcCompareViewModel)BindingContext;
         viewModel.CompareCommand.Execute(null);

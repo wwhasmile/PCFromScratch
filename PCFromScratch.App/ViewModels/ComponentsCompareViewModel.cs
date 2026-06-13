@@ -15,12 +15,12 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
 {
     private readonly ServerRequests _requests;
     private static readonly Color ActiveCategoryColor = Color.FromArgb("#0275c9");
-    private static readonly Color InactiveCategoryColor = Application.Current.RequestedTheme == AppTheme.Light? Color.FromArgb("#C8C8C8") : Color.FromArgb("#212121") ;
+    private static readonly Color InactiveCategoryColor = Application.Current?.RequestedTheme == AppTheme.Light? Color.FromArgb("#C8C8C8") : Color.FromArgb("#212121") ?? Color.FromArgb("#212121") ;
 
     public string SelectedComponentType { get; set; } = "CPU";
 
     public Guid? SelectedPartId { get; set; }
-    public string Category { get; set; }
+    public string? Category { get; set; }
     public int PcIndex { get; set; }
 
     public string Component1Name { get; set; } = "Оберіть компонент";
@@ -65,7 +65,7 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(GpuButtonColor));
     }
     
-    private async Task SelectComponent(string pcIndex)
+    private async Task SelectComponent(string? pcIndex)
     {
         var pageName = SelectedComponentType == "CPU" ? "CpuBenchmarkSelectionPage" : "GpuBenchmarkSelectionPage";
         await Shell.Current.GoToAsync($"{pageName}?PcIndex={pcIndex}");
@@ -79,18 +79,12 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         if (Category == "CpuBenchmark")
         {
             var benchmark = await _requests.GetItem<CpuBenchmarkDtoModel>("/benchmarks/cpu/byId", SelectedPartId.Value);
-            if (benchmark != null)
-            {
-                benchmarkName = benchmark.Name;
-            }
+            benchmarkName = benchmark.Name;
         }
         else if (Category == "GpuBenchmark")
         {
             var benchmark = await _requests.GetItem<GpuBenchmarkDtoModel>("/benchmarks/gpu/byId", SelectedPartId.Value);
-            if (benchmark != null)
-            {
-                benchmarkName = benchmark.Name;
-            }
+            benchmarkName = benchmark.Name;
         }
 
         if (PcIndex == 1)

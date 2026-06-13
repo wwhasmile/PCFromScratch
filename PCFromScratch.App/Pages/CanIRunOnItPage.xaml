@@ -10,30 +10,30 @@
         <VerticalStackLayout Spacing="20" Padding="20">
             
             <!-- PC Specs -->
-            <Label Text="Your PC" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
+            <Label Text="Ваш ПК" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
             <Border StrokeShape="RoundRectangle 10" StrokeThickness="2" Padding="10">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="{Binding CpuName, StringFormat='CPU: {0}'}" />
-                    <Label Text="{Binding GpuName, StringFormat='GPU: {0}'}" />
-                    <Label Text="{Binding RamName, StringFormat='RAM: {0}'}" />
-                    <Label Text="{Binding PsuName, StringFormat='PSU: {0}'}" />
-                    <Label Text="{Binding StorageNames, StringFormat='Storage: {0}'}" />
+                    <Label Text="{Binding CpuName, StringFormat='Процесор: {0}'}" />
+                    <Label Text="{Binding GpuName, StringFormat='Відеокарта: {0}'}" />
+                    <Label Text="{Binding RamName, StringFormat='ОЗП: {0}'}" />
+                    <Label Text="{Binding PsuName, StringFormat='БЖ: {0}'}" />
+                    <Label Text="{Binding StorageNames, StringFormat='Сховище: {0}'}" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- Requirements Constructor -->
-            <Label Text="System Requirements" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
+            <Label Text="Системні вимоги" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center"/>
             <VerticalStackLayout Spacing="10">
                 
                 <Border Padding="10" StrokeShape="RoundRectangle 10" StrokeThickness="2">
-                    <Label Text="{Binding SelectedCpuBenchmarkName, FallbackValue='Select CPU Benchmark'}" VerticalOptions="Center" />
+                    <Label Text="{Binding SelectedCpuBenchmarkName, FallbackValue='Оберіть процесор'}" VerticalOptions="Center" />
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding SelectCpuBenchmarkCommand}" />
                     </Border.GestureRecognizers>
                 </Border>
 
                 <Border Padding="10" StrokeShape="RoundRectangle 10" StrokeThickness="2">
-                    <Label Text="{Binding SelectedGpuBenchmarkName, FallbackValue='Select GPU Benchmark'}" VerticalOptions="Center" />
+                    <Label Text="{Binding SelectedGpuBenchmarkName, FallbackValue='Оберіть відеокарту'}" VerticalOptions="Center" />
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding SelectGpuBenchmarkCommand}" />
                     </Border.GestureRecognizers>

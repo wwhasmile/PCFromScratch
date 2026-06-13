@@ -11,7 +11,7 @@ namespace PCFromScratch.App.Pages;
 public partial class PcConstructorPage
 {
     public Guid SelectedPartId { get; set; }
-    public string Category { get; set; }
+    public string? Category { get; set; }
 
     public PcConstructorPage(PcConstructorViewModel viewModel)
     {
@@ -26,7 +26,7 @@ public partial class PcConstructorPage
         if (SelectedPartId != Guid.Empty && !string.IsNullOrEmpty(Category))
         {
             var viewModel = (PcConstructorViewModel)BindingContext;
-            viewModel.UpdateSelectedComponent(Category, SelectedPartId);
+            _ = viewModel.UpdateSelectedComponent(Category, SelectedPartId);
 
             // Clear properties to prevent re-processing
             SelectedPartId = Guid.Empty;
@@ -84,15 +84,16 @@ public class MultiComponentCategory (string name): BaseComponentCategory (name)
 
 public class ComponentCategoryTemplateSelector : DataTemplateSelector
 {
-    public DataTemplate SingleComponentCategoryTemplate { get; set; }
-    public DataTemplate MultiComponentCategoryTemplate { get; set; }
-    
+    public DataTemplate SingleComponentCategoryTemplate { get; set; } = null!;
+    public DataTemplate MultiComponentCategoryTemplate { get; set; } = null!;
+
     protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
     {
         return item switch
         {
             SingleComponentCategory => SingleComponentCategoryTemplate,
             MultiComponentCategory => MultiComponentCategoryTemplate,
+            _ => SingleComponentCategoryTemplate
         };
     }
 

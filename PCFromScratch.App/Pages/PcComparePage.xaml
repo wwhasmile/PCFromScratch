@@ -20,8 +20,8 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" Text="PC 1" HorizontalOptions="Center" FontSize="Large" FontAttributes="Bold" />
-        <Label Grid.Row="0" Grid.Column="1" Text="PC 2" HorizontalOptions="Center" FontSize="Large" FontAttributes="Bold" />
+        <Label Grid.Row="0" Grid.Column="0" Text="PC 1" HorizontalOptions="Center" FontSize="32" FontAttributes="Bold" />
+        <Label Grid.Row="0" Grid.Column="1" Text="PC 2" HorizontalOptions="Center" FontSize="32" FontAttributes="Bold" />
 
         <StackLayout Grid.Row="1" Grid.Column="0" Padding="10">
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc1CpuColor}">

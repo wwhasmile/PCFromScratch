@@ -68,7 +68,7 @@
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"></LinearItemsLayout>
             </CollectionView.ItemsLayout>
         </CollectionView>
-        <Label Text="{Binding TotalCost, StringFormat='Загальна вартість: {0:C}'}" FontSize="Medium" HorizontalOptions="End" Margin="20"/>
+        <Label Text="{Binding TotalCost, StringFormat='Загальна вартість: {0:C}'}" FontSize="24" HorizontalOptions="End" Margin="20"/>
         
         <HorizontalStackLayout Spacing="10" Margin="10" HorizontalOptions="Center">
             <Button Text="Check Compatibility" Command="{Binding CheckCompatibilityCommand}" />
@@ -98,7 +98,7 @@
                         </Border.Triggers>
                         
                         <VerticalStackLayout Spacing="5">
-                            <Label Text="{Binding Severity.DisplayName}" FontAttributes="Bold" FontSize="Caption" TextTransform="Uppercase">
+                            <Label Text="{Binding Severity.DisplayName}" FontAttributes="Bold" FontSize="24" TextTransform="Uppercase">
                                 <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Incompatibility}">
                                         <Setter Property="TextColor" Value="Red" />
@@ -111,7 +111,7 @@
                                     </DataTrigger>
                                 </Label.Triggers>
                             </Label>
-                            <Label Text="{Binding Message}" FontSize="Body" />
+                            <Label Text="{Binding Message}" FontSize="18" />
                         </VerticalStackLayout>
                     </Border>
                 </DataTemplate>

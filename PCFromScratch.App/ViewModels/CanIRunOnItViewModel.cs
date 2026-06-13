@@ -11,41 +11,41 @@ public partial class CanIRunOnItViewModel : ObservableObject
     private readonly ServerRequests _requests;
 
     [ObservableProperty]
-    private PcDtoModel _pc;
+    public partial PcDtoModel Pc { get; set; }
 
     [ObservableProperty]
-    private string _cpuName;
+    public partial string CpuName { get; set;}
     [ObservableProperty]
-    private string _gpuName;
+    public partial string GpuName { get; set;}
     [ObservableProperty]
-    private string _ramName;
+    public partial string RamName { get; set;}
     [ObservableProperty]
-    private string _psuName;
+    public partial string PsuName { get; set;}
     [ObservableProperty]
-    private string _storageNames;
+    public partial string StorageNames { get; set;}
 
     [ObservableProperty]
-    private SystemRequirementsDtoModel _requirements;
+    public partial SystemRequirementsDtoModel Requirements { get; set;}
 
     [ObservableProperty]
-    private string _resultMessage;
+    public partial string ResultMessage { get; set;}
     
     [ObservableProperty]
-    private string _selectedCpuBenchmarkName;
+    public partial string SelectedCpuBenchmarkName { get; set;}
     
     [ObservableProperty]
-    private string _selectedGpuBenchmarkName;
+    public partial string SelectedGpuBenchmarkName { get; set;}
 
     [ObservableProperty]
-    private int? _ramInMegabytes;
+    public partial int? RamInMegabytes { get; set;}
 
     [ObservableProperty]
-    private int? _spaceOnDiskInGigabytes;
+    public partial int? SpaceOnDiskInGigabytes { get; set;}
 
     public CanIRunOnItViewModel(ServerRequests requests)
     {
         _requests = requests;
-        _requirements = new SystemRequirementsDtoModel();
+        Requirements = new SystemRequirementsDtoModel();
         SelectedCpuBenchmarkName = "Процесор";
         SelectedGpuBenchmarkName = "Відеокарта";
     }
@@ -57,19 +57,13 @@ public partial class CanIRunOnItViewModel : ObservableObject
         {
             reqs.CpuBenchmark = id;
             var benchmark = await _requests.GetItem<CpuBenchmarkDtoModel>("/benchmarks/cpu/byId", id);
-            if (benchmark != null)
-            {
-                SelectedCpuBenchmarkName = benchmark.Name;
-            }
+            SelectedCpuBenchmarkName = benchmark.Name;
         }
         else if (category == "GpuBenchmark")
         {
             reqs.GpuBenchmark = id;
             var benchmark = await _requests.GetItem<GpuBenchmarkDtoModel>("/benchmarks/gpu/byId", id);
-            if (benchmark != null)
-            {
-                SelectedGpuBenchmarkName = benchmark.Name;
-            }
+            SelectedGpuBenchmarkName = benchmark.Name;
         }
         Requirements = reqs;
     }
@@ -89,10 +83,7 @@ public partial class CanIRunOnItViewModel : ObservableObject
         foreach (var driveId in value.InternalDrives)
         {
             var drive = await _requests.GetItem<InternalDriveDtoModel>("/drive", driveId);
-            if (drive != null)
-            {
-                storageNames.Add(drive.Name);
-            }
+            storageNames.Add(drive.Name);
         }
         StorageNames = string.Join(", ", storageNames);
     }

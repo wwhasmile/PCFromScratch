@@ -94,7 +94,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task OnChoose(BaseComponentCategory component)
+    private async Task OnChoose(BaseComponentCategory? component)
     {
         if (component != null)
         {

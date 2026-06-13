@@ -7,7 +7,7 @@ namespace PCFromScratch.App.Pages;
 public partial class CanIRunOnItPage : ContentPage
 {
     public Guid SelectedPartId { get; set; }
-    public string Category { get; set; }
+    public string? Category { get; set; }
 
     public CanIRunOnItPage(CanIRunOnItViewModel viewModel)
     {
