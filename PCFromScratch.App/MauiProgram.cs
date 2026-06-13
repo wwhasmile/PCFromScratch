@@ -37,6 +37,8 @@ public static class MauiProgram
         builder.Services.AddTransient<StorageSelectionViewModel>();
         builder.Services.AddTransient<GpuSelectionViewModel>();
         builder.Services.AddTransient<PsuSelectionViewModel>();
+        builder.Services.AddTransient<CpuBenchmarkSelectionViewModel>();
+        builder.Services.AddTransient<GpuBenchmarkSelectionViewModel>();
         builder.Services.AddTransient<CanIRunOnItViewModel>();
         builder.Services.AddSingleton<PcCompareViewModel>();
 
@@ -49,6 +51,8 @@ public static class MauiProgram
         builder.Services.AddTransient<StorageSelectionPage>();
         builder.Services.AddTransient<GpuSelectionPage>();
         builder.Services.AddTransient<PsuSelectionPage>();
+        builder.Services.AddTransient<CpuBenchmarkSelectionPage>();
+        builder.Services.AddTransient<GpuBenchmarkSelectionPage>();
         builder.Services.AddTransient<CanIRunOnItPage>();
         builder.Services.AddSingleton<PcComparePage>();
 
