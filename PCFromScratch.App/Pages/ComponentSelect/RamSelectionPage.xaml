@@ -14,9 +14,10 @@
                    HorizontalOptions="Center" />
         </Grid>
     </Shell.TitleView>
-    <Grid RowDefinitions="Auto, *">
+    <Grid RowDefinitions="Auto, Auto, *">
         <SearchBar Grid.Row="0" Placeholder="Пошук..." Text="{Binding SearchTerm}" />
-        <CollectionView Grid.Row="1"
+        <Picker Grid.Row="1" Margin="10" Title="RAM Gen" ItemsSource="{Binding RamGenerations}" SelectedItem="{Binding SelectedRamGeneration}" />
+        <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Parts}"
                         RemainingItemsThreshold="5"
                         RemainingItemsThresholdReachedCommand="{Binding LoadMorePartsCommand}"

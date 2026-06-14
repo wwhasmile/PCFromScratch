@@ -51,6 +51,11 @@ namespace PCFromScratch.App.ViewModels
             _searchTerm = "";
         }
 
+        protected virtual IEnumerable<T> ApplyFilters(IEnumerable<T> parts)
+        {
+            return parts;
+        }
+
         protected void LoadParts(bool fromSearch = false)
         {
             try
@@ -66,6 +71,8 @@ namespace PCFromScratch.App.ViewModels
                 var filteredParts = string.IsNullOrWhiteSpace(SearchTerm)
                     ? _allParts
                     : _allParts.Where(p => ((dynamic)p!).Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
+
+                filteredParts = ApplyFilters(filteredParts);
 
                 var pagedParts = filteredParts.Skip(_currentPage * PageSize).Take(PageSize).ToList();
 
