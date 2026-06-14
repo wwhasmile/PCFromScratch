@@ -13,8 +13,8 @@ public class PcCompareViewModel : INotifyPropertyChanged
 {
     private readonly ServerRequests _serverRequests;
 
-    public PcDtoModel Pc1 { get; set; } = new();
-    public PcDtoModel Pc2 { get; set; } = new();
+    private PcModel Pc1 { get; set; } = new();
+    private PcModel Pc2 { get; set; } = new();
 
     public string Pc1CpuName { get => field; set { field = value; OnPropertyChanged(); } } = "";
     public string Pc1GpuName { get => field; set { field = value; OnPropertyChanged(); } } = "";
@@ -50,7 +50,9 @@ public class PcCompareViewModel : INotifyPropertyChanged
 
     private async Task Compare()
     {
-        var results = await _serverRequests.ComparePcs(Pc1, Pc2);
+        var results = await _serverRequests.ComparePcs(
+            new PcDtoModel(Pc1.Cpu, Pc1.Motherboard, Pc1.Gpu, Pc1.Ram, Pc1.Cooler, Pc1.InternalDrives, Pc1.Psu), 
+            new PcDtoModel(Pc2.Cpu, Pc2.Motherboard, Pc2.Gpu, Pc2.Ram, Pc2.Cooler, Pc2.InternalDrives, Pc2.Psu));
         if (results == null) return;
 
         foreach (var result in results)
@@ -139,4 +141,15 @@ public class PcCompareViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+}
+
+class PcModel
+{
+    public Guid? Cpu;
+    public Guid? Motherboard;
+    public Guid? Gpu;
+    public Guid? Ram;
+    public Guid? Cooler;
+    public List<Guid> InternalDrives = [];
+    public Guid? Psu;
 }
