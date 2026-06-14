@@ -37,10 +37,13 @@ public partial class CanIRunOnItViewModel : ObservableObject
     public partial string SelectedGpuBenchmarkName { get; set;}
 
     [ObservableProperty]
-    public partial int? RamInMegabytes { get; set;}
+    public partial int? RamInGigabytes { get; set;}
 
     [ObservableProperty]
     public partial int? SpaceOnDiskInGigabytes { get; set;}
+    
+    [ObservableProperty]
+    public partial bool SsdRequired { get; set; }
 
     public CanIRunOnItViewModel(ServerRequests requests)
     {
@@ -104,8 +107,9 @@ public partial class CanIRunOnItViewModel : ObservableObject
     private async Task CheckRequirements()
     {
         var reqs = Requirements;
-        reqs.RamInMegabytes = RamInMegabytes ?? 0;
+        reqs.RamInMegabytes = RamInGigabytes ?? 0;
         reqs.SpaceOnDiskInGigabytes = SpaceOnDiskInGigabytes ?? 0;
+        reqs.SsdRequired = SsdRequired;
         Requirements = reqs;
 
         if (Requirements.CpuBenchmark is null || Requirements.GpuBenchmark is null || Requirements.RamInMegabytes == 0 || Requirements.SpaceOnDiskInGigabytes == 0)
@@ -124,7 +128,7 @@ public partial class CanIRunOnItViewModel : ObservableObject
         }
         else
         {
-            ResultMessage = "Ваш ПК не зможе це запустити. Ось чому:\\n" + string.Join("\\n", messages.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+            ResultMessage = "Ваш ПК не зможе це запустити. Ось чому:\n" + string.Join("\n", messages.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
         }
     }
 }

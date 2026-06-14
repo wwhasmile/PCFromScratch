@@ -40,7 +40,7 @@
                 </Border>
 
                 <Border Padding="10" StrokeShape="RoundRectangle 10" StrokeThickness="2">
-                    <Entry Placeholder="Оперативна пам'ять (MB)" Text="{Binding RamInMegabytes}" Keyboard="Numeric" />
+                    <Entry Placeholder="Оперативна пам'ять (GB)" Text="{Binding RamInGigabytes}" Keyboard="Numeric" />
                 </Border>
 
                 <Border Padding="10" StrokeShape="RoundRectangle 10" StrokeThickness="2">
@@ -48,7 +48,7 @@
                         <Entry Placeholder="Місце на диску (GB)" Text="{Binding SpaceOnDiskInGigabytes}" Keyboard="Numeric" />
                         <HorizontalStackLayout Spacing="10">
                             <Label Text="Потребує SSD" VerticalOptions="Center" FontAttributes="Bold"/>
-                            <Switch IsToggled="{Binding Requirements.SsdRequired}" />
+                            <Switch IsToggled="{Binding SsdRequired}" />
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Border>
