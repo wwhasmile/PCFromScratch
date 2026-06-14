@@ -72,14 +72,14 @@ public class PcCompareService(ICpuRepository cpuRepository,
         return false;
     }
 
-    private async Task<bool> CheckRam(Guid? ramId, int ramInMb, ConcurrentDictionary<string, string> messages)
+    private async Task<bool> CheckRam(Guid? ramId, int ramReq, ConcurrentDictionary<string, string> messages)
     {
         if (!ramId.HasValue) return true;
         
         var ram = await ramRepository.GetRam(ramId.Value);
         if (ram is null) return true;
 
-        if (ram.Amount * ram.Sticks >= ramInMb) return true;
+        if (ram.Amount * ram.Sticks >= ramReq) return true;
 
         messages.TryAdd("RAM", "Кількість оперативної пам'яті не відповідає вимогам");
         return false;
@@ -88,31 +88,27 @@ public class PcCompareService(ICpuRepository cpuRepository,
     private async Task<bool> CheckDrives(IEnumerable<Guid> driveIds, int capacity, bool requireSsd,
             ConcurrentDictionary<string, string> messages)
     {
-        List<InternalDrive> drives = [];
+        bool moreThanOneDrive = driveIds.Count() > 1;
+        bool anyDriveFitsReqs = false;
+        string message = "";
         foreach (var id in driveIds)
         {
             var drive = await internalDriveRepository.GetInternalDrive(id);
-            if (drive is not null) drives.Add(drive);
-        }
-        var totalSize = 0;
-
-        var hasSsd = false;
-        foreach (var drive in drives)
-        {
-            totalSize += drive?.Capacity ?? 0;
-            if (drive?.Type == "SSD") hasSsd = true;
-        }
-        
-        var result = true;
-        if (!hasSsd && requireSsd)
-        {
-            messages.TryAdd("SSD", "Відсутній SSD");
-            result = false;
+            if (drive is null) continue;
+            if (drive.Type != "SSD" && requireSsd)
+            {
+                message += $"{drive.Name} не є SSD\n";
+                continue;
+            }
+            if (drive.Capacity < (moreThanOneDrive ? capacity : capacity + 60))
+            {
+                message += $"{drive.Name} не має достатньо місця\n";
+            }
         }
 
-        if (totalSize >= capacity) return result;
+        if (anyDriveFitsReqs) return true;
 
-        messages.TryAdd("Диски", "Загальна кількість місця на накопичувачах не відповідає вимогам");
+        messages.TryAdd("Сховище", message);
         return false;
     }
 
