@@ -58,13 +58,13 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
                                         "Недостатня кількість слотів для оперативної пам'яті"));
 
         if (result.Count > 0) return result;
-
-        int maxRamFrequency = motherboard.RamFrequency;
-        if (cpu is not null && maxRamFrequency > cpu.RamFrequency)
-            maxRamFrequency = cpu.RamFrequency;
-        if (maxRamFrequency < ram.Frequency)
+        
+        if (cpu is not null && cpu.RamFrequency < ram.Frequency)
             result.Add(new(WarningSeverity.Bottleneck,
-                            $"Частота оперативної пам'яті ({ram.Frequency}) більша за допустиму материнською платою ({maxRamFrequency})"));
+                $"Частота оперативної пам'яті ({ram.Frequency}) більша за підтримувану процесором ({cpu.RamFrequency})"));
+        if (motherboard.RamFrequency < ram.Frequency)
+            result.Add(new(WarningSeverity.Bottleneck,
+                $"Частота оперативної пам'яті ({ram.Frequency}) більша за підтримувану материнською платою ({motherboard.RamFrequency})"));
         
         return result;
     }
