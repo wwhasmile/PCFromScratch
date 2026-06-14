@@ -59,22 +59,24 @@ public class ServerRequests
     {
         var send = await _httpClient.PostAsJsonAsync($"{ServerAddress}/pc/check",pc);
         if (!send.IsSuccessStatusCode) return null;
-        var response = await _httpClient.GetAsync($"{ServerAddress}/pc/check");
-        if (!response.IsSuccessStatusCode) return null;
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<IEnumerable<Warning>>(content, _options);
+        var content = await send.Content.ReadAsStringAsync();
+        var list = JsonSerializer.Deserialize<List<WarningDtoModel>>(content, _options);
+        var result = new List<Warning>();
+        foreach (var warning in list ?? [])
+        {
+            result.Add(new Warning(warning.Severity.Value, warning.Message));
+        }
+        return result;
     }
     
-    public async Task<(bool, Dictionary<string, string>)?> CheckRequirements(PcDtoModel pc,
+    public async Task<RequirementsResultDtoModel?> CheckRequirements(PcDtoModel pc,
         SystemRequirementsDtoModel systemRequirements)
     {
         CompareRequirementsRequest body = new (pc, systemRequirements);
         var send = await _httpClient.PostAsJsonAsync($"{ServerAddress}/pc/check", body);
         if (!send.IsSuccessStatusCode) return null;
-        var response = await _httpClient.GetAsync($"{ServerAddress}/pc/check");
-        if (!response.IsSuccessStatusCode) return null;
-        var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<(bool, Dictionary<string, string>)>(content, _options);
+        var content = await send.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<RequirementsResultDtoModel>(content, _options);
     }
 
     public async Task<List<PcCompareMessage>?> ComparePcs(PcDtoModel a, PcDtoModel b)
@@ -82,9 +84,7 @@ public class ServerRequests
         ComparePcsRequest body = new(a, b);
         var send = await _httpClient.PostAsJsonAsync($"{ServerAddress}/pc/compare/pc", body);
         if (!send.IsSuccessStatusCode) return null;
-        var response = await _httpClient.GetAsync($"{ServerAddress}/pc/compare/pc");
-        if (!response.IsSuccessStatusCode) return null;
-        var content = await response.Content.ReadAsStringAsync();
+        var content = await send.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<List<PcCompareMessage>>(content, _options);
     }
     
