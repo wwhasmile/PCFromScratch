@@ -1,6 +1,8 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
 
+using Microsoft.Extensions.Configuration;
+
 using PCFromScratch.Common;
 using PCFromScratch.DTOModels;
 
@@ -12,9 +14,9 @@ public class ServerRequests
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _options;
 
-    public ServerRequests()
+    public ServerRequests(IConfiguration configuration)
     {
-        ServerAddress = "http://192.168.0.77:5160";
+        ServerAddress = "http://"+configuration["settings:serverIp"]+":5160";
         _httpClient = new HttpClient();
         _options = new JsonSerializerOptions
         {

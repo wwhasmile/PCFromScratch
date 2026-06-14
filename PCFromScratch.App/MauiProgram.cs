@@ -1,5 +1,8 @@
-﻿using CommunityToolkit.Maui;
+﻿using System.Reflection;
 
+using CommunityToolkit.Maui;
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PCFromScratch.App.Pages;
 using PCFromScratch.App.Utils;
@@ -22,7 +25,13 @@ public static class MauiProgram
                 fonts.AddFont("DniproCity-Bold.ttf", "DniproCityBold");
                 fonts.AddFont("DniproCity-Regular.ttf", "DniproCityRegular");
             });
+        var assembly = Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.appsettings.json");
 
+        if (stream != null)
+        {
+            builder.Configuration.AddJsonStream(stream);
+        }
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
