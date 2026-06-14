@@ -51,11 +51,38 @@ public class PcCompareViewModel : INotifyPropertyChanged
     public Color Pc2StorageColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
 
     public ICommand CompareCommand { get; }
+    public ICommand ResetSelectionsCommand { get; }
 
     public PcCompareViewModel(ServerRequests serverRequests)
     {
         _serverRequests = serverRequests;
         CompareCommand = new AsyncRelayCommand(Compare);
+        ResetSelectionsCommand = new Command(ResetSelections);
+    }
+
+    private void ResetColors()
+    {
+        Pc1CpuColor = Pc2CpuColor = EqualityColor;
+        Pc1GpuColor = Pc2GpuColor = EqualityColor;
+        Pc1RamColor = Pc2RamColor = EqualityColor;
+        Pc1PsuColor = Pc2PsuColor = EqualityColor;
+        Pc1StorageColor = Pc2StorageColor = EqualityColor;
+    }
+
+    private void ResetSelections()
+    {
+        Pc1 = new PcModel();
+        Pc2 = new PcModel();
+
+        Pc1CpuName = Pc2CpuName = "";
+        Pc1GpuName = Pc2GpuName = "";
+        Pc1RamName = Pc2RamName = "";
+        Pc1PsuName = Pc2PsuName = "";
+        
+        Pc1StorageNames.Clear();
+        Pc2StorageNames.Clear();
+
+        ResetColors();
     }
 
     private async Task Compare()
@@ -102,6 +129,7 @@ public class PcCompareViewModel : INotifyPropertyChanged
 
     public async Task UpdateComponent(string category, Guid selectedPartId, int pcIndex)
     {
+        ResetColors();
         string name;
         try 
         {

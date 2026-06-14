@@ -22,8 +22,8 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0" Text="PC 1" HorizontalOptions="Center" FontSize="32" FontAttributes="Bold" />
-        <Label Grid.Row="0" Grid.Column="1" Text="PC 2" HorizontalOptions="Center" FontSize="32" FontAttributes="Bold" />
+        <Label Grid.Row="0" Grid.Column="0" Text="ПК 1" HorizontalOptions="Center" FontSize="32" FontAttributes="Bold" />
+        <Label Grid.Row="0" Grid.Column="1" Text="ПК 2" HorizontalOptions="Center" FontSize="32" FontAttributes="Bold" />
 
         <StackLayout Grid.Row="1" Grid.Column="0" Padding="10">
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc1CpuColor}">
@@ -138,7 +138,10 @@
                 </StackLayout>
             </Border>
         </StackLayout>
-
-        <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Text="Compare" Clicked="OnCompareClicked" Margin="10" />
+        
+        <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" HorizontalOptions="Center" Spacing="10" Margin="10">
+            <Button Text="Порівняти" Clicked="OnCompareClicked" />
+            <Button Text="Скинути" Command="{Binding ResetSelectionsCommand}" />
+        </HorizontalStackLayout>
     </Grid>
 </ContentPage>
