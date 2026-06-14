@@ -73,7 +73,7 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
 
     public async Task UpdateSelectedComponent()
     {
-        if (SelectedPartId == null) return;
+        if (SelectedPartId == Guid.Empty) return;
 
         var benchmarkName = "";
         if (Category == "CpuBenchmark")

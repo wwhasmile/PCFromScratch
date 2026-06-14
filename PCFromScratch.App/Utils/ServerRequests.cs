@@ -73,7 +73,7 @@ public class ServerRequests
         SystemRequirementsDtoModel systemRequirements)
     {
         CompareRequirementsRequest body = new (pc, systemRequirements);
-        var send = await _httpClient.PostAsJsonAsync($"{ServerAddress}/pc/check", body);
+        var send = await _httpClient.PostAsJsonAsync($"{ServerAddress}/pc/compare/requirements", body);
         if (!send.IsSuccessStatusCode) return null;
         var content = await send.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<RequirementsResultDtoModel>(content, _options);

@@ -25,11 +25,6 @@ public partial class PcComparePage : ContentPage
         {
             var viewModel = (PcCompareViewModel)BindingContext;
             await viewModel.UpdateComponent(Category, SelectedPartId, PcIndex);
-
-            // Clear properties to prevent re-processing
-            SelectedPartId = Guid.Empty;
-            Category = null;
-            PcIndex = 0;
         }
     }
 
