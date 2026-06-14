@@ -163,12 +163,9 @@ public class PcCompareService(ICpuRepository cpuRepository,
         var gpuA = await gpuTaskA;
         var gpuB = await gpuTaskB;
         if (gpuA is null || gpuB is null) yield break;
-
-        var gpuBenchmarkTaskA = gpuBenchmarkRepository.GetGpuBenchmark(gpuA.Name);
-        var gpuBenchmarkTaskB = gpuBenchmarkRepository.GetGpuBenchmark(gpuB.Name);
-        await Task.WhenAll(gpuBenchmarkTaskA, gpuBenchmarkTaskB);
-        var gpuBenchmarkA = await gpuBenchmarkTaskA;
-        var gpuBenchmarkB = await gpuBenchmarkTaskB;
+        
+        var gpuBenchmarkA = await gpuBenchmarkRepository.GetGpuBenchmark(gpuA.Name);
+        var gpuBenchmarkB = await gpuBenchmarkRepository.GetGpuBenchmark(gpuB.Name);
         if (gpuBenchmarkA is null || gpuBenchmarkB is null) yield break;
 
         if (gpuBenchmarkA.Score < gpuBenchmarkB.Score)
