@@ -145,7 +145,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
         var cpuBenchmarkB = await cpuBenchmarkRepository.GetCpuBenchmark(cpuB.Name);
         if (cpuBenchmarkA is null || cpuBenchmarkB is null) yield break;
 
-        if (cpuBenchmarkA.Score < cpuBenchmarkB.Score)
+        if (cpuBenchmarkA.Score > cpuBenchmarkB.Score)
             yield return new("Cpu", PcCompareMetric.Better);
         else if (cpuBenchmarkA.Score == cpuBenchmarkB.Score)
             yield return new("Cpu", PcCompareMetric.Equal);
@@ -157,7 +157,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
     {
         if (!a.HasValue || !b.HasValue) yield break;
         
-        var gpuA = await gpuRepository.GetGpu(b.Value);
+        var gpuA = await gpuRepository.GetGpu(a.Value);
         var gpuB = await gpuRepository.GetGpu(b.Value);
         if (gpuA is null || gpuB is null) yield break;
         
@@ -165,7 +165,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
         var gpuBenchmarkB = await gpuBenchmarkRepository.GetGpuBenchmark(gpuB.Name);
         if (gpuBenchmarkA is null || gpuBenchmarkB is null) yield break;
 
-        if (gpuBenchmarkA.Score < gpuBenchmarkB.Score)
+        if (gpuBenchmarkA.Score > gpuBenchmarkB.Score)
             yield return new("Gpu", PcCompareMetric.Better);
         else if (gpuBenchmarkA.Score == gpuBenchmarkB.Score)
             yield return new("Gpu", PcCompareMetric.Equal);
