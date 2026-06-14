@@ -15,7 +15,9 @@ public class PcCompareViewModel : INotifyPropertyChanged
 
     private PcModel Pc1 { get; set; } = new();
     private PcModel Pc2 { get; set; } = new();
-
+    
+    private static readonly Color EqualityColor = Application.Current?.RequestedTheme == AppTheme.Light? Color.FromArgb("#C8C8C8") : Color.FromArgb("#212121") ?? Color.FromArgb("#212121") ;
+    
     public string Pc1CpuName { get => field; set { field = value; OnPropertyChanged(); } } = "";
     public string Pc1GpuName { get => field; set { field = value; OnPropertyChanged(); } } = "";
     public string Pc1RamName { get => field; set { field = value; OnPropertyChanged(); } } = "";
@@ -28,17 +30,17 @@ public class PcCompareViewModel : INotifyPropertyChanged
     public string Pc2PsuName { get => field; set { field = value; OnPropertyChanged(); } } = "";
     public ObservableCollection<string> Pc2StorageNames { get; set; } = new();
 
-    public Color Pc1CpuColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
-    public Color Pc1GpuColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
-    public Color Pc1RamColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
-    public Color Pc1PsuColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
-    public Color Pc1StorageColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
+    public Color Pc1CpuColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
+    public Color Pc1GpuColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
+    public Color Pc1RamColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
+    public Color Pc1PsuColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
+    public Color Pc1StorageColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
 
-    public Color Pc2CpuColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
-    public Color Pc2GpuColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
-    public Color Pc2RamColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
-    public Color Pc2PsuColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
-    public Color Pc2StorageColor { get => field; set { field = value; OnPropertyChanged(); } } = Color.FromArgb("#212121");
+    public Color Pc2CpuColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
+    public Color Pc2GpuColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
+    public Color Pc2RamColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
+    public Color Pc2PsuColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
+    public Color Pc2StorageColor { get => field; set { field = value; OnPropertyChanged(); } } = EqualityColor;
 
     public ICommand CompareCommand { get; }
 
@@ -61,7 +63,7 @@ public class PcCompareViewModel : INotifyPropertyChanged
             {
                 PcCompareMetric.Better => (Colors.Green, Colors.Red),
                 PcCompareMetric.Worse => (Colors.Red, Colors.Green),
-                _ => (Color.FromArgb("#212121"), Color.FromArgb("#212121"))
+                _ => (EqualityColor, EqualityColor)
             };
 
             switch (result.Component)

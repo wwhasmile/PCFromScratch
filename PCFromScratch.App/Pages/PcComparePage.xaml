@@ -28,7 +28,7 @@
         <StackLayout Grid.Row="1" Grid.Column="0" Padding="10">
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc1CpuColor}">
                 <StackLayout>
-                    <Label Text="CPU" FontAttributes="Bold" />
+                    <Label Text="Процесор" FontAttributes="Bold" />
                     <Label Text="{Binding Pc1CpuName}" />
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelectComponent" CommandParameter="Pc1Cpu" />
@@ -37,7 +37,7 @@
             </Border>
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc1GpuColor}">
                 <StackLayout>
-                    <Label Text="GPU" FontAttributes="Bold" />
+                    <Label Text="Відеокарта" FontAttributes="Bold" />
                     <Label Text="{Binding Pc1GpuName}" />
                      <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelectComponent" CommandParameter="Pc1Gpu" />
@@ -46,7 +46,7 @@
             </Border>
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc1RamColor}">
                 <StackLayout>
-                    <Label Text="RAM" FontAttributes="Bold" />
+                    <Label Text="ОЗП" FontAttributes="Bold" />
                     <Label Text="{Binding Pc1RamName}" />
                      <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelectComponent" CommandParameter="Pc1Ram" />
@@ -55,7 +55,7 @@
             </Border>
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc1PsuColor}">
                 <StackLayout>
-                    <Label Text="PSU" FontAttributes="Bold" />
+                    <Label Text="БЖ" FontAttributes="Bold" />
                     <Label Text="{Binding Pc1PsuName}" />
                      <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelectComponent" CommandParameter="Pc1Psu" />
@@ -64,7 +64,7 @@
             </Border>
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc1StorageColor}">
                 <StackLayout>
-                    <Label Text="Storage" FontAttributes="Bold" />
+                    <Label Text="Сховище" FontAttributes="Bold" />
                     <StackLayout BindableLayout.ItemsSource="{Binding Pc1StorageNames}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
@@ -85,7 +85,7 @@
         <StackLayout Grid.Row="1" Grid.Column="1" Padding="10">
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc2CpuColor}">
                 <StackLayout>
-                    <Label Text="CPU" FontAttributes="Bold" />
+                    <Label Text="Процесор" FontAttributes="Bold" />
                     <Label Text="{Binding Pc2CpuName}" />
                      <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelectComponent" CommandParameter="Pc2Cpu" />
@@ -94,7 +94,7 @@
             </Border>
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc2GpuColor}">
                 <StackLayout>
-                    <Label Text="GPU" FontAttributes="Bold" />
+                    <Label Text="Відеокарта" FontAttributes="Bold" />
                     <Label Text="{Binding Pc2GpuName}" />
                      <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelectComponent" CommandParameter="Pc2Gpu" />
@@ -103,7 +103,7 @@
             </Border>
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc2RamColor}">
                 <StackLayout>
-                    <Label Text="RAM" FontAttributes="Bold" />
+                    <Label Text="ОЗП" FontAttributes="Bold" />
                     <Label Text="{Binding Pc2RamName}" />
                      <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelectComponent" CommandParameter="Pc2Ram" />
@@ -112,7 +112,7 @@
             </Border>
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc2PsuColor}">
                 <StackLayout>
-                    <Label Text="PSU" FontAttributes="Bold" />
+                    <Label Text="БЖ" FontAttributes="Bold" />
                     <Label Text="{Binding Pc2PsuName}" />
                      <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSelectComponent" CommandParameter="Pc2Psu" />
@@ -121,7 +121,7 @@
             </Border>
             <Border Padding="10" Margin="5" StrokeShape="RoundRectangle 10" StrokeThickness="2" BackgroundColor="{Binding Pc2StorageColor}">
                 <StackLayout>
-                    <Label Text="Storage" FontAttributes="Bold" />
+                    <Label Text="Сховище" FontAttributes="Bold" />
                     <StackLayout BindableLayout.ItemsSource="{Binding Pc2StorageNames}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate>
