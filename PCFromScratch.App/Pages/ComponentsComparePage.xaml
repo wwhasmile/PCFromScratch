@@ -37,18 +37,20 @@
             </Grid>
 
             <Label IsVisible="{Binding AreResultsAvailable}" Text="Результати порівняння" FontSize="20" HorizontalOptions="Center" Margin="0,20,0,0" />
-
-            <CollectionView ItemsSource="{Binding ChartData}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="viewModels:BenchmarkChartEntry">
-                        <StackLayout Orientation="Horizontal" Padding="5">
-                            <Label Text="{Binding Name}" VerticalOptions="Center" WidthRequest="150" />
-                            <BoxView Color="CornflowerBlue" HeightRequest="20" WidthRequest="{Binding Width}"/>
-                            <Label Text="{Binding Value}" VerticalOptions="Center" />
-                        </StackLayout>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <Grid VerticalOptions="Center" Margin="0,30,0,0">
+                <CollectionView ItemsSource="{Binding ChartData}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:BenchmarkChartEntry">
+                            <StackLayout Orientation="Horizontal" Padding="5">
+                                <Label Text="{Binding Name}" VerticalOptions="Center" WidthRequest="150" />
+                                <BoxView Color="CornflowerBlue" HeightRequest="20" WidthRequest="{Binding Width}"/>
+                                <Label Text="{Binding Value}" VerticalOptions="Center" Margin="3,0,0,0"/>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+            
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
