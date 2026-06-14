@@ -6,11 +6,13 @@
              x:Class="PCFromScratch.App.Pages.PsuSelectionPage"
              x:DataType="viewModels:PsuSelectionViewModel">
     <Shell.TitleView>
-        <Label Text="Вибір блока живлення"
-               FontFamily="DniproCityBold"
-               FontSize="36"
-               TextColor="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDarkText}}"
-               HorizontalOptions="Center" />
+        <Grid HorizontalOptions="Fill">
+            <Label Text="Вибір блока живлення"
+                   FontFamily="DniproCityBold"
+                   FontSize="36"
+                   TextColor="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDarkText}}"
+                   HorizontalOptions="Center" />
+        </Grid>
     </Shell.TitleView>
     <Grid RowDefinitions="Auto, *">
         <SearchBar Grid.Row="0" Placeholder="Пошук..." Text="{Binding SearchTerm}" />

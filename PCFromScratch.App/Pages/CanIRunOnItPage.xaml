@@ -3,9 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:PCFromScratch.App.ViewModels"
              x:Class="PCFromScratch.App.Pages.CanIRunOnItPage"
-             x:DataType="viewmodels:CanIRunOnItViewModel"
-             Title="Чи запуститься?">
-
+             x:DataType="viewmodels:CanIRunOnItViewModel">
+    <Shell.TitleView>
+            <Grid HorizontalOptions="Fill">
+                <Label Text="Чи запуститься?"
+                       FontFamily="DniproCityBold"
+                       FontSize="36"
+                       TextColor="{AppThemeBinding Light={StaticResource Secondary}, Dark={StaticResource SecondaryDarkText}}"
+                       HorizontalOptions="Center" />
+            </Grid>
+    </Shell.TitleView>
     <ScrollView>
         <VerticalStackLayout Spacing="20" Padding="20">
             
