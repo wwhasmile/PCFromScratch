@@ -16,23 +16,14 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
     {
         List<Warning> warnings = [];
 
-        var cpuTask = pc.Cpu.HasValue ? cpuRepository.GetCpu(pc.Cpu.Value) : Task.FromResult<Cpu?>(null);
-        var motherboardTask = pc.Motherboard.HasValue ? motherboardRepository.GetMotherboard(pc.Motherboard.Value)
-            : Task.FromResult<MotherboardRenamedForOmnissiah?>(null);
-        var ramTask = pc.Ram.HasValue ? ramRepository.GetRam(pc.Ram.Value) : Task.FromResult<Ram?>(null);
-        var gpuTask = pc.Gpu.HasValue ? gpuRepository.GetGpu(pc.Gpu.Value) : Task.FromResult<Gpu?>(null);
-        var coolerTask = pc.Cooler.HasValue ? coolerRepository.GetCooler(pc.Cooler.Value)
-            : Task.FromResult<Cooler?>(null);
-        var psuTask = pc.Psu.HasValue ? psuRepository.GetPsu(pc.Psu.Value) : Task.FromResult<Psu?>(null);
-
-        await Task.WhenAll(cpuTask, motherboardTask, ramTask, coolerTask, psuTask);
-
-        var cpu = await cpuTask;
-        var motherboard = await motherboardTask;
-        var ram = await ramTask;
-        var gpu = await gpuTask;
-        var cooler = await coolerTask;
-        var psu = await psuTask;
+        var cpu = await (pc.Cpu.HasValue ? cpuRepository.GetCpu(pc.Cpu.Value) : Task.FromResult<Cpu?>(null));
+        var motherboard = await (pc.Motherboard.HasValue ? motherboardRepository.GetMotherboard(pc.Motherboard.Value)
+            : Task.FromResult<MotherboardRenamedForOmnissiah?>(null));
+        var ram = await (pc.Ram.HasValue ? ramRepository.GetRam(pc.Ram.Value) : Task.FromResult<Ram?>(null));
+        var gpu = await (pc.Gpu.HasValue ? gpuRepository.GetGpu(pc.Gpu.Value) : Task.FromResult<Gpu?>(null));
+        var cooler = await (pc.Cooler.HasValue ? coolerRepository.GetCooler(pc.Cooler.Value)
+                                        : Task.FromResult<Cooler?>(null));
+        var psu = await (pc.Psu.HasValue ? psuRepository.GetPsu(pc.Psu.Value) : Task.FromResult<Psu?>(null));
 
         warnings.AddRange(ValidateMotherboard(cpu, motherboard));
         warnings.AddRange(ValidateRam(cpu, motherboard, ram));
@@ -104,10 +95,10 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         if (psu is null) return [];
 
         var totalPower = 150;
-        if (cpu is not null)
-        totalPower += cpu.Tdp;
-        if (gpu is not null)
-        totalPower += gpu.Tdp * 2;
+        if (cpu is not null) 
+            totalPower += cpu.Tdp;
+        if (gpu is not null) 
+            totalPower += gpu.Tdp * 2;
         totalPower += (int)(totalPower * 0.4);
 
         if (totalPower >= psu.Power) return [];

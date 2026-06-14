@@ -20,14 +20,13 @@ public class PcCompareService(ICpuRepository cpuRepository,
         var result = true;
         var messages = new ConcurrentDictionary<string, string>();
 
-        var checkCpuTask = CheckCpu(pc.Cpu, requirements.CpuBenchmark, messages);
-        var checkGpuTask = CheckGpu(pc.Gpu, requirements.GpuBenchmark, messages);
-        var checkRamTask = CheckRam(pc.Ram, requirements.RamInMegabytes, messages);
-        var checkDrivesTask = CheckDrives(pc.InternalDrives, requirements.SpaceOnDiskInGigabytes,
+        var checkCpu = await CheckCpu(pc.Cpu, requirements.CpuBenchmark, messages);
+        var checkGpu = await CheckGpu(pc.Gpu, requirements.GpuBenchmark, messages);
+        var checkRam = await CheckRam(pc.Ram, requirements.RamInMegabytes, messages);
+        var checkDrives = await CheckDrives(pc.InternalDrives, requirements.SpaceOnDiskInGigabytes,
             requirements.SsdRequired, messages);
-
-        await Task.WhenAll(checkCpuTask, checkGpuTask, checkRamTask, checkDrivesTask);
-        if (!await checkCpuTask || !await checkGpuTask || !await checkRamTask || !await checkDrivesTask)
+        
+        if (!checkCpu || !checkGpu || !checkRam || !checkDrives)
             result = false;
 
         return (result, messages.ToDictionary());
@@ -38,12 +37,8 @@ public class PcCompareService(ICpuRepository cpuRepository,
         if (!cpuId.HasValue) return true;
         if (!cpuBenchmarkId.HasValue) return true;
         
-        var cpuTask = cpuRepository.GetCpu(cpuId.Value);
-        var targetCpuBenchmarkTask = cpuBenchmarkRepository.GetCpuBenchmark(cpuBenchmarkId.Value);
-        await Task.WhenAll(cpuTask, targetCpuBenchmarkTask);
-
-        var cpu = await cpuTask;
-        var targetCpuBenchmark = await targetCpuBenchmarkTask;
+        var cpu = await cpuRepository.GetCpu(cpuId.Value);
+        var targetCpuBenchmark = await cpuBenchmarkRepository.GetCpuBenchmark(cpuBenchmarkId.Value);
 
         if (cpu is null) return true;
         if (targetCpuBenchmark is null) return true;
@@ -61,13 +56,9 @@ public class PcCompareService(ICpuRepository cpuRepository,
     {
         if (!gpuId.HasValue) return true;
         if (!gpuBenchmarkId.HasValue) return true;
-        
-        var gpuTask = gpuRepository.GetGpu(gpuId.Value);
-        var targetGpuBenchmarkTask = gpuBenchmarkRepository.GetGpuBenchmark(gpuBenchmarkId.Value);
-        await Task.WhenAll(gpuTask, targetGpuBenchmarkTask);
 
-        var gpu = await gpuTask;
-        var targetGpuBenchmark = await targetGpuBenchmarkTask;
+        var gpu = await gpuRepository.GetGpu(gpuId.Value);
+        var targetGpuBenchmark = await gpuBenchmarkRepository.GetGpuBenchmark(gpuBenchmarkId.Value);
 
         if (gpu is null) return true;
         if (targetGpuBenchmark is null) return true;
@@ -97,7 +88,12 @@ public class PcCompareService(ICpuRepository cpuRepository,
     private async Task<bool> CheckDrives(IEnumerable<Guid> driveIds, int capacity, bool requireSsd,
             ConcurrentDictionary<string, string> messages)
     {
-        var drives = await Task.WhenAll(driveIds.Select(id => internalDriveRepository.GetInternalDrive(id)));
+        List<InternalDrive> drives = [];
+        foreach (var id in driveIds)
+        {
+            var drive = await internalDriveRepository.GetInternalDrive(id);
+            if (drive is not null) drives.Add(drive);
+        }
         var totalSize = 0;
 
         var hasSsd = false;
@@ -145,27 +141,21 @@ public class PcCompareService(ICpuRepository cpuRepository,
     private async IAsyncEnumerable<PcCompareMessage> CompareCpus(Guid? a, Guid? b)
     {
         if (!a.HasValue || !b.HasValue) yield break;
-
-        var cpuTaskA = cpuRepository.GetCpu(a.Value);
-        var cpuTaskB = cpuRepository.GetCpu(b.Value);
-        await Task.WhenAll(cpuTaskA, cpuTaskB);
-        var cpuA = await cpuTaskA;
-        var cpuB = await cpuTaskB;
+        
+        var cpuA = await cpuRepository.GetCpu(a.Value);
+        var cpuB = await cpuRepository.GetCpu(b.Value);
         if (cpuA is null || cpuB is null) yield break;
-
-        var cpuBenchmarkTaskA = cpuBenchmarkRepository.GetCpuBenchmark(cpuA.Name);
-        var cpuBenchmarkTaskB = cpuBenchmarkRepository.GetCpuBenchmark(cpuB.Name);
-        await Task.WhenAll(cpuBenchmarkTaskA, cpuBenchmarkTaskB);
-        var cpuBenchmarkA = await cpuBenchmarkTaskA;
-        var cpuBenchmarkB = await cpuBenchmarkTaskB;
+        
+        var cpuBenchmarkA = await cpuBenchmarkRepository.GetCpuBenchmark(cpuA.Name);
+        var cpuBenchmarkB = await cpuBenchmarkRepository.GetCpuBenchmark(cpuB.Name);
         if (cpuBenchmarkA is null || cpuBenchmarkB is null) yield break;
 
         if (cpuBenchmarkA.Score < cpuBenchmarkB.Score)
-            yield return new("Процесор", PcCompareMetric.Better);
+            yield return new("Cpu", PcCompareMetric.Better);
         else if (cpuBenchmarkA.Score == cpuBenchmarkB.Score)
-            yield return new("Процесор", PcCompareMetric.Equal);
+            yield return new("Cpu", PcCompareMetric.Equal);
         else
-            yield return new("Процесор", PcCompareMetric.Worse);
+            yield return new("Cpu", PcCompareMetric.Worse);
     }
 
     private async IAsyncEnumerable<PcCompareMessage> CompareGpus(Guid? a, Guid? b)
@@ -187,106 +177,107 @@ public class PcCompareService(ICpuRepository cpuRepository,
         if (gpuBenchmarkA is null || gpuBenchmarkB is null) yield break;
 
         if (gpuBenchmarkA.Score < gpuBenchmarkB.Score)
-            yield return new("Відеокарта", PcCompareMetric.Better);
+            yield return new("Gpu", PcCompareMetric.Better);
         else if (gpuBenchmarkA.Score == gpuBenchmarkB.Score)
-            yield return new("Відеокарта", PcCompareMetric.Equal);
+            yield return new("Gpu", PcCompareMetric.Equal);
         else
-            yield return new("Відеокарта", PcCompareMetric.Worse);
+            yield return new("Gpu", PcCompareMetric.Worse);
     }
 
     private async IAsyncEnumerable<PcCompareMessage> CompareRams(Guid? a, Guid? b)
     {
         if (!a.HasValue || !b.HasValue) yield break;
 
-        var ramTaskA = ramRepository.GetRam(a.Value);
-        var ramTaskB = ramRepository.GetRam(b.Value);
-        await Task.WhenAll(ramTaskA, ramTaskB);
-        var ramA = await ramTaskA;
-        var ramB = await ramTaskB;
+        var ramA = await ramRepository.GetRam(a.Value);
+        var ramB = await ramRepository.GetRam(b.Value);
         if (ramA is null || ramB is null) yield break;
 
         if (ramA.Amount * ramA.Sticks > ramB.Amount * ramB.Sticks)
-            yield return new("Оперативна пам'ять", PcCompareMetric.Better,
+            yield return new("Ram", PcCompareMetric.Better,
                 "У вашій збірці більше оперативної пам'яті");
         else if (ramA.Amount * ramA.Sticks == ramB.Amount * ramB.Sticks)
-            yield return new("Оперативна пам'ять", PcCompareMetric.Equal,
+            yield return new("Ram", PcCompareMetric.Equal,
                 "У вашій збірці така сама кількість оперативної пам'яті");
         else
-            yield return new("Оперативна пам'ять", PcCompareMetric.Worse,
+            yield return new("Ram", PcCompareMetric.Worse,
                 "У вашій збірці менша кількість оперативної пам'яті");
         
         if (ramA.Frequency > ramB.Frequency)
-            yield return new("Оперативна пам'ять", PcCompareMetric.Better,
+            yield return new("Ram", PcCompareMetric.Better,
                 "У вашій збірці швидка оперативна пам'ять");
         else if (ramA.Frequency == ramB.Frequency)
-            yield return new("Оперативна пам'ять", PcCompareMetric.Equal,
+            yield return new("Ram", PcCompareMetric.Equal,
                 "У вашій збірці така сама швидкість оперативної пам'яті");
         else
-            yield return new("Оперативна пам'ять", PcCompareMetric.Worse,
+            yield return new("Ram", PcCompareMetric.Worse,
                 "У вашій збірці повільніша оперативна пам'ять");
         
         yield return ramA.Generation.CompareTo(ramB.Generation) switch
         {
-            1 => new("Оперативна пам'ять", PcCompareMetric.Better,
+            1 => new("Ram", PcCompareMetric.Better,
                 "У вашій збірці оперативна пам'ять більш нового покоління"),
-            -1 => new("Оперативна пам'ять", PcCompareMetric.Worse,
+            -1 => new("Ram", PcCompareMetric.Worse,
                 "У вашій збірці оперативна пам'ять більш старого покоління"),
-            _ => new("Оперативна пам'ять", PcCompareMetric.Equal,
+            _ => new("Ram", PcCompareMetric.Equal,
                 "У вашій збірці оперативна пам'ять такого самого покоління"),
         };
     }
 
     private async IAsyncEnumerable<PcCompareMessage> CompareDrives(List<Guid> a, List<Guid> b)
     {
-        var driveTasksA = a.Select(x => internalDriveRepository.GetInternalDrive(x));
-        var driveTasksB = b.Select(x => internalDriveRepository.GetInternalDrive(x));
+        List<InternalDrive> drivesA = [];
+        foreach (var id in a)
+        {
+            var drive = await internalDriveRepository.GetInternalDrive(id);
+            if (drive is not null) drivesA.Add(drive);
+        }
+        List<InternalDrive> drivesB = [];
+        foreach (var id in b)
+        {
+            var drive = await internalDriveRepository.GetInternalDrive(id);
+            if (drive is not null) drivesB.Add(drive);
+        }
 
-        var drivesA = await Task.WhenAll(driveTasksA);
-        var drivesB = await Task.WhenAll(driveTasksB);
-
-        var capacityA = drivesA.Sum(x => x?.Capacity ?? 0);
-        var capacityB = drivesB.Sum(x => x?.Capacity ?? 0);
+        var capacityA = drivesA.Sum(x => x.Capacity);
+        var capacityB = drivesB.Sum(x => x.Capacity);
 
         if (capacityA > capacityB)
-            yield return new("Диски", PcCompareMetric.Better,
+            yield return new("Storage", PcCompareMetric.Better,
                 "У вашій збірці більше дискового простору");
         else if (capacityA == capacityB)
-            yield return new("Диски", PcCompareMetric.Equal,
+            yield return new("Storage", PcCompareMetric.Equal,
                 "У вашій збірці такий самий дисковий простір");
         else
-            yield return new("Диски", PcCompareMetric.Worse,
+            yield return new("Storage", PcCompareMetric.Worse,
                 "У вашій збірці менше дискового простору");
     }
 
     private async IAsyncEnumerable<PcCompareMessage> ComparePsus(Guid? a, Guid? b)
     {
         if (!a.HasValue || !b.HasValue) yield break;
-
-        var psuTaskA = psuRepository.GetPsu(a.Value);
-        var psuTaskB = psuRepository.GetPsu(b.Value);
-        await Task.WhenAll(psuTaskA, psuTaskB);
-        var psuA = await psuTaskA;
-        var psuB = await psuTaskB;
+        
+        var psuA = await psuRepository.GetPsu(a.Value);
+        var psuB = await psuRepository.GetPsu(b.Value);
         if (psuA is null || psuB is null) yield break;
 
         if (psuA.Power > psuB.Power)
-            yield return new("Блок живлення", PcCompareMetric.Better,
+            yield return new("Psu", PcCompareMetric.Better,
                 "У вашій збірці більш потужний блок живлення");
         else if (psuA.Power == psuB.Power)
-            yield return new("Блок живлення", PcCompareMetric.Equal,
+            yield return new("Psu", PcCompareMetric.Equal,
                 "У вашій збірці так само потужний блок живлення");
         else
-            yield return new("Блок живлення", PcCompareMetric.Worse,
+            yield return new("Psu", PcCompareMetric.Worse,
                 "У вашій збірці менш потужний блок живлення");
         
         if (psuA.Level > psuB.Level)
-            yield return new("Блок живлення", PcCompareMetric.Better,
+            yield return new("Psu", PcCompareMetric.Better,
                 "У вашій збірці краще сертифікований блок живлення");
         else if (psuA.Level == psuB.Level)
-            yield return new("Блок живлення", PcCompareMetric.Equal,
+            yield return new("Psu", PcCompareMetric.Equal,
                 "У вашій збірці так само сертифікований блок живлення");
         else
-            yield return new("Блок живлення", PcCompareMetric.Worse,
+            yield return new("Psu", PcCompareMetric.Worse,
                 "У вашій збірці гірше сертифікований блок живлення");
     }
 }
