@@ -12,6 +12,7 @@ public class GpuScraper
 {
     public static async Task<List<Gpu>> GetGpus()
     {
+        Microsoft.Playwright.Program.Main(new[] { "install" });
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {

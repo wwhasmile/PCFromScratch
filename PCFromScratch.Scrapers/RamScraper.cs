@@ -11,6 +11,7 @@ public class RamScraper
 {
     public static async Task<List<Ram>> GetRams()
     {
+        Microsoft.Playwright.Program.Main(new[] { "install" });
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {

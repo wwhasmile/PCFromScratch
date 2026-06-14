@@ -12,6 +12,7 @@ public class HddScraper
 {
     public static async Task<List<InternalDrive>> GetHdds()
     {
+        Microsoft.Playwright.Program.Main(new[] { "install" });
         using var playwright = await Playwright.CreateAsync();
         await using var browser =
             await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
