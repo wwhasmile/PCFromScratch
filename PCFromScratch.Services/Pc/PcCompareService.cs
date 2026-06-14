@@ -129,8 +129,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
         foreach (var message in await CompareGpus(a.Gpu, b.Gpu).ToListAsync())
             result.Add(message);
         
-        foreach (var message in await CompareDrives(a.InternalDrives, b.InternalDrives).ToListAsync())
-            result.Add(message);
+        result.Add(await CompareDrives(a.InternalDrives, b.InternalDrives));
         
         foreach (var message in await ComparePsus(a.Psu, b.Psu).ToListAsync())
             result.Add(message);
@@ -223,7 +222,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
         };
     }
 
-    private async IAsyncEnumerable<PcCompareMessage> CompareDrives(List<Guid> a, List<Guid> b)
+    private async Task<PcCompareMessage> CompareDrives(List<Guid> a, List<Guid> b)
     {
         List<InternalDrive> drivesA = [];
         foreach (var id in a)
@@ -242,13 +241,12 @@ public class PcCompareService(ICpuRepository cpuRepository,
         var capacityB = drivesB.Sum(x => x.Capacity);
 
         if (capacityA > capacityB)
-            yield return new("Storage", PcCompareMetric.Better,
+            return new PcCompareMessage("Storage", PcCompareMetric.Better,
                 "У вашій збірці більше дискового простору");
-        else if (capacityA == capacityB)
-            yield return new("Storage", PcCompareMetric.Equal,
+        if (capacityA == capacityB)
+            return new PcCompareMessage("Storage", PcCompareMetric.Equal,
                 "У вашій збірці такий самий дисковий простір");
-        else
-            yield return new("Storage", PcCompareMetric.Worse,
+        return new PcCompareMessage("Storage", PcCompareMetric.Worse,
                 "У вашій збірці менше дискового простору");
     }
 

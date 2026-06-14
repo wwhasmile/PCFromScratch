@@ -29,7 +29,8 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         warnings.AddRange(ValidateRam(cpu, motherboard, ram));
         warnings.AddRange(ValidateCooler(cpu, motherboard, cooler));
         warnings.AddRange(ValidatePsu(psu, cpu, gpu));
-
+        warnings.AddRange(GetCaseRequirements(motherboard, cooler, gpu));
+        
         return warnings;
     }
 
@@ -108,5 +109,15 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         return [ new(WarningSeverity.Incompatibility,
                     "Обраний блок живлення не є достатньо потужним для інших обраних компонентів."
                     ) ];
+    }
+
+    private static List<Warning> GetCaseRequirements(MotherboardRenamedForOmnissiah? motherboard, Cooler? cooler, Gpu? gpu)
+    {
+        if (motherboard is null) return [];
+        if (gpu is null) return [];
+        string message = $"Вимоги до корпуса: {motherboard.FormFactor} форм фактор, {gpu.Length}мм довжина місця для відеокарти";
+        if (cooler is not null && cooler.Height > 0) message += $", {cooler.Height} глибина";
+        if (cooler is not null && cooler.Radius > 0) message += $", {cooler.Radius * cooler.FanCount}мм верхня панель";
+        return [new(WarningSeverity.Info, message)];
     }
 }
