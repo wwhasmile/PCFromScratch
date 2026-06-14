@@ -103,7 +103,9 @@ public class PcCompareService(ICpuRepository cpuRepository,
             if (drive.Capacity < (moreThanOneDrive ? capacity : capacity + 60))
             {
                 message += $"{drive.Name} не має достатньо місця\n";
+                continue;
             }
+            anyDriveFitsReqs = true;
         }
 
         if (anyDriveFitsReqs) return true;
