@@ -35,23 +35,23 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
 
     private static List<Warning> ValidateMotherboard(Cpu? cpu, MotherboardRenamedForOmnissiah? motherboard)
     {
-        if (cpu is null) return [];
-        if (motherboard is null) return [];
+        if (cpu is null) return [new(WarningSeverity.Info, "Процесор не обрано")];
+        if (motherboard is null) return [new(WarningSeverity.Info, "Материнську плату не обрано")];
 
         if (cpu.Socket == motherboard.Socket) return [];
 
-        return [ new(WarningSeverity.Incompatibility, "Несумісний сокет процесора та материнської плати") ];
+        return [ new(WarningSeverity.Incompatibility, $"Несумісний сокет процесора ({cpu.Socket}) та материнської плати ({motherboard.Socket})") ];
     }
 
     private static List<Warning> ValidateRam(Cpu? cpu, MotherboardRenamedForOmnissiah? motherboard, Ram? ram)
     {
         if (motherboard is null) return [];
-        if (ram is null) return [];
+        if (ram is null) return [new(WarningSeverity.Info, "Оперативну пам'ять не обрано")];
 
         List<Warning> result = [];
         if (motherboard.RamGeneration != ram.Generation)
             result.Add(new(WarningSeverity.Incompatibility,
-                                        "Несумісне покоління оперативної пам'яті з материнською платою"));
+                                        $"Несумісне покоління оперативної пам'яті ({ram.Generation}) з материнською платою ({motherboard.RamGeneration})"));
         if (motherboard.RamSlots < ram.Sticks)
             result.Add(new(WarningSeverity.Incompatibility,
                                         "Недостатня кількість слотів для оперативної пам'яті"));
@@ -61,12 +61,9 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
         int maxRamFrequency = motherboard.RamFrequency;
         if (cpu is not null && maxRamFrequency > cpu.RamFrequency)
             maxRamFrequency = cpu.RamFrequency;
-        if (maxRamFrequency / ram.Frequency > 1.35)
+        if (maxRamFrequency < ram.Frequency)
             result.Add(new(WarningSeverity.Bottleneck,
-                                        "Частота оперативної пам'яті нижча за рекомендовану"));
-        else if (maxRamFrequency < ram.Frequency)
-            result.Add(new(WarningSeverity.Bottleneck,
-                            "Частота оперативної пам'яті переважає максимально допустиму"));
+                            $"Частота оперативної пам'яті ({ram.Frequency}) більша за допустиму материнською платою ({maxRamFrequency})"));
         
         return result;
     }
@@ -74,17 +71,21 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
     private static List<Warning> ValidateCooler(Cpu? cpu, MotherboardRenamedForOmnissiah? motherboard, Cooler? cooler)
     {
         if (motherboard is null) return [];
-        if (cooler is null) return [];
+        if (cooler is null)
+        {
+            if (cpu is null || cpu.Packing == CpuPacking.Box) return [];
+            return [new(WarningSeverity.Incompatibility, "До обраного процесора кулер не йде в комплекті")];
+        }
 
         bool isCompatible = cooler.AmdSockets.Contains(motherboard.Socket) || 
                             cooler.IntelSockets.Contains(motherboard.Socket);
         if (!isCompatible)
-            return [ new(WarningSeverity.Incompatibility, "Несумісний сокет кулера та материнської плати") ];
-
+            return [ new(WarningSeverity.Incompatibility, $"Кулер не підходить обраному сокету ({motherboard.Socket})") ];
+        if (cpu?.Packing == CpuPacking.Box) return [new(WarningSeverity.Info, "Кулер йде в комплекті до обраного процесора")];
         List<Warning> warnings = [];
         if (cpu?.Tdp * 1.4 > cooler.Tdp)
             warnings.Add(new(WarningSeverity.Info,
-                    "Обраний кулер може не забезпечити оптимальний тепловий запас (рекомендовано: 1.4x TDP процесора)"
+                    "Обраний кулер може не забезпечити оптимальне охолодження (рекомендовано: 1.4x від споживання процесора)"
                     ));
 
         return warnings;
@@ -92,7 +93,8 @@ public class PcCheckService(IMotherboardRepository motherboardRepository,
 
     private static List<Warning> ValidatePsu(Psu? psu, Cpu? cpu, Gpu? gpu)
     {
-        if (psu is null) return [];
+        if (psu is null) return [new(WarningSeverity.Info, "Блок живлення не обрано")];
+        if (gpu is null) return [new(WarningSeverity.Info, "Відеокарту не обрано")];
 
         var totalPower = 150;
         if (cpu is not null) 

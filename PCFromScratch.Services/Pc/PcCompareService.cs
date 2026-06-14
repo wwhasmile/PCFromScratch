@@ -15,7 +15,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
     IInternalDriveRepository internalDriveRepository,
     IPsuRepository psuRepository) : IPcCompareService
 {
-    public async Task<(bool, Dictionary<string, string>)> IsFitRequirements(PcDtoModel pc, SystemRequirementsDtoModel requirements)
+    public async Task<RequirementsResultDtoModel> IsFitRequirements(PcDtoModel pc, SystemRequirementsDtoModel requirements)
     {
         var result = true;
         var messages = new ConcurrentDictionary<string, string>();
@@ -29,7 +29,7 @@ public class PcCompareService(ICpuRepository cpuRepository,
         if (!checkCpu || !checkGpu || !checkRam || !checkDrives)
             result = false;
 
-        return (result, messages.ToDictionary());
+        return new RequirementsResultDtoModel(result, messages.ToDictionary());
     }
 
     private async Task<bool> CheckCpu(Guid? cpuId, Guid? cpuBenchmarkId, ConcurrentDictionary<string, string> messages)
@@ -120,19 +120,19 @@ public class PcCompareService(ICpuRepository cpuRepository,
     {
         List<PcCompareMessage> result = [];
 
-        await foreach (var message in CompareCpus(a.Cpu, b.Cpu))
+        foreach (var message in await CompareCpus(a.Cpu, b.Cpu).ToListAsync())
             result.Add(message);
 
-        await foreach (var message in CompareRams(a.Ram, b.Ram))
+        foreach (var message in await CompareRams(a.Ram, b.Ram).ToListAsync())
             result.Add(message);
         
-        await foreach (var message in CompareGpus(a.Gpu, b.Gpu))
+        foreach (var message in await CompareGpus(a.Gpu, b.Gpu).ToListAsync())
             result.Add(message);
         
-        await foreach (var message in CompareDrives(a.InternalDrives, b.InternalDrives))
+        foreach (var message in await CompareDrives(a.InternalDrives, b.InternalDrives).ToListAsync())
             result.Add(message);
         
-        await foreach (var message in ComparePsus(a.Psu, b.Psu))
+        foreach (var message in await ComparePsus(a.Psu, b.Psu).ToListAsync())
             result.Add(message);
 
         return result;
