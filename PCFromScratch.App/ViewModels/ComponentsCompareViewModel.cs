@@ -19,8 +19,8 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
 
     public string SelectedComponentType { get; set; } = "CPU";
 
-    public Guid? SelectedPartId { get; set; }
-    public string? Category { get; set; }
+    public Guid SelectedPartId { get; set; }
+    public string Category { get; set; }
     public int PcIndex { get; set; }
 
     public string Component1Name { get; set; } = "Оберіть компонент";
@@ -78,12 +78,12 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         var benchmarkName = "";
         if (Category == "CpuBenchmark")
         {
-            var benchmark = await _requests.GetItem<CpuBenchmarkDtoModel>("/benchmarks/cpu/byId", SelectedPartId.Value);
+            var benchmark = await _requests.GetItem<CpuBenchmarkDtoModel>("/benchmarks/cpu/byId", SelectedPartId);
             benchmarkName = benchmark.Name;
         }
         else if (Category == "GpuBenchmark")
         {
-            var benchmark = await _requests.GetItem<GpuBenchmarkDtoModel>("/benchmarks/gpu/byId", SelectedPartId.Value);
+            var benchmark = await _requests.GetItem<GpuBenchmarkDtoModel>("/benchmarks/gpu/byId", SelectedPartId);
             benchmarkName = benchmark.Name;
         }
 
@@ -101,7 +101,6 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
 
         await CompareComponents();
         
-        SelectedPartId = null;
         Category = null;
         PcIndex = 0;
     }
