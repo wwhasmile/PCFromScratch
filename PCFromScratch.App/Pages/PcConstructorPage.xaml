@@ -17,39 +17,82 @@
         <local:IsNotNullConverter x:Key="IsNotNullConverter" />
         <!-- Single Component Category Template -->
         <DataTemplate x:Key="SingleComponentCategory" x:DataType="local:SingleComponentCategory">
-            <Border Padding="5"  StrokeShape="RoundRectangle 10" StrokeThickness="2">
-                <Grid ColumnDefinitions="*,*,Auto" IsVisible="{Binding ., Converter={local:TypeCheckConverter TargetType={x:Type local:SingleComponentCategory}}}">
-                    <VerticalStackLayout Padding="2, 0" VerticalOptions="Center">
+            <Border Padding="10" StrokeShape="RoundRectangle 10" StrokeThickness="2">
+                <VerticalStackLayout>
+                    <!-- Layout for when a component is NOT selected -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Grid.Triggers>
+                            <DataTrigger TargetType="Grid" Binding="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}" Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </Grid.Triggers>
                         <Label Text="{Binding Name}" VerticalOptions="Center" />
-                        <Label Text="{Binding SelectedPart.Name}" VerticalOptions="Center" IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}" />
-                    </VerticalStackLayout>
-                    <Picker Grid.Column="1" 
-                            ItemsSource="{Binding SelectedPart.Offers}" 
-                            ItemDisplayBinding="{Binding Display}" 
-                            SelectedItem="{Binding SelectedOffer}" 
-                            IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}"/>
-                    <Button Grid.Column="2" Text="{Binding ButtonText}" Command="{Binding Path=BindingContext.ChooseCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
-                </Grid>
+                        <Button Grid.Column="1" Text="{Binding ButtonText}" Command="{Binding Path=BindingContext.ChooseCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
+                    </Grid>
+
+                    <!-- Layout for when a component IS selected -->
+                    <ContentView IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}">
+                        <Grid>
+                            <!-- WINDOWS -->
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="5"
+                                  IsVisible="{OnPlatform WinUI=True, Default=False}">
+                                <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Source="{Binding SelectedPart.Image}" HeightRequest="60" WidthRequest="60" Aspect="AspectFit" />
+                                <Label Grid.Row="0" Grid.Column="1" Text="{Binding Name}" VerticalOptions="Center" />
+                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedPart.Name}" VerticalOptions="Center" />
+                                <Picker Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" ItemsSource="{Binding SelectedPart.Offers}" ItemDisplayBinding="{Binding Display}" SelectedItem="{Binding SelectedOffer}" HorizontalOptions="End" />
+                                <Button Grid.Row="1" Grid.Column="2" Text="{Binding ButtonText}" Command="{Binding Path=BindingContext.ChooseCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" Margin="0,0,5,0" />
+                                <Button Grid.Row="1" Grid.Column="3" Text="Купити" Command="{Binding Path=BindingContext.OpenLinkCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding SelectedPart.Link}" IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}" />
+                            </Grid>
+
+                            <!-- ANDROID -->
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="10" RowSpacing="5"
+                                  IsVisible="{OnPlatform Android=True, Default=False}">
+                                <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="4" Source="{Binding SelectedPart.Image}" HeightRequest="80" WidthRequest="80" Aspect="AspectFit" />
+                                <Label Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontAttributes="Bold" />
+                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedPart.Name}" />
+                                <Picker Grid.Row="2" Grid.Column="1" ItemsSource="{Binding SelectedPart.Offers}" ItemDisplayBinding="{Binding Display}" SelectedItem="{Binding SelectedOffer}" />
+                                <HorizontalStackLayout Grid.Row="3" Grid.Column="1" Spacing="10">
+                                    <Button Text="{Binding ButtonText}" Command="{Binding Path=BindingContext.ChooseCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
+                                    <Button Text="Купити" Command="{Binding Path=BindingContext.OpenLinkCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding SelectedPart.Link}" IsVisible="{Binding SelectedPart, Converter={StaticResource IsNotNullConverter}}" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Grid>
+                    </ContentView>
+                </VerticalStackLayout>
             </Border>
         </DataTemplate>
+
         <!-- Multi Component Category Template -->
         <DataTemplate x:Key="MultiComponentCategory" x:DataType="local:MultiComponentCategory">
-            <Border Padding="2, 2, 0, 2"  StrokeShape="RoundRectangle 10" StrokeThickness="2">
-                <VerticalStackLayout Padding="5" IsVisible="{Binding ., Converter={local:TypeCheckConverter TargetType={x:Type local:MultiComponentCategory}}}">
-                    <Grid ColumnDefinitions="*,Auto" Padding="2, 0" VerticalOptions="Center">
+            <Border Padding="10" StrokeShape="RoundRectangle 10" StrokeThickness="2">
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
                         <Label Text="{Binding Name}" VerticalOptions="Center" />
                         <Button Grid.Column="1" Text="Додати ще" Command="{Binding Path=BindingContext.ChooseCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
                     </Grid>
                     <CollectionView ItemsSource="{Binding SelectedParts}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="local:Part">
-                                <Grid Padding="5,5,5,0" ColumnDefinitions="*,*,Auto">
-                                    <Label Text="{Binding Name}" VerticalOptions="Center" />
-                                    <Picker Grid.Column="1" 
-                                            ItemsSource="{Binding Offers}" 
-                                            ItemDisplayBinding="{Binding Display}" 
-                                            SelectedItem="{Binding SelectedOffer}"/>
-                                    <Button Grid.Column="2" Text="Видалити" Command="{Binding Path=BindingContext.RemoveCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" Padding="5" />
+                                <Grid>
+                                    <!-- WINDOWS -->
+                                    <Grid IsVisible="{OnPlatform WinUI=True, Default=False}" ColumnDefinitions="Auto, *, Auto, Auto" RowDefinitions="Auto, Auto" ColumnSpacing="10" RowSpacing="5" Padding="0, 5">
+                                        <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Source="{Binding Image}" HeightRequest="60" WidthRequest="60" Aspect="AspectFit" />
+                                        <Label Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Text="{Binding Name}" VerticalOptions="Center" />
+                                        <Picker Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" ItemsSource="{Binding Offers}" ItemDisplayBinding="{Binding Display}" SelectedItem="{Binding SelectedOffer}" HorizontalOptions="End" />
+                                        <Button Grid.Row="1" Grid.Column="2" Text="Видалити" Command="{Binding Path=BindingContext.RemoveCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" Margin="0, 0, 5, 0" />
+                                        <Button Grid.Row="1" Grid.Column="3" Text="Купити" Command="{Binding Path=BindingContext.OpenLinkCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding Link}" IsVisible="{Binding SelectedOffer, Converter={StaticResource IsNotNullConverter}}" />
+                                    </Grid>
+
+                                    <!-- ANDROID -->
+                                    <Grid IsVisible="{OnPlatform Android=True, Default=False}" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="10" RowSpacing="5" Padding="0, 5">
+                                        <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Source="{Binding Image}" HeightRequest="60" WidthRequest="60" Aspect="AspectFit" />
+                                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontAttributes="Bold" />
+                                        <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Offers}" ItemDisplayBinding="{Binding Display}" SelectedItem="{Binding SelectedOffer}" />
+                                        <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Spacing="10">
+                                            <Button Text="Видалити" Command="{Binding Path=BindingContext.RemoveCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding}" />
+                                            <Button Text="Купити" Command="{Binding Path=BindingContext.OpenLinkCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding Link}" IsVisible="{Binding SelectedOffer, Converter={StaticResource IsNotNullConverter}}" />
+                                        </HorizontalStackLayout>
+                                    </Grid>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -62,60 +105,63 @@
                                                  SingleComponentCategoryTemplate="{StaticResource SingleComponentCategory}"
                                                  MultiComponentCategoryTemplate="{StaticResource MultiComponentCategory}"/>
     </ContentPage.Resources>
-    <StackLayout Margin="2, 0">
-        <CollectionView ItemsSource="{Binding Components}" ItemTemplate="{StaticResource ComponentCategoryTemplateSelector}">   
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"></LinearItemsLayout>
-            </CollectionView.ItemsLayout>
-        </CollectionView>
-        <Label Text="{Binding TotalCost, StringFormat='Загальна вартість: {0:C}'}" FontSize="24" HorizontalOptions="End" Margin="20"/>
-        
-        <HorizontalStackLayout Spacing="10" Margin="10" HorizontalOptions="Center">
-            <Button Text="Check Compatibility" Command="{Binding CheckCompatibilityCommand}" />
-            <Button Text="Can I Run On It?" Command="{Binding GoToCanIRunOnItPageCommand}" />
-        </HorizontalStackLayout>
 
-        <CollectionView ItemsSource="{Binding Warnings}" >
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"></LinearItemsLayout>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="common:Warning">
-                    <Border Margin="10,5" Padding="15" StrokeThickness="2">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="8" />
-                        </Border.StrokeShape>
-                        <Border.Triggers>
-                            <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Incompatibility}">
-                                <Setter Property="Stroke" Value="Red" />
-                            </DataTrigger>
-                            <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Bottleneck}">
-                                <Setter Property="Stroke" Value="Orange" />
-                            </DataTrigger>
-                            <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Info}">
-                                <Setter Property="Stroke" Value="#00b7ff" />
-                            </DataTrigger>
-                        </Border.Triggers>
-                        
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="{Binding Severity.DisplayName}" FontAttributes="Bold" FontSize="24" TextTransform="Uppercase">
-                                <Label.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Incompatibility}">
-                                        <Setter Property="TextColor" Value="Red" />
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Bottleneck}">
-                                        <Setter Property="TextColor" Value="Orange" />
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Info}">
-                                        <Setter Property="TextColor" Value="#00b7ff" />
-                                    </DataTrigger>
-                                </Label.Triggers>
-                            </Label>
-                            <Label Text="{Binding Message}" FontSize="18" />
-                        </VerticalStackLayout>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </StackLayout>
+    <ScrollView>
+        <VerticalStackLayout Margin="2, 0">
+            <CollectionView ItemsSource="{Binding Components}" ItemTemplate="{StaticResource ComponentCategoryTemplateSelector}">   
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"></LinearItemsLayout>
+                </CollectionView.ItemsLayout>
+            </CollectionView>
+            <Label Text="{Binding TotalCost, StringFormat='Загальна вартість: {0:C}'}" FontSize="24" HorizontalOptions="End" Margin="20"/>
+            
+            <HorizontalStackLayout Spacing="10" Margin="10" HorizontalOptions="Center">
+                <Button Text="Check Compatibility" Command="{Binding CheckCompatibilityCommand}" />
+                <Button Text="Can I Run On It?" Command="{Binding GoToCanIRunOnItPageCommand}" />
+            </HorizontalStackLayout>
+
+            <CollectionView ItemsSource="{Binding Warnings}" >
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"></LinearItemsLayout>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="common:Warning">
+                        <Border Margin="10,5" Padding="15" StrokeThickness="2">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8" />
+                            </Border.StrokeShape>
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Incompatibility}">
+                                    <Setter Property="Stroke" Value="Red" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Bottleneck}">
+                                    <Setter Property="Stroke" Value="Orange" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Info}">
+                                    <Setter Property="Stroke" Value="#00b7ff" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="{Binding Severity.DisplayName}" FontAttributes="Bold" FontSize="24" TextTransform="Uppercase">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Incompatibility}">
+                                            <Setter Property="TextColor" Value="Red" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Bottleneck}">
+                                            <Setter Property="TextColor" Value="Orange" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Severity.Value}" Value="{x:Static common:WarningSeverity.Info}">
+                                            <Setter Property="TextColor" Value="#00b7ff" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                                <Label Text="{Binding Message}" FontSize="18" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

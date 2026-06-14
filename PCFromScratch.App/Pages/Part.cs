@@ -6,10 +6,12 @@ using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.Pages;
 
-public class Part (Guid id, string name, IEnumerable<OfferDtoModel> offers) : INotifyPropertyChanged
+public class Part (Guid id, string name, string? image, string link, IEnumerable<OfferDtoModel> offers) : INotifyPropertyChanged
 {
     public Guid Id { get; set; } = id;
     public string Name { get; set; } = name;
+    public string? Image { get; set; } = image;
+    public string Link { get; set; } = link;
     public ObservableCollection<OfferDtoModel> Offers { get; set; } = new (offers);
     
     public OfferDtoModel? SelectedOffer

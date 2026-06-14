@@ -2,9 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-
 using CommunityToolkit.Mvvm.Input;
-
 using PCFromScratch.App.Pages;
 using PCFromScratch.App.Utils;
 using PCFromScratch.Common;
@@ -34,6 +32,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
     public ICommand RemoveCommand { get; }
     public ICommand CheckCompatibilityCommand { get; }
     public ICommand GoToCanIRunOnItPageCommand { get; }
+    public ICommand OpenLinkCommand { get; }
 
     public PcConstructorViewModel(ServerRequests serverRequests)
     {
@@ -82,8 +81,18 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         RemoveCommand = new Command<Part>(OnRemove);
         CheckCompatibilityCommand = new AsyncRelayCommand(CheckCompatibility);
         GoToCanIRunOnItPageCommand = new AsyncRelayCommand(GoToCanIRunOnItPage);
+        OpenLinkCommand = new AsyncRelayCommand<string>(OpenLink);
 
         _pc = new PcDtoModel();
+        _pc.InternalDrives = [];
+    }
+    
+    private async Task OpenLink(string? url)
+    {
+        if (!string.IsNullOrEmpty(url))
+        {
+            await Launcher.OpenAsync(url);
+        }
     }
     
     private void Part_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -148,17 +157,54 @@ public class PcConstructorViewModel : INotifyPropertyChanged
             _ => string.Empty
         };
         
-        string name = category switch
+        string name = "", link = "";
+        string? image = null;
+
+        switch (category)
         {
-            "Cpu" => (await _serverRequests.GetItem<CpuDtoModel>("/cpu", selectedPartId)).Name,
-            "Cooler" => (await _serverRequests.GetItem<CoolerDtoModel>("/cooler", selectedPartId)).Name,
-            "Motherboard" => (await _serverRequests.GetItem<MotherboardDtoModel>("/motherboard", selectedPartId)).Name,
-            "Ram" => (await _serverRequests.GetItem<RamDtoModel>("/ram", selectedPartId)).Model,
-            "Storage" => (await _serverRequests.GetItem<InternalDriveDtoModel>("/drive", selectedPartId)).Name,
-            "Gpu" => (await _serverRequests.GetItem<GpuDtoModel>("/gpu", selectedPartId)).Name,
-            "Psu" => (await _serverRequests.GetItem<PsuDtoModel>("/psu", selectedPartId)).Name,
-            _ => string.Empty
-        };
+            case "Cpu":
+                var cpu = await _serverRequests.GetItem<CpuDtoModel>("/cpu", selectedPartId);
+                name = cpu.Name;
+                image = cpu.Image;
+                link = cpu.Link;
+                break;
+            case "Cooler":
+                var cooler = await _serverRequests.GetItem<CoolerDtoModel>("/cooler", selectedPartId);
+                name = cooler.Name;
+                image = cooler.ImageUrl;
+                link = cooler.Link;
+                break;
+            case "Motherboard":
+                var motherboard = await _serverRequests.GetItem<MotherboardDtoModel>("/motherboard", selectedPartId);
+                name = motherboard.Name;
+                image = motherboard.ImageUrl;
+                link = motherboard.Link;
+                break;
+            case "Ram":
+                var ram = await _serverRequests.GetItem<RamDtoModel>("/ram", selectedPartId);
+                name = ram.Model;
+                image = ram.Image;
+                link = ram.Link;
+                break;
+            case "Storage":
+                var storage = await _serverRequests.GetItem<InternalDriveDtoModel>("/drive", selectedPartId);
+                name = storage.Name;
+                image = storage.Image;
+                link = storage.Link;
+                break;
+            case "Gpu":
+                var gpu = await _serverRequests.GetItem<GpuDtoModel>("/gpu", selectedPartId);
+                name = gpu.Name;
+                image = gpu.Image;
+                link = gpu.Link;
+                break;
+            case "Psu":
+                var psu = await _serverRequests.GetItem<PsuDtoModel>("/psu", selectedPartId);
+                name = psu.Name;
+                image = psu.Image;
+                link = psu.Link;
+                break;
+        }
 
         if (name == string.Empty) return;
 
@@ -176,11 +222,11 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         var component = Components.FirstOrDefault(c => c.Name == categoryName);
         if (component is SingleComponentCategory single)
         {
-            single.SelectedPart = new Part(selectedPartId, name, offers ?? new List<OfferDtoModel>());
+            single.SelectedPart = new Part(selectedPartId, name, image, link, offers ?? new List<OfferDtoModel>());
         }
         else if (component is MultiComponentCategory multi)
         {
-            multi.SelectedParts.Add(new Part(selectedPartId, name, offers ?? new List<OfferDtoModel>()));
+            multi.SelectedParts.Add(new Part(selectedPartId, name, image, link, offers ?? new List<OfferDtoModel>()));
         }
         switch (category)
         {
