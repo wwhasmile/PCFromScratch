@@ -15,8 +15,16 @@ public class PcCompareViewModel : INotifyPropertyChanged
 
     private PcModel Pc1 { get; set; } = new();
     private PcModel Pc2 { get; set; } = new();
-    
-    private static readonly Color EqualityColor = Application.Current?.RequestedTheme == AppTheme.Light? Color.FromArgb("#C8C8C8") : Color.FromArgb("#212121") ?? Color.FromArgb("#212121") ;
+
+    private static readonly Color BetterColor = Application.Current?.RequestedTheme == AppTheme.Light
+        ? Color.FromArgb("#2b9934")
+        : Color.FromArgb("#1e4714") ?? Color.FromArgb("#2b9934");
+    private static readonly Color EqualityColor = Application.Current?.RequestedTheme == AppTheme.Light
+        ? Color.FromArgb("#C8C8C8") 
+        : Color.FromArgb("#212121") ?? Color.FromArgb("#212121") ;
+    private static readonly Color WorseColor = Application.Current?.RequestedTheme == AppTheme.Light
+        ? Color.FromArgb("#cf3434")
+        : Color.FromArgb("#59201d") ?? Color.FromArgb("#cf3434");
     
     public string Pc1CpuName { get => field; set { field = value; OnPropertyChanged(); } } = "";
     public string Pc1GpuName { get => field; set { field = value; OnPropertyChanged(); } } = "";
@@ -61,8 +69,8 @@ public class PcCompareViewModel : INotifyPropertyChanged
         {
             var (pc1Color, pc2Color) = result.Metric switch
             {
-                PcCompareMetric.Better => (Colors.Green, Colors.Red),
-                PcCompareMetric.Worse => (Colors.Red, Colors.Green),
+                PcCompareMetric.Better => (BetterColor, WorseColor),
+                PcCompareMetric.Worse => (WorseColor, BetterColor),
                 _ => (EqualityColor, EqualityColor)
             };
 
