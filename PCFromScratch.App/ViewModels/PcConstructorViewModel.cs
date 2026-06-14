@@ -284,6 +284,7 @@ public class PcConstructorViewModel : INotifyPropertyChanged
 
     private async Task GoToCanIRunOnItPage()
     {
+        if (_pc.Cpu == null || _pc.Motherboard == null || _pc.Gpu == null || _pc.Ram == null || _pc.Psu == null || _pc.InternalDrives.Count == 0) return;
         var navigationParameter = new Dictionary<string, object>
         {
             { "pc", _pc }

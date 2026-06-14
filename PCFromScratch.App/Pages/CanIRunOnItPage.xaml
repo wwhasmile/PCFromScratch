@@ -64,7 +64,7 @@
 
             <!-- Check Button & Result -->
             <Button Text="Check Compatibility" Command="{Binding CheckRequirementsCommand}" />
-            <Label Text="{Binding ResultMessage}" HorizontalOptions="Center" HorizontalTextAlignment="Center" FontSize="16" />
+            <Label Text="{Binding ResultMessage}" HorizontalOptions="Center" HorizontalTextAlignment="Center" FontSize="24" />
 
         </VerticalStackLayout>
     </ScrollView>

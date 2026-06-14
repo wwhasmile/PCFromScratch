@@ -128,7 +128,7 @@ public partial class CanIRunOnItViewModel : ObservableObject
         }
         else
         {
-            ResultMessage = "Ваш ПК не зможе це запустити. Ось чому:\n" + string.Join("\n", messages.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+            ResultMessage = "Ваш ПК не зможе це запустити. Ось чому:\n" + string.Join("\n", messages.Select(kvp => kvp.Value));
         }
     }
 }

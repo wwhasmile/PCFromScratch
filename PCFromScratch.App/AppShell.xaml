@@ -24,10 +24,4 @@
             Route="PcComparePage" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Чи запуститься?">
-        <ShellContent
-            ContentTemplate="{DataTemplate pages:CanIRunOnItPage}"
-            Route="CanIRunOnItPage" />
-    </FlyoutItem>
-
 </Shell>
