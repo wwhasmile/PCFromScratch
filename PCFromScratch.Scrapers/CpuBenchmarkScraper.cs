@@ -39,7 +39,7 @@ public class CpuBenchmarkScraper
                 
                 var cpuData = new List<CpuBenchmark>();
 
-                // Attempt 1: Look for the standard PassMark table format
+                //Look for the standard PassMark table format
                 var table = document.QuerySelector("table#cputable");
                 if (table != null)
                 {
@@ -64,7 +64,7 @@ public class CpuBenchmarkScraper
                 }
                 else
                 {
-                    // Attempt 2: Alternative list structure
+                    //Alternative list structure
                     var listItems = document.QuerySelectorAll("li");
                     foreach (var item in listItems)
                     {
@@ -91,7 +91,7 @@ public class CpuBenchmarkScraper
 
                 allCpus.AddRange(cpuData);
                 
-                // Be polite to the server and wait a second between requests
+                //Wait between requests so we will not get blocked
                 await Task.Delay(2000);
             }
             catch (Exception e)

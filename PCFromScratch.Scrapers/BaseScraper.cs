@@ -8,8 +8,16 @@ using PCFromScratch.DBModels;
 
 namespace PCFromScratch.Scrapers;
 
+/// <summary>
+/// Scraping of price information.
+/// </summary>
 public class BaseScraper
 {
+    /// <summary>
+    /// Extracts price range and individual offers.
+    /// </summary>
+    /// <param name="priceInfo">The HTML element containing price information.</param>
+    /// <returns>A tuple containing the minimum and maximum price, and a set of offers.</returns>
     public static (int, int, HashSet<Offer>) GetPriceInfo(IElement? priceInfo)
     {
         int min = 0, max = 0;
@@ -50,6 +58,12 @@ public class BaseScraper
         }
         return (min, max, offers);
     }   
+
+    /// <summary>
+    /// Scrape prices from locator.
+    /// </summary>
+    /// <param name="priceInfo">Locator pointing to the price information.</param>
+    /// <returns>Task with a tuple with minimum and maximum price, and a set of offers.</returns>
     public static async Task<(int, int, HashSet<Offer>)> GetPriceInfoAsync(ILocator priceInfo)
     {
         int min = 0, max = 0;

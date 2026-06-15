@@ -11,7 +11,6 @@ using AngleSharp.Text;
 
 namespace PCFromScratch.Scrapers;
 
-//For now install Playwright browsers by writing in code Microsoft.Playwright.Program.Main(new[] { "install" }); during first launch, then I'm planning to add browsers in release app
 public class CpuScraper
 {
     public static async Task<List<Cpu>> GetCpus()
