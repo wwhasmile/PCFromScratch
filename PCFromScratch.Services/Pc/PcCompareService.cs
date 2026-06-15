@@ -88,19 +88,18 @@ public class PcCompareService(ICpuRepository cpuRepository,
     private async Task<bool> CheckDrives(IEnumerable<Guid> driveIds, int capacity, bool requireSsd,
             ConcurrentDictionary<string, string> messages)
     {
-        bool moreThanOneDrive = driveIds.Count() > 1;
         bool anyDriveFitsReqs = false;
         string message = "";
         foreach (var id in driveIds)
         {
             var drive = await internalDriveRepository.GetInternalDrive(id);
-            if (drive is null) continue;
+            if (drive is null) return true;
             if (drive.Type != "SSD" && requireSsd)
             {
                 message += $"{drive.Name} не є SSD\n";
                 continue;
             }
-            if (drive.Capacity < (moreThanOneDrive ? capacity : capacity + 60))
+            if (drive.Capacity < capacity)
             {
                 message += $"{drive.Name} не має достатньо місця\n";
                 continue;
