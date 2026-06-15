@@ -25,6 +25,7 @@ public static class MauiProgram
                 fonts.AddFont("DniproCity-Bold.ttf", "DniproCityBold");
                 fonts.AddFont("DniproCity-Regular.ttf", "DniproCityRegular");
             });
+        //Register appsettings.json
         var assembly = Assembly.GetExecutingAssembly();
         using var stream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.appsettings.json");
 
@@ -35,8 +36,9 @@ public static class MauiProgram
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
+        //Client side requests service
         builder.Services.AddSingleton<ServerRequests>();
-
+        //View models
         builder.Services.AddSingleton<ComponentsCompareViewModel>();
         builder.Services.AddSingleton<PcConstructorViewModel>();
         builder.Services.AddTransient<CpuSelectionViewModel>();
@@ -50,7 +52,7 @@ public static class MauiProgram
         builder.Services.AddTransient<GpuBenchmarkSelectionViewModel>();
         builder.Services.AddTransient<CanIRunOnItViewModel>();
         builder.Services.AddSingleton<PcCompareViewModel>();
-
+        //Pages
         builder.Services.AddSingleton<ComponentsComparePage>();
         builder.Services.AddSingleton<PcConstructorPage>();
         builder.Services.AddTransient<CpuSelectionPage>();

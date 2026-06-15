@@ -5,6 +5,9 @@ using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
+/// <summary>
+/// ViewModel for checking if a PC build can run a game with specific requirements.
+/// </summary>
 [QueryProperty(nameof(Pc), "pc")]
 public partial class CanIRunOnItViewModel : ObservableObject
 {
@@ -53,6 +56,11 @@ public partial class CanIRunOnItViewModel : ObservableObject
         SelectedGpuBenchmarkName = "Відеокарта";
     }
 
+    /// <summary>
+    /// Updates the selected benchmark for a given category.
+    /// </summary>
+    /// <param name="category">The category of the benchmark (e.g., "CpuBenchmark", "GpuBenchmark").</param>
+    /// <param name="id">The ID of the selected benchmark.</param>
     public async Task UpdateBenchmark(string category, Guid id)
     {
         var reqs = Requirements;

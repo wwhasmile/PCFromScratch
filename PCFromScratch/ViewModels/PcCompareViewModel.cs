@@ -9,6 +9,9 @@ using PCFromScratch.Common;
 
 namespace PCFromScratch.App.ViewModels;
 
+/// <summary>
+/// ViewModel for comparing two PC builds.
+/// </summary>
 public class PcCompareViewModel : INotifyPropertyChanged
 {
     private readonly ServerRequests _serverRequests;
@@ -127,6 +130,12 @@ public class PcCompareViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Updates a component for a specific PC.
+    /// </summary>
+    /// <param name="category">The category of the component (e.g., "Cpu", "Gpu").</param>
+    /// <param name="selectedPartId">The ID of the selected component.</param>
+    /// <param name="pcIndex">The index of the PC to update (1 or 2).</param>
     public async Task UpdateComponent(string category, Guid selectedPartId, int pcIndex)
     {
         ResetColors();
@@ -181,6 +190,9 @@ public class PcCompareViewModel : INotifyPropertyChanged
     }
 }
 
+/// <summary>
+/// Represents a simplified model of a PC for comparison purposes.
+/// </summary>
 class PcModel
 {
     public Guid? Cpu;

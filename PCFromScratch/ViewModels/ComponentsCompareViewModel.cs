@@ -8,6 +8,9 @@ using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
+/// <summary>
+/// ViewModel for comparing two individual components (CPU or GPU) based on their benchmarks.
+/// </summary>
 [QueryProperty(nameof(SelectedPartId), "SelectedPartId")]
 [QueryProperty(nameof(Category), "Category")]
 [QueryProperty(nameof(PcIndex), "PcIndex")]
@@ -71,6 +74,9 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
         await Shell.Current.GoToAsync($"{pageName}?PcIndex={pcIndex}");
     }
 
+    /// <summary>
+    /// Updates the selected component for comparison.
+    /// </summary>
     public async Task UpdateSelectedComponent()
     {
         if (SelectedPartId == Guid.Empty) return;
@@ -144,6 +150,12 @@ public class ComponentsCompareViewModel : INotifyPropertyChanged
     }
 }
 
+/// <summary>
+/// Represents an entry in the benchmark comparison chart.
+/// </summary>
+/// <param name="name">The name of the component.</param>
+/// <param name="value">The benchmark score.</param>
+/// <param name="width">The calculated width for the chart bar.</param>
 public class BenchmarkChartEntry (string name, int value, double width)
 {
     public string Name { get; set; } = name;

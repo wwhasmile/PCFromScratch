@@ -10,6 +10,9 @@ using PCFromScratch.DTOModels;
 
 namespace PCFromScratch.App.ViewModels;
 
+/// <summary>
+/// ViewModel for the main PC Constructor page, managing selected components and overall build cost.
+/// </summary>
 public class PcConstructorViewModel : INotifyPropertyChanged
 {
     private readonly ServerRequests _serverRequests;
@@ -143,6 +146,11 @@ public class PcConstructorViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Updates the selected component for a given category.
+    /// </summary>
+    /// <param name="category">The category of the component.</param>
+    /// <param name="selectedPartId">The ID of the newly selected component.</param>
     public async Task UpdateSelectedComponent(string category, Guid selectedPartId)
     {
         var categoryName = category switch
