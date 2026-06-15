@@ -1,8 +1,5 @@
 <Solution>
   <Project Path="PCFromScratch.API/PCFromScratch.API.csproj" Id="3454f267-038e-4c26-abc6-464a0cd4eb70" />
-  <Project Path="PCFromScratch.App/PCFromScratch.App.csproj">
-    <Deploy Solution="Debug|*" />
-  </Project>
   <Project Path="PCFromScratch.Common/PCFromScratch.Common.csproj" />
   <Project Path="PCFromScratch.DBModels/PCFromScratch.DBModels.csproj" />
   <Project Path="PCFromScratch.DTOModels/PCFromScratch.DTOModels.csproj" />
