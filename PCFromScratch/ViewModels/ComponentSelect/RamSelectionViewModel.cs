@@ -10,14 +10,13 @@ public class RamSelectionViewModel : BaseComponentViewModel<RamDtoModel>
 
     public ObservableCollection<string> RamGenerations { get; } = new();
     
-    private string _selectedRamGeneration;
     public string SelectedRamGeneration
     {
-        get => _selectedRamGeneration;
+        get => field;
         set
         {
-            if (_selectedRamGeneration == value) return;
-            _selectedRamGeneration = value;
+            if (field == value) return;
+            field = value;
             OnPropertyChanged();
             LoadParts(true);
         }

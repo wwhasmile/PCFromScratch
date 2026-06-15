@@ -1,14 +1,7 @@
 <Solution>
-  <Project Path="PCFromScratch.API/PCFromScratch.API.csproj" Id="3454f267-038e-4c26-abc6-464a0cd4eb70" />
-  <Project Path="PCFromScratch.App/PCFromScratch.App.csproj">
+  <Project Path="PCFromScratch.Common/PCFromScratch.Common.csproj" />
+  <Project Path="PCFromScratch.DTOModels/PCFromScratch.DTOModels.csproj" />
+  <Project Path="PCFromScratch/PCFromScratch.csproj">
     <Deploy Solution="Debug|*" />
   </Project>
-  <Project Path="PCFromScratch.Common/PCFromScratch.Common.csproj" />
-  <Project Path="PCFromScratch.DBModels/PCFromScratch.DBModels.csproj" />
-  <Project Path="PCFromScratch.DTOModels/PCFromScratch.DTOModels.csproj" />
-  <Project Path="PCFromScratch.Migrations/PCFromScratch.Migrations.csproj" Id="33155eb3-30f9-4739-8a0b-e94edcc09f7e" />
-  <Project Path="PCFromScratch.Repository/PCFromScratch.Repository.csproj" />
-  <Project Path="PCFromScratch.Scrapers/PCFromScratch.Scrapers.csproj" />
-  <Project Path="PCFromScratch.Services/PCFromScratch.Services.csproj" />
-  <Project Path="PCFromScratch.Storage/PCFromScratch.Storage.csproj" />
 </Solution>

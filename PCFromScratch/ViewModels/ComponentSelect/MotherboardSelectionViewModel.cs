@@ -10,14 +10,13 @@ public class MotherboardSelectionViewModel : BaseComponentViewModel<MotherboardD
 
     public ObservableCollection<string> Sockets { get; } = new();
     
-    private string _selectedSocket;
     public string SelectedSocket
     {
-        get => _selectedSocket;
+        get => field;
         set
         {
-            if (_selectedSocket == value) return;
-            _selectedSocket = value;
+            if (field == value) return;
+            field = value;
             OnPropertyChanged();
             LoadParts(true);
         }
@@ -25,14 +24,13 @@ public class MotherboardSelectionViewModel : BaseComponentViewModel<MotherboardD
 
     public ObservableCollection<string> RamGenerations { get; } = new();
     
-    private string _selectedRamGeneration;
     public string SelectedRamGeneration
     {
-        get => _selectedRamGeneration;
+        get => field;
         set
         {
-            if (_selectedRamGeneration == value) return;
-            _selectedRamGeneration = value;
+            if (field == value) return;
+            field = value;
             OnPropertyChanged();
             LoadParts(true);
         }
