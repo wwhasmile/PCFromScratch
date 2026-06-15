@@ -63,7 +63,7 @@
             </VerticalStackLayout>
 
             <!-- Check Button & Result -->
-            <Button Text="Check Compatibility" Command="{Binding CheckRequirementsCommand}" />
+            <Button Text="Перевірити" Command="{Binding CheckRequirementsCommand}" />
             <Label Text="{Binding ResultMessage}" HorizontalOptions="Center" HorizontalTextAlignment="Center" FontSize="24" />
 
         </VerticalStackLayout>
